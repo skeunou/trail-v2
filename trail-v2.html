@@ -210,7 +210,7 @@
   <!-- AUJOURD'HUI -->
   <section class="view on" id="v-today">
     <div class="topline">
-      <div class="eyebrow" id="todayDate">—</div>
+      <div class="eyebrow" id="todayDate" style="color:var(--ink)">—</div>
       <div style="display:flex;align-items:center;gap:8px">
         <button id="notifBell" onclick="togglePush()" style="border:none;background:none;font-size:19px;cursor:pointer;padding:2px 4px;line-height:1" title="Rappel du matin">🔕</button>
         <div class="blockbadge" id="blockBadge">—</div>
@@ -1729,7 +1729,7 @@ function renderLoadCard(){
   var box=document.getElementById("loadCard"); if(!box)return;
   var d=loadStats();
   if(!d){ box.innerHTML=""; return; }
-  var h='<div class="card" style="padding:11px 14px;margin-bottom:10px">';
+  var h='<div class="card" style="padding:11px 14px;margin:16px 0 10px">';
   if(d.acwr!=null && d.daysCov>=14){
     var z=acwrZone(d.acwr);
     h+='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">'+

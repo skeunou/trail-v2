@@ -70,9 +70,8 @@
   .strava .t .s{font-size:13px;color:var(--mut)}
   .strava .go{font-size:14px;font-weight:700;color:var(--blue);flex:0 0 auto}
   #stravaActs:not(:empty){border-top:1px solid var(--line)}
-  .nextsid{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;border-top:1px solid var(--line)}
-  .nextsid .cap{font-size:11px;color:var(--mut);line-height:1.3}
-  .nextsid .pill{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;background:var(--acid);color:#15171a;padding:3px 11px;border-radius:20px;white-space:nowrap;flex:0 0 auto}
+  .nexthdr{font-size:11px;font-weight:800;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px 9px;white-space:nowrap;align-items:center;gap:4px;line-height:1}
+  .nexthdr .n{color:var(--acid-d);font-weight:800}
   .sact{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line)}
   .sact:last-child{border-bottom:none}
   .sact .sn{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -221,6 +220,7 @@
         <!-- Cloche/rappel notifs retiré (ne fonctionnait pas) — réactivable :
         <button id="notifBell" onclick="togglePush()" style="border:none;background:none;font-size:19px;cursor:pointer;padding:2px 4px;line-height:1" title="Rappel du matin">🔕</button>
         -->
+        <div id="nextSid" class="nexthdr" style="display:none"></div>
         <div class="blockbadge" id="blockBadge">—</div>
       </div>
     </div>
@@ -248,7 +248,6 @@
         <div class="t"><div class="l">Charge · cette semaine</div><div class="s" id="stravaState">Strava à connecter</div></div>
         <div class="go" id="stravaGo">Connecter →</div>
       </div>
-      <div id="nextSid" class="nextsid" style="display:none"></div>
       <div id="stravaActs"></div>
       <div id="tokExport"></div>
     </div>
@@ -459,8 +458,8 @@ function gen(d){
     else if(dow==="mar"){ o.typeKey="cotes"; o.label="Côte club · reprise"; o.short="Côtes 5×2′ Z3"; o.sub="5×2′ Z3 · reprise"; o.why="Côtes club (mardi soir) — reprise progressive de la VAM."; o.detail=["Échauff : 15′ EF progressif.","Corps : 5× 2′ en montée modérée Z3 (pas à fond, on reprend le geste).","Retour : 10′ EF facile.","Mardi soir = toujours club, ton pilier."]; o.color="var(--orange)"; o.plan={reps:5,format:"Reprise"}; }
     else if(dow==="mer"){ o.typeKey="fond"; o.label="EF moyen"; o.short="EF 50' Z2"; o.sub="~50′ · Z2 · flexible"; o.why="Volume aérobie facile."; o.detail=["~50′ EF facile, solo ou pote.","Flexible : décale-le si journée chargée."]; o.color="var(--grn)"; o.plan={durMin:50}; }
     else if(dow==="jeu"){ o.typeKey="fond"; o.label="EF relance"; o.short="EF 40' souple"; o.sub="~40′ · Z2 · flexible"; o.why="Footing souple — optionnel selon la semaine."; o.detail=["~40′ très facile.","À faire en grosse semaine, à sauter en petite."]; o.color="var(--grn)"; o.plan={durMin:40}; }
-    else if(dow==="ven"){ o.typeKey="repos"; o.label="Repos / fraîcheur"; o.sub="repos"; o.why="Repos — ou un de tes 2 renfos si tu veux."; o.plan={}; }
-    else { o.typeKey="repos"; o.label="Repos"; o.sub="week-end"; o.why="Repos + ta sortie longue de la semaine, à caler quand tu peux (carte accueil)."; o.plan={}; }
+    else if(dow==="ven"){ o.typeKey="fond"; o.label="EF"; o.short="EF 45' Z2"; o.sub="~45′ · Z2"; o.why="Footing facile — recharge sans forcer."; o.detail=["~45′ EF, allure de conversation, nez qui respire.","Flexible : décale-le si journée chargée."]; o.color="var(--grn)"; o.plan={durMin:45}; }
+    else { o.typeKey="repos"; o.label="Séance libre ou SL"; o.sub="week-end · libre"; o.why="Séance libre (EF ou côtes courtes) ou ta sortie longue — comme ta vie le permet (carte À FAIRE)."; o.color="var(--blue)"; o.plan={}; }
   }
   else if(ph==="base"||ph==="force"||ph==="build"){
     var isBuild=ph==="build", isForce=ph==="force";
@@ -492,20 +491,22 @@ function gen(d){
     }
     else if(dow==="jeu"){
       var durj=round5(50*wi.m);
-      o.typeKey="fond"; o.label="EF relance"; o.short="EF relance "+durj+"'"; o.sub="~"+durj+"′ · Z2 · flexible";
-      o.why="Relance facile — optionnelle selon ta semaine.";
-      o.detail=["~"+durj+"′ EF conversation, nez qui respire.","Jeudi 12-14h = ton créneau.","À faire en grosse semaine, à sauter en petite."];
+      o.typeKey="fond"; o.label="EF ou VMA"; o.short="EF "+durj+"' ou VMA"; o.sub="~"+durj+"′ Z2 · ou VMA";
+      o.why="Au choix : relance EF facile, ou ta séance VMA (carte À FAIRE) si tu veux de l'intensité sur le plat.";
+      o.detail=["Option EF : ~"+durj+"′ conversation, nez qui respire.","Option VMA : carte À FAIRE (rotation 3 formats, route/piste). Complète les côtes du mardi.","Jeudi 12-14h = ton créneau."];
       o.color="var(--grn)"; o.plan={durMin:durj};
     }
     else if(dow==="ven"){
-      o.typeKey="repos"; o.label="Repos / fraîcheur"; o.sub="repos";
-      o.why="Repos — ou un de tes 2 renfos si tu veux du gainage avant le week-end.";
-      o.plan={};
+      var durv=round5(45*wi.m);
+      o.typeKey="fond"; o.label="EF"; o.short="EF "+durv+"' Z2"; o.sub="~"+durv+"′ · Z2";
+      o.why="Footing facile avant le week-end — nourrit le moteur diesel.";
+      o.detail=["~"+durv+"′ EF en Z2, allure de conversation.","Flexible : décale-le si journée chargée."];
+      o.color="var(--grn)"; o.plan={durMin:durv};
     }
     else {
-      o.typeKey="repos"; o.label="Repos"; o.sub="week-end";
-      o.why="Repos + ta sortie longue de la semaine (carte accueil), à caler quand ta vie le permet. Grosse semaine : possible EF facile l'autre jour.";
-      o.plan={};
+      o.typeKey="repos"; o.label="Séance libre ou SL"; o.sub="week-end · libre";
+      o.why="Séance libre (EF ou côtes courtes) ou ta sortie longue — à caler quand ta vie le permet (carte À FAIRE).";
+      o.color="var(--blue)"; o.plan={};
     }
     
     // Renfo placé par phase. Vendredi = ancre (avant repos week-end).
@@ -903,25 +904,90 @@ function renfoPair(){ var wc=weekCounter(), na=RENFO_CAT_A.length, nb=RENFO_CAT_
 function slotIdx(slot){ var p=renfoPair(); return slot===1?p.a:p.b; }
 function slotDone(slot){ var wk=mondayKey(); return loadLog().some(function(e){return e.typeKey==="renfo-supp"&&e.wk===wk&&e.wslot===slot;}); }
 var _wkSlot=0,_wkIdx=-1,pWeekly=false,pRenfoBlocks=[];
-function renderRenfoWeek(){
-  var box=document.getElementById("renfoWeek"); if(!box)return;
-  var p=renfoPair();
-  function btn(slot,idx){
-    var done=slotDone(slot), s=RENFO_WEEK[idx];
-    var accent=done?"var(--grn)":"var(--acid)";
-    return '<button style="flex:1;background:var(--paper);border:1px solid var(--line);border-left:4px solid '+accent+';border-radius:12px;padding:12px 13px;text-align:left;cursor:pointer;font-family:inherit" onclick="'+(done?'reviewWeeklyRenfo':'startWeeklyRenfo')+'('+slot+')">'+
-      (done?'<div style="font-size:10.5px;font-weight:800;color:var(--grn);letter-spacing:.5px;margin-bottom:4px">✓ FAIT</div>':'')+
-      '<div style="font-size:14px;font-weight:700;line-height:1.25;color:var(--ink)">'+s.name+'</div>'+
-      '<div style="font-size:11px;color:var(--mut);margin-top:6px">'+s.blocks.length+' blocs · '+(s.cat==="A"?"force":"puissance / access.")+'</div></button>';
-  }
+/* ===== VMA hebdo (slot flottant, rotation 3 formats — plat/piste) ===== */
+var VMA_FORMATS=[
+  {n:"30/30 court",  desc:"2 blocs de 10 × (30″ vite / 30″ footing) · récup 3′ entre blocs", cue:"« Vite » = allure VMA (~16–17 km/h), fluide, jamais en sur-régime."},
+  {n:"Intervalles 2′", desc:"5 × 2′ @ 95–100% VMA · récup 1′30 en footing", cue:"Allure 3000/5000. Contrôle la 1re, finis fort la dernière."},
+  {n:"VMA 400", desc:"8 × 400 m @ VMA · récup 1′ (ou 200 m trot)", cue:"Piste idéale. ~1′27 le 400 à 16,5 km/h — même temps à chaque tour."}
+];
+function vmaFmt(){ var wb=weekInfo(new Date()).wb; return VMA_FORMATS[(((wb-1)%3)+3)%3]; }
+function vmaDoneEntry(){ var wk=mondayKey(),r=null; loadLog().forEach(function(e){ if(e.typeKey==="vma-week"&&e.wk===wk) r=e; }); return r; }
+
+/* ===== CARTE « À FAIRE » — sortie longue + VMA + 2 renfos (boutons identiques) ===== */
+function renderRenfoWeek(){ renderAFaire(); }
+function renderSLWeek(){ renderAFaire(); }
+function afaireBtn(o){
+  var accent=o.done?"var(--grn)":"var(--acid)";
+  return '<button style="background:var(--paper);border:1px solid var(--line);border-left:4px solid '+accent+';border-radius:12px;padding:12px 13px;text-align:left;cursor:pointer;font-family:inherit" onclick="'+o.onclick+'">'+
+    (o.done?'<div style="font-size:10.5px;font-weight:800;color:var(--grn);letter-spacing:.5px;margin-bottom:4px">✓ FAIT</div>':'')+
+    '<div style="font-size:14px;font-weight:700;line-height:1.2;color:var(--ink)">'+o.label+'</div>'+
+    '<div style="font-size:11px;color:var(--mut);margin-top:5px">'+o.sub+'</div></button>';
+}
+function renderAFaire(){
+  var box=document.getElementById("slWeek"); if(!box)return;
+  var rf=document.getElementById("renfoWeek"); if(rf)rf.innerHTML="";
+  var p=renfoPair(), ra=RENFO_WEEK[p.a], rb=RENFO_WEEK[p.b];
+  var slT=slWeekTarget(), slE=slDoneEntry();
+  var slSub = slE ? ((slE.km?slE.km+' km · ':'')+fmtMin(slE.durMin||0)) : (slT.absorption?"récup — pas de longue":("~"+fmtDur(slT.dur)+" · "+slT.dplus+" m D+"));
+  var vE=vmaDoneEntry(), vf=vmaFmt();
+  var vSub = vE ? ((vE.km?vE.km+' km · ':'')+fmtMin(vE.durMin||0)) : vf.n;
   box.innerHTML='<div class="card" style="padding:13px;margin-top:10px">'+
-    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px">RENFO DE LA SEMAINE</div><div style="font-size:10.5px;color:var(--mut)">2 séances · où tu veux</div></div>'+
-    '<div style="display:flex;gap:8px">'+btn(1,p.a)+btn(2,p.b)+'</div>'+
-    '<div style="font-size:10.5px;color:var(--mut);margin-top:8px">Appairage force + puissance/accessoires. Nouvelle paire chaque lundi.</div>'+
-    '<div id="renfoWeekCk"></div></div>';
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px">À FAIRE</div><div style="font-size:10.5px;color:var(--mut)">cette semaine · où tu veux</div></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
+      afaireBtn({label:"Sortie longue",sub:slSub,done:!!slE,onclick:"openSL()"})+
+      afaireBtn({label:"VMA",sub:vSub,done:!!vE,onclick:"openVMA()"})+
+      afaireBtn({label:ra.name,sub:ra.blocks.length+" blocs · "+(ra.cat==="A"?"force":"puissance / access."),done:slotDone(1),onclick:(slotDone(1)?"reviewWeeklyRenfo":"startWeeklyRenfo")+"(1)"})+
+      afaireBtn({label:rb.name,sub:rb.blocks.length+" blocs · "+(rb.cat==="A"?"force":"puissance / access."),done:slotDone(2),onclick:(slotDone(2)?"reviewWeeklyRenfo":"startWeeklyRenfo")+"(2)"})+
+    '</div>'+
+    '<div style="font-size:10.5px;color:var(--mut);margin-top:9px">Longue · VMA · 2 renfos — à poser quand ta vie le permet. Nouvelle paire de renfos chaque lundi.</div>'+
+    '<div id="afaireDetail"></div></div>';
+}
+function openVMA(){
+  var el=document.getElementById("afaireDetail"); if(!el)return;
+  var e=vmaDoneEntry(), f=vmaFmt();
+  var close='<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px;padding:6px" onclick="renderAFaire()">← fermer</button>';
+  if(e){
+    el.innerHTML='<div style="border-top:1px solid var(--line);margin-top:11px;padding-top:11px">'+
+      '<div style="font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:6px">VMA</div>'+
+      '<div style="font-size:10.5px;font-weight:800;color:var(--grn);letter-spacing:.5px;margin-bottom:4px">✓ FAITE</div>'+
+      '<div style="font-size:14px;font-weight:700;color:var(--ink)">'+(e.stravaName||"Séance VMA")+'</div>'+
+      '<div style="font-size:11.5px;color:var(--mut);margin-top:4px">'+(e.km?e.km+' km · ':'')+fmtMin(e.durMin||0)+(e.hrAvg?' · FC '+e.hrAvg:'')+'</div>'+
+      '<button class="btn btn-ghost" style="width:100%;margin-top:9px;font-size:11px;padding:5px;color:var(--mut)" onclick="unlinkVMA()">délier</button>'+close+'</div>';
+    return;
+  }
+  el.innerHTML='<div style="border-top:1px solid var(--line);margin-top:11px;padding-top:11px">'+
+    '<div style="font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:6px">VMA · '+f.n+'</div>'+
+    '<div style="font-size:13px;color:var(--ink);font-weight:700">'+f.desc+'</div>'+
+    '<div style="font-size:11px;color:var(--mut);margin-top:5px">'+f.cue+'</div>'+
+    '<div style="font-size:11px;color:var(--mut);margin-top:6px">Structure : 15–20′ échauffement progressif · corps de séance · 10′ retour au calme. Route plate ou piste, le jeudi de préférence — la VMA plat complète les côtes du mardi.</div>'+
+    '<button class="btn btn-go" style="width:100%;margin-top:10px;background:var(--blue)" onclick="showVMALinkList()">🔗 Lier ma VMA (Strava)</button>'+
+    '<div id="vmaLinkList"></div>'+close+'</div>';
+}
+function showVMALinkList(){
+  var el=document.getElementById("vmaLinkList"); if(!el)return;
+  if(!stravaToken){ el.innerHTML='<div style="color:var(--mut);font-size:12px;padding:6px 0">Connecte Strava pour lier ta séance.</div>'; return; }
+  var acts=runActsForLink().slice(0,8);
+  if(!acts.length){ el.innerHTML='<div style="color:var(--mut);font-size:12px;padding:6px 0">Aucune course Strava récente. Recharge Strava (↻).</div>'; return; }
+  el.innerHTML=acts.map(function(a){
+    var d=a.date?a.date.split("-").reverse().slice(0,2).join("/"):"";
+    return '<div class="card" style="padding:9px 12px;margin-top:6px;cursor:pointer" onclick="linkVMAStrava(\''+a.id+'\')"><div style="font-weight:700;font-size:13px">'+(a.name||"Course")+'</div><div style="color:var(--mut);font-size:11px">'+d+(a.km?' · '+a.km+' km':'')+' · '+fmtMin(a.movingMin)+'</div></div>';
+  }).join("")+'<button class="btn btn-ghost" style="width:100%;font-size:12px;padding:6px;margin-top:6px" onclick="openVMA()">← annuler</button>';
+}
+function linkVMAStrava(id){
+  var a=null; lastActs.forEach(function(x){if(String(x.id)===String(id))a=x;}); if(!a)return;
+  var log=loadLog();
+  log.unshift({id:"vma_"+Date.now(),dateKey:a.date||iso(new Date()),ts:Date.now(),_u:Date.now(),
+    typeKey:"vma-week",type:"VMA",title:"VMA",color:"var(--purp)",wk:mondayKey(),
+    sid:a.id,stravaName:a.name||"",km:a.km,dplus:a.dplus,durMin:a.movingMin,hrAvg:a.hrAvg||null,hrMax:a.hrMax||null});
+  log.sort(function(x,y){return x.dateKey<y.dateKey?1:-1;});
+  saveLog(log); renderAFaire(); renderLog();
+}
+function unlinkVMA(){
+  if(!confirm("Délier la VMA de la semaine ?"))return;
+  var wk=mondayKey(); saveLog(loadLog().filter(function(e){return !(e.typeKey==="vma-week"&&e.wk===wk);})); renderAFaire(); renderLog();
 }
 function reviewWeeklyRenfo(slot){
-  var box=document.getElementById("renfoWeekCk"); if(!box)return;
+  var box=document.getElementById("afaireDetail"); if(!box)return;
   var wk=mondayKey();
   var e=loadLog().filter(function(x){return x.typeKey==="renfo-supp"&&x.wk===wk&&x.wslot===slot;})[0];
   if(!e){ startWeeklyRenfo(slot); return; }
@@ -934,7 +1000,7 @@ function reviewWeeklyRenfo(slot){
     '<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px;padding:6px" onclick="renderRenfoWeek()">← fermer</button></div>';
 }
 function startWeeklyRenfo(slot){
-  var box=document.getElementById("renfoWeekCk"); if(!box)return;
+  var box=document.getElementById("afaireDetail"); if(!box)return;
   _wkSlot=slot; _wkIdx=slotIdx(slot); checkinFlags=[];
   var chips=Object.keys(ZONE_LBL).map(function(zk){
     return '<button type="button" id="ck-'+zk+'" onclick="toggleFlag(\''+zk+'\')" style="border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer">'+ZONE_LBL[zk]+'</button>';
@@ -1006,30 +1072,31 @@ function slWeekTarget(){
 }
 function fmtDur(min){ var h=Math.floor(min/60), m=min%60; return h?(h+"h"+(m?String(m).padStart(2,"0"):"")):(m+"′"); }
 function slDoneEntry(){ var wk=mondayKey(), r=null; loadLog().forEach(function(e){ if(e.typeKey==="sl-week"&&e.wk===wk) r=e; }); return r; }
-function renderSLWeek(){
-  var box=document.getElementById("slWeek"); if(!box)return;
-  var t=slWeekTarget();
-  if(t.absorption){
-    box.innerHTML='<div class="card" style="padding:13px;margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px">SORTIE LONGUE</div><div style="font-size:10.5px;color:var(--mut)">semaine d\'absorption</div></div><div style="font-size:12px;color:var(--mut)">Pas de longue cette semaine — récup relative. Laisse le corps encaisser, tu reviens plus fort la semaine prochaine.</div></div>';
-    return;
-  }
-  var head='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px">SORTIE LONGUE DE LA SEMAINE</div><div style="font-size:10.5px;color:var(--mut)">où tu veux</div></div>';
-  var e=slDoneEntry();
+function openSL(){
+  var el=document.getElementById("afaireDetail"); if(!el)return;
+  var t=slWeekTarget(), e=slDoneEntry();
+  var close='<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px;padding:6px" onclick="renderAFaire()">← fermer</button>';
   if(e){
-    box.innerHTML='<div class="card" style="padding:13px;margin-top:10px;border-left:4px solid var(--grn)">'+head+
+    el.innerHTML='<div style="border-top:1px solid var(--line);margin-top:11px;padding-top:11px">'+
+      '<div style="font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:6px">SORTIE LONGUE</div>'+
       '<div style="font-size:10.5px;font-weight:800;color:var(--grn);letter-spacing:.5px;margin-bottom:4px">✓ FAITE</div>'+
       '<div style="font-size:14px;font-weight:700;color:var(--ink)">'+(e.stravaName||"Sortie longue")+'</div>'+
       '<div style="font-size:11.5px;color:var(--mut);margin-top:4px">'+(e.km?e.km+' km · ':'')+(e.dplus?e.dplus+' m D+ · ':'')+fmtMin(e.durMin||0)+(e.hrAvg?' · FC '+e.hrAvg:'')+'</div>'+
       '<button class="btn btn-ghost" style="width:100%;margin-top:9px;font-size:12.5px;padding:7px" id="slCdBtn" onclick="toggleSLCoach(\''+(e.sid||"")+'\')">+ détails coach</button>'+
       '<div id="slCoach" style="margin-top:8px"></div>'+
-      '<button class="btn btn-ghost" style="width:100%;margin-top:6px;font-size:11px;padding:5px;color:var(--mut)" onclick="unlinkSL()">délier</button></div>';
+      '<button class="btn btn-ghost" style="width:100%;margin-top:6px;font-size:11px;padding:5px;color:var(--mut)" onclick="unlinkSL()">délier</button>'+close+'</div>';
     return;
   }
-  box.innerHTML='<div class="card" style="padding:13px;margin-top:10px;border-left:4px solid var(--blue)">'+head+
+  if(t.absorption){
+    el.innerHTML='<div style="border-top:1px solid var(--line);margin-top:11px;padding-top:11px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:6px">SORTIE LONGUE</div><div style="font-size:12px;color:var(--mut)">Semaine d\'absorption — pas de longue cette semaine. Récup relative, laisse le corps encaisser : tu reviens plus fort la semaine prochaine.</div>'+close+'</div>';
+    return;
+  }
+  el.innerHTML='<div style="border-top:1px solid var(--line);margin-top:11px;padding-top:11px">'+
+    '<div style="font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:6px">SORTIE LONGUE</div>'+
     '<div style="font-size:13px;color:var(--ink);font-weight:700">Cible : ~'+fmtDur(t.dur)+' · '+t.dplus+' m D+</div>'+
     '<div style="font-size:11px;color:var(--mut);margin-top:4px">Pose-la quand ta vie le permet. Pas de créneau long ? 2 sorties moyennes rapprochées (ven. soir + sam. matin) = back-to-back, tout aussi bénéfique pour l\'UT4M.</div>'+
     '<button class="btn btn-go" style="width:100%;margin-top:10px;background:var(--blue)" onclick="showSLLinkList()">🔗 Lier ma sortie longue (Strava)</button>'+
-    '<div id="slLinkList"></div></div>';
+    '<div id="slLinkList"></div>'+close+'</div>';
 }
 function showSLLinkList(){
   var el=document.getElementById("slLinkList"); if(!el)return;
@@ -1039,7 +1106,7 @@ function showSLLinkList(){
   el.innerHTML=acts.map(function(a){
     var d=a.date?a.date.split("-").reverse().slice(0,2).join("/"):"";
     return '<div class="card" style="padding:9px 12px;margin-top:6px;cursor:pointer" onclick="linkSLStrava(\''+a.id+'\')"><div style="font-weight:700;font-size:13px">'+(a.name||"Course")+'</div><div style="color:var(--mut);font-size:11px">'+d+(a.km?' · '+a.km+' km':'')+(a.dplus?' · '+a.dplus+' m D+':'')+' · '+fmtMin(a.movingMin)+'</div></div>';
-  }).join("")+'<button class="btn btn-ghost" style="width:100%;font-size:12px;padding:6px;margin-top:6px" onclick="renderSLWeek()">← annuler</button>';
+  }).join("")+'<button class="btn btn-ghost" style="width:100%;font-size:12px;padding:6px;margin-top:6px" onclick="openSL()">← annuler</button>';
 }
 function linkSLStrava(id){
   var a=null; lastActs.forEach(function(x){if(String(x.id)===String(id))a=x;}); if(!a)return;
@@ -2485,8 +2552,8 @@ function updateNextSid(){
   if(!stravaToken || !Array.isArray(lastActs) || !lastActs.length){ el.style.display="none"; return; }
   var mx=0;
   lastActs.forEach(function(a){ var s=parseSid(a.name); if(!s)return; var n=parseFloat(s.slice(1)); if(!isNaN(n)&&n>mx)mx=n; });
-  el.style.display="flex";
-  el.innerHTML='<span class="cap">Prochain n° à poser sur Strava</span><span class="pill">Next : S'+(Math.floor(mx)+1)+'</span>';
+  el.style.display="inline-flex";
+  el.innerHTML='Next : <span class="n">S'+(Math.floor(mx)+1)+'</span>';
 }
 function fetchStravaData(retried){
   stravaMsg("Chargement…","var(--mut)");

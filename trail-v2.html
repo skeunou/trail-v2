@@ -114,6 +114,9 @@
   .wkrow.wktoday .wkdn{color:var(--ink)}
   .wkdesc{flex:1;display:flex;align-items:flex-start;gap:9px;min-width:0}
   .wkdesc .pip{width:9px;height:9px;border-radius:50%;flex:0 0 auto;margin-top:5px}
+  .wkmid{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+  .wkmid .pip{width:9px;height:9px;border-radius:50%;flex:0 0 auto;margin-top:5px}
+  .wkline{display:flex;align-items:flex-start;gap:9px;min-width:0}
   .wtxt{min-width:0}
   .wtxt .wm{font-size:14px;font-weight:700;line-height:1.2}
   .wtxt .wsub{font-size:11.5px;color:var(--mut);line-height:1.3;margin-top:1px}
@@ -210,22 +213,24 @@
   <!-- AUJOURD'HUI -->
   <section class="view on" id="v-today">
     <div class="topline">
-      <div class="eyebrow" id="todayDate" style="color:var(--ink)">—</div>
+      <div class="eyebrow" id="todayDate" style="color:var(--ink);font-weight:800">—</div>
       <div style="display:flex;align-items:center;gap:8px">
+        <!-- Cloche/rappel notifs retiré (ne fonctionnait pas) — réactivable :
         <button id="notifBell" onclick="togglePush()" style="border:none;background:none;font-size:19px;cursor:pointer;padding:2px 4px;line-height:1" title="Rappel du matin">🔕</button>
+        -->
         <div class="blockbadge" id="blockBadge">—</div>
       </div>
     </div>
-    <div class="weeklbl"><span class="eyebrow" id="weekLbl">Ta semaine</span><span style="display:flex;align-items:center;gap:8px"><span onclick="weekNav(-1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">‹</span><span class="eyebrow" id="weekRange">—</span><span onclick="weekNav(1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">›</span></span></div>
+    <div class="weeklbl"><span class="eyebrow" id="weekLbl" style="color:var(--ink)">Ta semaine</span><span style="display:flex;align-items:center;gap:8px"><span onclick="weekNav(-1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">‹</span><span class="eyebrow" id="weekRange">—</span><span onclick="weekNav(1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">›</span></span></div>
     <div class="week" id="weekStrip"></div>
     <div id="weekRecap"></div>
-    <div class="weeklbl"><span class="eyebrow">Aujourd'hui</span></div>
+    <div class="weeklbl" style="margin-top:22px"><span class="eyebrow" style="color:var(--ink)">Aujourd'hui</span></div>
     <div class="card hero" id="heroCard" style="position:relative">
       <div class="type" id="heroType">—</div>
       <div class="sessionid bebas" id="heroId" style="font-size:14px;color:var(--acc);letter-spacing:1px">—</div>
       <h1 id="heroTitle" style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;letter-spacing:0;margin:2px 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</h1>
       <div class="why" id="heroWhy">—</div>
-      <div class="specsRow" style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div class="specsRow" style="display:flex;align-items:center;gap:10px;margin-bottom:0">
         <div class="specs" id="heroSpecs" style="flex:1;margin-bottom:0"></div>
         <div id="heroActions" style="flex-shrink:0"></div>
       </div>
@@ -1749,20 +1754,21 @@ function renderLoadCard(){
   box.innerHTML=h;
 }
 function realDaySummary(key){
-  // ce qui a été RÉELLEMENT fait ce jour (activités Strava), pour les jours validés
+  // ce qui a été RÉELLEMENT fait ce jour (toutes les activités Strava), pour les jours validés
   if(typeof lastActs==="undefined"||!Array.isArray(lastActs))return null;
   var acts=lastActs.filter(function(a){return (a.date||"").slice(0,10)===key;});
   if(!acts.length)return null;
-  var prim=acts.slice().sort(function(a,b){return (b.movingMin||0)-(a.movingMin||0);})[0];
-  var t=(prim.type||"")+" "+(prim.name||"");
-  var ic=/ride|v[ée]lo|bike|H\.T|VdR/i.test(t)?"🚴":(/hiit|workout|weight/i.test(t)?"🥊":"🏃");
-  var parts=[];
-  if(prim.km)parts.push(prim.km+" km");
-  if(prim.movingMin)parts.push(fmtMin(prim.movingMin));
-  if(prim.dplus)parts.push(prim.dplus+" m D+");
-  if(prim.hrAvg)parts.push("FC "+prim.hrAvg);
-  var more=acts.length>1?' <span style="color:var(--mut)">+'+(acts.length-1)+'</span>':'';
-  return {name:ic+" "+(prim.name||"Activité")+more, sub:parts.join(" · ")};
+  acts=acts.slice().sort(function(a,b){return (b.movingMin||0)-(a.movingMin||0);});
+  return acts.map(function(prim){
+    var t=(prim.type||"")+" "+(prim.name||"");
+    var ic=/ride|v[ée]lo|bike|H\.T|VdR/i.test(t)?"🚴":(/hiit|workout|weight/i.test(t)?"🥊":"🏃");
+    var parts=[];
+    if(prim.km)parts.push(prim.km+" km");
+    if(prim.movingMin)parts.push(fmtMin(prim.movingMin));
+    if(prim.dplus)parts.push(prim.dplus+" m D+");
+    if(prim.hrAvg)parts.push("FC "+prim.hrAvg);
+    return {name:ic+" "+(prim.name||"Activité"), sub:parts.join(" · ")};
+  });
 }
 function renderWeekView(){
   var out="";
@@ -1776,12 +1782,15 @@ function renderWeekView(){
     out+='<div class="card" style="padding:0;margin-bottom:18px;overflow:hidden">';
     for(var i=0;i<7;i++){var d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i);var s=sessionFor(d);var dk=iso(d);var done=sessionDone(s)||extrasForDay(dk).length>0||suppEntriesFor(dk).length>0;var dd=s.plan;
       var real=done?realDaySummary(dk):null;
-      var wm=real?real.name:((dd.sid?'<span style="color:var(--blue)">'+dd.sid+'</span> · ':'')+dd.label);
-      var wsub=real?real.sub:dd.sub;
-      var pip=real?'var(--grn)':s.info.color;
+      var mid;
+      if(real&&real.length){
+        mid=real.map(function(r){return '<div class="wkline"><span class="pip" style="background:var(--grn)"></span><div class="wtxt"><div class="wm">'+r.name+'</div>'+(r.sub?'<div class="wsub">'+r.sub+'</div>':'')+'</div></div>';}).join('');
+      } else {
+        mid='<div class="wkline"><span class="pip" style="background:'+s.info.color+'"></span><div class="wtxt"><div class="wm">'+(dd.sid?'<span style="color:var(--blue)">'+dd.sid+'</span> · ':'')+dd.label+'</div>'+(dd.sub?'<div class="wsub">'+dd.sub+'</div>':'')+'</div></div>';
+      }
       out+='<div class="wkrow'+(dk===iso(today)?' wktoday':'')+'" onclick="openSheet(\''+dk+'\')">'
         +'<div class="wkdn bebas">'+JOURS[i]+' '+d.getDate()+'</div>'
-        +'<div class="wkdesc"><span class="pip" style="background:'+pip+'"></span><div class="wtxt"><div class="wm">'+wm+'</div>'+(wsub?'<div class="wsub">'+wsub+'</div>':'')+'</div></div>'
+        +'<div class="wkmid">'+mid+'</div>'
         +'<div class="wkchk">'+(done?'✓':'')+'</div></div>';}
     out+='</div>';
   }
@@ -2496,7 +2505,7 @@ function renderExtras(){
     supps.forEach(function(e){ h+=suppCard(e); });
     list.forEach(function(e){ h+=extraCard(e); });
   }
-  h+='<button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="openAdd(\''+k+'\')">+ Ajouter une activité</button>';
+  h+='<button class="btn btn-ghost" style="width:100%;margin-top:6px;padding:9px;font-size:13px" onclick="openAdd(\''+k+'\')">+ Ajouter une activité</button>';
   box.innerHTML=h;
 }
 function renderSheetExtras(k){
@@ -2508,7 +2517,7 @@ function renderSheetExtras(k){
     supps.forEach(function(e){ h+=suppCard(e); });
     list.forEach(function(e){ h+=extraCard(e); });
   }
-  h+='<button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="openAdd(\''+k+'\')">+ Ajouter une activité</button>';
+  h+='<button class="btn btn-ghost" style="width:100%;margin-top:8px;padding:9px;font-size:13px" onclick="openAdd(\''+k+'\')">+ Ajouter une activité</button>';
   box.innerHTML=h;
 }
 function suppCard(e){
@@ -2724,7 +2733,7 @@ function addManual(){
 renderToday(); renderHorizon(); renderLog(); renderStravaCard();
 if(stravaToken) loadStravaData();
 initCloud();
-initPush();
+/* initPush(); — rappel notifs désactivé (ne fonctionnait pas). Réactiver cette ligne + le bouton cloche pour le remettre. */
 </script>
 </body>
 </html>

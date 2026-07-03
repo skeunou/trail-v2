@@ -1405,8 +1405,42 @@ function coachRun(a,typeKey){
     rows+='<div class="row"><span style="font-size:12px;color:var(--mut);line-height:1.4">⚡ Dernier km +'+kick.toFixed(0)+'% : accélération finale (groupe / volontaire). OK ponctuellement, mais garde l\'EM <b>vraiment facile</b> jusqu\'au bout — sinon c\'est un tempo déguisé.</span><b></b></div>';
   }
   if(hot && z.z>2) rows+='<div class="row"><span style="font-size:12px;color:var(--mut);line-height:1.4">⚠️ '+Math.round(a.temp)+'° : une partie de la FC haute est thermique. En chaleur, <b>ralentis pour tenir la zone</b> au lieu de tenir l\'allure.</span><b></b></div>';
+  rows+=coachWeekCtx(a);
   rows+='</div>';
-  return rows;
+  return rows+coachTerrain(a);
+}
+// B — analyse terrain : VAM en montée, allure en descente/plat (que du mesuré, via splits elev/d)
+function coachTerrain(a){
+  var sp=a.splits; if(!sp||!sp.length)return "";
+  var cE=0,cS=0, dS=0,dD=0, fS=0,fD=0;
+  sp.forEach(function(s){
+    if(!s.sec||!s.d)return;
+    var grade=(s.elev/s.d)*100;
+    if(grade>=4){ cE+=s.elev; cS+=s.sec; }
+    else if(grade<=-4){ dS+=s.sec; dD+=s.d; }
+    else { fS+=s.sec; fD+=s.d; }
+  });
+  var out=[];
+  if(cS>=90 && cE>=25){ var vam=Math.round(cE/cS*3600); out.push(['⛰️ Montée','<b>VAM '+vam+' m/h</b> · '+Math.round(cE)+' m en '+fmtMin(cS/60)]); }
+  if(dD>=400){ out.push(['↘ Descente','<b>'+fmtPace(dS/(dD/1000))+' /km</b>']); }
+  if(fD>=400){ out.push(['➡️ Plat','<b>'+fmtPace(fS/(fD/1000))+' /km</b>']); }
+  if(out.length<1)return "";
+  var body=out.map(function(r){return '<div class="row"><span>'+r[0]+'</span><b style="font-weight:400">'+r[1]+'</b></div>';}).join('');
+  return '<div class="summary" style="border-left:3px solid var(--blue);margin-top:8px"><div class="row"><span style="color:var(--blue);font-weight:700">⌁ Terrain</span><b></b></div>'+body+'</div>';
+}
+// A — ancrage dans la semaine : polarisation EF (Z2 vs au-dessus) + 1 action
+function coachWeekCtx(a){
+  if(!a.date||typeof lastActs==="undefined"||!Array.isArray(lastActs))return "";
+  var d=new Date(a.date.slice(0,10)+"T12:00:00");
+  var mon=new Date(d); mon.setDate(d.getDate()-(dowMon(d)-1)); mon.setHours(0,0,0,0);
+  var sun=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+6);
+  var mk=iso(mon), sk=iso(sun);
+  var runs=lastActs.filter(function(x){var k=(x.date||"").slice(0,10); return k>=mk&&k<=sk && (/run|trail/i.test(x.type||"")||/^(T|R)\s*-/i.test(x.name||"")) && x.hrAvg;});
+  if(runs.length<2)return "";
+  var z2=0,hi=0; runs.forEach(function(x){ if(hrZone(x.hrAvg).z<=2)z2++; else hi++; });
+  var line=runs.length+' runs cette semaine · '+z2+' en Z2, '+hi+' au-dessus.';
+  var action = hi>=2 ? ' Polarise : garde tes faciles vraiment faciles, ça libère la qualité pour les côtes.' : (z2===runs.length ? ' Base aérobie propre, tout en Z2 — continue.' : '');
+  return '<div class="row"><span style="font-size:12px;line-height:1.4;color:var(--mut)">📅 '+line+action+'</span><b></b></div>';
 }
 function fmtPace(minkm){ if(!isFinite(minkm)||minkm<=0)return "—"; var m=Math.floor(minkm), s=Math.round((minkm-m)*60); if(s===60){m++;s=0;} return m+":"+String(s).padStart(2,"0"); }
 function zoneTime(splits){

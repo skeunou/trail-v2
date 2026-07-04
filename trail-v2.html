@@ -491,9 +491,9 @@ function gen(d){
     }
     else if(dow==="jeu"){
       var durj=round5(50*wi.m);
-      o.typeKey="fond"; o.label="EF ou VMA"; o.short="EF "+durj+"' ou VMA"; o.sub="~"+durj+"′ Z2 · ou VMA";
-      o.why="Au choix : relance EF facile, ou ta séance VMA (carte À FAIRE) si tu veux de l'intensité sur le plat.";
-      o.detail=["Option EF : ~"+durj+"′ conversation, nez qui respire.","Option VMA : carte À FAIRE (rotation 3 formats, route/piste). Complète les côtes du mardi.","Jeudi 12-14h = ton créneau."];
+      o.typeKey="fond"; o.label="EF ou séance qualité"; o.short="EF "+durj+"' ou seuil/VMA"; o.sub="~"+durj+"′ Z2 · ou seuil";
+      o.why="Au choix : relance EF facile, ou ta séance qualité seuil/VMA (carte À FAIRE) sur le plat.";
+      o.detail=["Option EF : ~"+durj+"′ conversation, nez qui respire.","Option qualité : carte À FAIRE — seuil (norvégien) ou VMA courte, route/piste. Complète les côtes du mardi.","Jeudi 12-14h = ton créneau."];
       o.color="var(--grn)"; o.plan={durMin:durj};
     }
     else if(dow==="ven"){
@@ -906,9 +906,9 @@ function slotDone(slot){ var wk=mondayKey(); return loadLog().some(function(e){r
 var _wkSlot=0,_wkIdx=-1,pWeekly=false,pRenfoBlocks=[];
 /* ===== VMA hebdo (slot flottant, rotation 3 formats — plat/piste) ===== */
 var VMA_FORMATS=[
-  {n:"30/30 court",  desc:"2 blocs de 10 × (30″ vite / 30″ footing) · récup 3′ entre blocs", cue:"« Vite » = allure VMA (~16–17 km/h), fluide, jamais en sur-régime."},
-  {n:"Intervalles 2′", desc:"5 × 2′ @ 95–100% VMA · récup 1′30 en footing", cue:"Allure 3000/5000. Contrôle la 1re, finis fort la dernière."},
-  {n:"VMA 400", desc:"8 × 400 m @ VMA · récup 1′ (ou 200 m trot)", cue:"Piste idéale. ~1′27 le 400 à 16,5 km/h — même temps à chaque tour."}
+  {n:"Seuil long", desc:"5 × 6′ au seuil · récup 1′ trot", cue:"Allure « seuil » = tenable ~1h en course, respiration ample mais maîtrisée (~88–90% FCmax). Jamais dans le rouge : la dernière rep aussi propre que la première."},
+  {n:"Sous-seuil volume", desc:"6 × 5′ un cran sous le seuil · récup 1′ trot", cue:"~83–87% FCmax. Le principe norvégien : tu finis en te disant « j'aurais pu en faire 2 de plus ». Volume qualité sans casse."},
+  {n:"VMA courte", desc:"6 × 2′ @ ~95–100% VMA · récup 1′30 trot", cue:"Allure 3000/5000. On garde un peu de plafond et d'économie de foulée. Contrôle la 1re, finis fort."}
 ];
 function vmaFmt(){ var wb=weekInfo(new Date()).wb; return VMA_FORMATS[(((wb-1)%3)+3)%3]; }
 function vmaDoneEntry(){ var wk=mondayKey(),r=null; loadLog().forEach(function(e){ if(e.typeKey==="vma-week"&&e.wk===wk) r=e; }); return r; }
@@ -935,7 +935,7 @@ function renderAFaire(){
     '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px">À FAIRE</div><div style="font-size:10.5px;color:var(--mut)">cette semaine · où tu veux</div></div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
       afaireBtn({label:"Sortie longue",sub:slSub,done:!!slE,onclick:"openSL()"})+
-      afaireBtn({label:"VMA",sub:vSub,done:!!vE,onclick:"openVMA()"})+
+      afaireBtn({label:"Seuil / VMA",sub:vSub,done:!!vE,onclick:"openVMA()"})+
       afaireBtn({label:ra.name,sub:ra.blocks.length+" blocs · "+(ra.cat==="A"?"force":"puissance / access."),done:slotDone(1),onclick:(slotDone(1)?"reviewWeeklyRenfo":"startWeeklyRenfo")+"(1)"})+
       afaireBtn({label:rb.name,sub:rb.blocks.length+" blocs · "+(rb.cat==="A"?"force":"puissance / access."),done:slotDone(2),onclick:(slotDone(2)?"reviewWeeklyRenfo":"startWeeklyRenfo")+"(2)"})+
     '</div>'+
@@ -948,19 +948,19 @@ function openVMA(){
   var close='<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px;padding:6px" onclick="renderAFaire()">← fermer</button>';
   if(e){
     el.innerHTML='<div style="border-top:1px solid var(--line);margin-top:11px;padding-top:11px">'+
-      '<div style="font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:6px">VMA</div>'+
+      '<div style="font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:6px">SEUIL / VMA</div>'+
       '<div style="font-size:10.5px;font-weight:800;color:var(--grn);letter-spacing:.5px;margin-bottom:4px">✓ FAITE</div>'+
-      '<div style="font-size:14px;font-weight:700;color:var(--ink)">'+(e.stravaName||"Séance VMA")+'</div>'+
+      '<div style="font-size:14px;font-weight:700;color:var(--ink)">'+(e.stravaName||"Séance qualité")+'</div>'+
       '<div style="font-size:11.5px;color:var(--mut);margin-top:4px">'+(e.km?e.km+' km · ':'')+fmtMin(e.durMin||0)+(e.hrAvg?' · FC '+e.hrAvg:'')+'</div>'+
       '<button class="btn btn-ghost" style="width:100%;margin-top:9px;font-size:11px;padding:5px;color:var(--mut)" onclick="unlinkVMA()">délier</button>'+close+'</div>';
     return;
   }
   el.innerHTML='<div style="border-top:1px solid var(--line);margin-top:11px;padding-top:11px">'+
-    '<div style="font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:6px">VMA · '+f.n+'</div>'+
+    '<div style="font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:6px">SEUIL / VMA · '+f.n+'</div>'+
     '<div style="font-size:13px;color:var(--ink);font-weight:700">'+f.desc+'</div>'+
     '<div style="font-size:11px;color:var(--mut);margin-top:5px">'+f.cue+'</div>'+
-    '<div style="font-size:11px;color:var(--mut);margin-top:6px">Structure : 15–20′ échauffement progressif · corps de séance · 10′ retour au calme. Route plate ou piste, le jeudi de préférence — la VMA plat complète les côtes du mardi.</div>'+
-    '<button class="btn btn-go" style="width:100%;margin-top:10px;background:var(--blue)" onclick="showVMALinkList()">🔗 Lier ma VMA (Strava)</button>'+
+    '<div style="font-size:11px;color:var(--mut);margin-top:6px">Structure : 15–20′ échauffement progressif · corps de séance · 10′ retour au calme. Route plate ou piste, le jeudi de préférence — complète les côtes du mardi (vertical).</div>'+
+    '<button class="btn btn-go" style="width:100%;margin-top:10px;background:var(--blue)" onclick="showVMALinkList()">🔗 Lier ma séance (Strava)</button>'+
     '<div id="vmaLinkList"></div>'+close+'</div>';
 }
 function showVMALinkList(){
@@ -977,7 +977,7 @@ function linkVMAStrava(id){
   var a=null; lastActs.forEach(function(x){if(String(x.id)===String(id))a=x;}); if(!a)return;
   var log=loadLog();
   log.unshift({id:"vma_"+Date.now(),dateKey:a.date||iso(new Date()),ts:Date.now(),_u:Date.now(),
-    typeKey:"vma-week",type:"VMA",title:"VMA",color:"var(--purp)",wk:mondayKey(),
+    typeKey:"vma-week",type:"SEUIL/VMA",title:"Séance qualité",color:"var(--purp)",wk:mondayKey(),
     sid:a.id,stravaName:a.name||"",km:a.km,dplus:a.dplus,durMin:a.movingMin,hrAvg:a.hrAvg||null,hrMax:a.hrMax||null});
   log.sort(function(x,y){return x.dateKey<y.dateKey?1:-1;});
   saveLog(log); renderAFaire(); renderLog();

@@ -328,7 +328,7 @@
 
 <!-- PLAYER -->
 <section id="player">
-  <div class="pbar"><span class="pmin" id="pSeg">—</span><button class="x" onclick="quitPlayer()">Quitter</button></div>
+  <div class="pbar"><span style="display:flex;align-items:center;gap:12px"><button class="x" id="pBackBtn" onclick="prevSeg()" style="display:none">‹ Retour</button><span class="pmin" id="pSeg">—</span></span><button class="x" onclick="quitPlayer()">Quitter</button></div>
   <div class="pprog"><i id="pProg"></i></div>
   <div id="pSignal" style="display:none"></div>
   <div class="pbody" id="pBody"></div>
@@ -1074,7 +1074,7 @@ function buildWeeklyWork(s,org){
 function launchWeeklyRenfo(idx,slot,signal){
   unlockAudio(); reqWake(); beep(660,.12);
   pKey=iso(new Date()); pIsSupp=true; pSuppKind="renfo"; pWeekly=true; _wkSlot=slot; _wkIdx=idx;
-  pState={}; pSignal=signal||{zones:[],text:""};
+  pState={}; pSeriesDone={}; pSignal=signal||{zones:[],text:""};
   var s=RENFO_WEEK[idx];
   var org=rnd(s.cat==="A"?["sets","sets","superset","cluster5"]:["sets","superset","circuit"]);
   pSuppName=s.name+" · "+orgLabel(org);
@@ -2042,10 +2042,10 @@ function deleteSession(){
 }
 
 /* ================= PLAYER ================= */
-var pSegs=[],pIdx=0,pKey=null,pTimer=null,pState={},pIsSupp=false,pSuppKind="wod",pSuppName="",ftSec=0;
+var pSegs=[],pIdx=0,pKey=null,pTimer=null,pState={},pIsSupp=false,pSuppKind="wod",pSuppName="",ftSec=0,pSeriesDone={};
 function startPlayer(k){
   unlockAudio(); reqWake(); beep(660,.12);
-  pKey=k; pIsSupp=false; pState={}; pSignal={zones:[],text:""}; pSegs=content(k)||[]; pIdx=0;
+  pKey=k; pIsSupp=false; pState={}; pSeriesDone={}; pSignal={zones:[],text:""}; pSegs=content(k)||[]; pIdx=0;
   closeSheet(); document.getElementById("player").classList.add("on");
   renderSeg();
 }
@@ -2061,7 +2061,7 @@ function chooseSupp(k){
 }
 function startSuppRenfo(k,signal){
   unlockAudio(); reqWake(); beep(660,.12);
-  pKey=k; pIsSupp=true; pSuppKind="renfo"; pWeekly=false; pState={}; pSignal=signal||{zones:[],text:""};
+  pKey=k; pIsSupp=true; pSuppKind="renfo"; pWeekly=false; pState={}; pSeriesDone={}; pSignal=signal||{zones:[],text:""};
   var r=buildSuppRenfo(pSignal); pSuppName=r.name; pSegs=r.segs; pIdx=0;
   closeSheet(); document.getElementById("player").classList.add("on");
   renderSeg();
@@ -2081,6 +2081,7 @@ function startSuppWod(k,signal){
 function quitPlayer(){ clearInterval(pTimer); document.getElementById("player").classList.remove("on"); }
 function pProg(){ document.getElementById("pProg").style.width=Math.round((pIdx/pSegs.length)*100)+"%"; }
 function nextSeg(){ clearInterval(pTimer); pIdx++; if(pIdx>=pSegs.length){ finishPlayer(); } else { renderSeg(); } }
+function prevSeg(){ clearInterval(pTimer); if(pIdx>0){ pIdx--; renderSeg(); } }
 function endTimedSeg(){ clearInterval(pTimer); dbeep(); nextSeg(); }
 
 function fmtClock(s){var m=Math.floor(s/60),x=s%60;return m+":"+(x<10?"0":"")+x;}
@@ -2258,6 +2259,7 @@ var _rfCueId="";
 function rfToggleCue(){ var b=document.getElementById(_rfCueId); if(b)b.style.display=(b.style.display==="none"?"block":"none"); }
 function rfValidate(){
   if(pState.rfDone<pState.rfN){ pState.rfDone++; beep(1000,.09); }
+  pSeriesDone[pIdx]=pState.rfDone;
   var c=document.getElementById("rfCnt"); if(c)c.textContent=pState.rfDone+" / "+pState.rfN;
   if(pState.rfDone>=pState.rfN){ var s=document.getElementById("rfSerie"); if(s)s.classList.add("done"); }
   rfStartRecup();
@@ -2277,7 +2279,7 @@ function rfStartRecup(){
 function renderRenfoWork(seg){
   clearInterval(pTimer);
   document.getElementById("pSeg").textContent=(seg.label||"Exercice")+" "+(pIdx+1)+"/"+pSegs.length;
-  pState.rfN=seg.series||3; pState.rfDone=0; pState.rfRecup=seg.recup||75;
+  pState.rfN=seg.series||3; pState.rfDone=pSeriesDone[pIdx]||0; pState.rfRecup=seg.recup||75;
   _rfCueId="rfCue"+pIdx;
   var figHTML;
   if(seg.parts&&seg.parts.length>1){
@@ -2292,7 +2294,7 @@ function renderRenfoWork(seg){
     '<div class="pname bebas">'+seg.name+'</div>'+
     (seg.repsHead?'<div class="preps">'+seg.repsHead+'</div>':'')+
     '<div class="rrow">'+
-      '<button class="rserie" id="rfSerie" onclick="rfValidate()"><span class="rlab">Série ✓</span><span class="rcnt bebas" id="rfCnt">0 / '+pState.rfN+'</span></button>'+
+      '<button class="rserie'+(pState.rfDone>=pState.rfN?' done':'')+'" id="rfSerie" onclick="rfValidate()"><span class="rlab">Série ✓</span><span class="rcnt bebas" id="rfCnt">'+pState.rfDone+' / '+pState.rfN+'</span></button>'+
       '<div class="rrecup" id="rfRecup"><span class="rlab">Récup</span><span class="rtime bebas" id="rfTime">'+fmtClock(pState.rfRecup)+'</span></div>'+
     '</div>'+
     (seg.cue?'<button class="rcueBtn" onclick="rfToggleCue()">▾ Comment faire</button><div class="rcueBody" id="'+_rfCueId+'" style="display:none">'+seg.cue.replace(/\n/g,"<br>")+'</div>':'');
@@ -2300,6 +2302,7 @@ function renderRenfoWork(seg){
 }
 function renderSeg(){
   clearInterval(pTimer); pProg(); renderSignalBanner();
+  var _bb=document.getElementById("pBackBtn"); if(_bb) _bb.style.display=(pIdx>0?"":"none");
   if(pSegs[pIdx]&&pSegs[pIdx].kind==="renfowarm"){ renderRenfoWarm(pSegs[pIdx]); return; }
   if(pSegs[pIdx]&&pSegs[pIdx].kind==="flow"&&pSegs[pIdx].renfoWork){ renderRenfoWork(pSegs[pIdx]); return; }
   var seg=pSegs[pIdx], body=document.getElementById("pBody"), act=document.getElementById("pAct");
@@ -2419,6 +2422,7 @@ function startTabata(seg){
 }
 function finishPlayer(){
   clearInterval(pTimer);
+  var _bb=document.getElementById("pBackBtn"); if(_bb) _bb.style.display="none";
   document.getElementById("player").classList.remove("on");
   dbeep();
   if(pIsSupp){

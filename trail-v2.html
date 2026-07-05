@@ -328,7 +328,7 @@
 
 <!-- PLAYER -->
 <section id="player">
-  <div class="pbar"><span style="display:flex;align-items:center;gap:12px"><button class="x" id="pBackBtn" onclick="prevSeg()" style="display:none">‹ Retour</button><span class="pmin" id="pSeg">—</span></span><button class="x" onclick="quitPlayer()">Quitter</button></div>
+  <div class="pbar"><span class="pmin" id="pSeg">—</span><button class="x" onclick="quitPlayer()">Quitter</button></div>
   <div class="pprog"><i id="pProg"></i></div>
   <div id="pSignal" style="display:none"></div>
   <div class="pbody" id="pBody"></div>
@@ -2082,6 +2082,12 @@ function quitPlayer(){ clearInterval(pTimer); document.getElementById("player").
 function pProg(){ document.getElementById("pProg").style.width=Math.round((pIdx/pSegs.length)*100)+"%"; }
 function nextSeg(){ clearInterval(pTimer); pIdx++; if(pIdx>=pSegs.length){ finishPlayer(); } else { renderSeg(); } }
 function prevSeg(){ clearInterval(pTimer); if(pIdx>0){ pIdx--; renderSeg(); } }
+function pActRow(mainHTML){
+  if(pIdx<=0) return mainHTML;
+  return '<div style="display:flex;gap:8px;align-items:stretch">'+
+    '<button class="btn btn-ghost" style="flex:0 0 auto;width:auto;padding-left:18px;padding-right:18px" onclick="prevSeg()">‹ Retour</button>'+
+    '<span style="flex:1;display:flex">'+mainHTML+'</span></div>';
+}
 function endTimedSeg(){ clearInterval(pTimer); dbeep(); nextSeg(); }
 
 function fmtClock(s){var m=Math.floor(s/60),x=s%60;return m+":"+(x<10?"0":"")+x;}
@@ -2253,7 +2259,7 @@ function renderRenfoWarm(seg){
     '<div class="pname bebas">Échauffement</div>'+
     '<div class="rchip">'+seg.rounds+' TOURS</div>'+
     '<div class="plist">'+lis+'</div>';
-  document.getElementById("pAct").innerHTML='<button class="btn btn-acid" onclick="nextSeg()">SUIVANT</button>';
+  document.getElementById("pAct").innerHTML=pActRow('<button class="btn btn-acid" onclick="nextSeg()">SUIVANT</button>');
 }
 var _rfCueId="";
 function rfToggleCue(){ var b=document.getElementById(_rfCueId); if(b)b.style.display=(b.style.display==="none"?"block":"none"); }
@@ -2298,11 +2304,10 @@ function renderRenfoWork(seg){
       '<div class="rrecup" id="rfRecup"><span class="rlab">Récup</span><span class="rtime bebas" id="rfTime">'+fmtClock(pState.rfRecup)+'</span></div>'+
     '</div>'+
     (seg.cue?'<button class="rcueBtn" onclick="rfToggleCue()">▾ Comment faire</button><div class="rcueBody" id="'+_rfCueId+'" style="display:none">'+seg.cue.replace(/\n/g,"<br>")+'</div>':'');
-  document.getElementById("pAct").innerHTML='<button class="btn btn-acid" onclick="nextSeg()">'+(pIdx===pSegs.length-1?'TERMINER':'EXERCICE SUIVANT')+'</button>';
+  document.getElementById("pAct").innerHTML=pActRow('<button class="btn btn-acid" onclick="nextSeg()">'+(pIdx===pSegs.length-1?'TERMINER':'EXERCICE SUIVANT')+'</button>');
 }
 function renderSeg(){
   clearInterval(pTimer); pProg(); renderSignalBanner();
-  var _bb=document.getElementById("pBackBtn"); if(_bb) _bb.style.display=(pIdx>0?"":"none");
   if(pSegs[pIdx]&&pSegs[pIdx].kind==="renfowarm"){ renderRenfoWarm(pSegs[pIdx]); return; }
   if(pSegs[pIdx]&&pSegs[pIdx].kind==="flow"&&pSegs[pIdx].renfoWork){ renderRenfoWork(pSegs[pIdx]); return; }
   var seg=pSegs[pIdx], body=document.getElementById("pBody"), act=document.getElementById("pAct");
@@ -2312,8 +2317,8 @@ function renderSeg(){
     var clock= seg.hold?('<div class="pclock bebas" id="pc">'+seg.hold+'</div>'):'';
     var sub= seg.hold?'':('<div class="preps">'+(seg.reps||"")+'</div>');
     body.innerHTML=clock+'<div class="pname bebas">'+seg.name+(seg.side?' · Côté 1':'')+'</div>'+sub+'<div class="pcue">'+(seg.cue||"").replace(/\n/g,"<br>")+'</div>';
-    if(seg.hold){ startHold(seg); act.innerHTML='<button class="btn btn-ghost" onclick="nextSeg()">Passer</button>'; }
-    else { act.innerHTML='<button class="btn btn-acid" onclick="nextSeg()">'+(pIdx===pSegs.length-1?'TERMINER':'SUIVANT')+'</button>'; }
+    if(seg.hold){ startHold(seg); act.innerHTML=pActRow('<button class="btn btn-ghost" onclick="nextSeg()">Passer</button>'); }
+    else { act.innerHTML=pActRow('<button class="btn btn-acid" onclick="nextSeg()">'+(pIdx===pSegs.length-1?'TERMINER':'SUIVANT')+'</button>'); }
   } else {
     renderReady(seg);
   }
@@ -2383,7 +2388,7 @@ function startAmrap(seg){
   window.amrapR=function(d){rounds=Math.max(0,rounds+d);var e=document.getElementById("prnd");if(e)e.textContent=rounds;if(d>0)beep(1000,.09);pState.rounds=rounds;};
   document.getElementById("pSeg").textContent=seg.label||"AMRAP";
   pState.rounds=0; draw();
-  document.getElementById("pAct").innerHTML='<button class="btn btn-go" onclick="nextSeg()">TERMINER</button>';
+  document.getElementById("pAct").innerHTML=pActRow('<button class="btn btn-go" onclick="nextSeg()">TERMINER</button>');
   pTimer=setInterval(function(){ sec--; if(sec<=0){clearInterval(pTimer);sec=0;draw();dbeep();nextSeg();return;} if(sec===60)beep(800,.2); if(sec<=5)beep(700,.07); draw(); },1000);
 }
 function startTabata(seg){
@@ -2422,7 +2427,6 @@ function startTabata(seg){
 }
 function finishPlayer(){
   clearInterval(pTimer);
-  var _bb=document.getElementById("pBackBtn"); if(_bb) _bb.style.display="none";
   document.getElementById("player").classList.remove("on");
   dbeep();
   if(pIsSupp){

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<!-- redeploy 20260705-042632 -->
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -687,11 +686,66 @@ var TABATA_ABDO={kind:"tabata",label:"Finisher — Tabata abdo",rounds:8,work:20
   {name:"SHOULDER TAPS",cue:"Planche haute, bassin verrouillé. Touche l'épaule opposée sans rouler."},
   {name:"GAINAGE LATÉRAL",cue:"Alterne le côté à chaque tour. Hanche haute, corps aligné."}
 ]};
+/* ===== BANQUES VACANCES — élastique + poids du corps + corde uniquement (aucun matos lourd, ZP-safe) ===== */
+var vacMode=false;
+var WODS_SUPP_VAC=[
+  {name:"Corde & Gainage",sec:600,moves:[["","40 Corde à sauter (ou double-unders)","rebond avant-pied, souple"],["","10 Pompes","corps gainé, amplitude complète"],["","30 s Planche","dos neutre, bassin verrouillé"]]},
+  {name:"Squat & Push band",sec:600,moves:[["","15 Air squats","talons ancrés, profondeur"],["","12 Développé élastique","band sous les pieds, gainé"],["","20 Mountain climbers","bassin bas, rapide"]]},
+  {name:"Tirage élastique",sec:600,moves:[["","15 Rowing élastique","tire au nombril, omoplates serrées"],["","12 Pull-apart band","bras tendus, contrôlé"],["","40 s Corde à sauter","cadence régulière"]]},
+  {name:"Burpees ladder",sec:600,moves:[["","8 Burpees","poitrine au sol, fluide"],["","15 Fentes arrière alt.","genou aligné, descente contrôlée"],["","15 Face pull élastique","rotation externe épaules"]]},
+  {name:"Fessiers & Corde",sec:600,moves:[["","20 Hip thrust au sol","verrouille les fessiers 1s en haut"],["","15 Monster walk band","genoux écartés, bassin stable"],["","30 s Corde à sauter","souple"]]},
+  {name:"Push & Pull",sec:600,moves:[["","12 Pompes tempo","3s descente, gainé"],["","15 Rowing élastique","dos, coudes le long du corps"],["","20 Squats sautés","réception douce, genoux souples"]]},
+  {name:"Cardio band",sec:600,moves:[["","30 s Corde à sauter","vite"],["","12 Développé militaire band","gainage, pas de cambrure"],["","15 Good morning band","charnière de hanche, dos gainé"]]},
+  {name:"Full body express",sec:600,moves:[["","10 Burpees","rythme régulier"],["","15 Rowing élastique","dos"],["","15 Fentes marchées","grande amplitude, buste droit"]]}
+];
+var RENFO_SUPP_VAC=[
+  {zpsafe:true, name:"Fessiers & Tirage band", emom:{kind:"emom",minutes:14,label:"Force — fessiers + tirage",moves:[
+      {name:"HIP THRUST AU SOL",cue:"12 · verrouille les fessiers 1s en haut, menton rentré"},
+      {name:"ROWING ÉLASTIQUE",cue:"12 · tire au nombril, omoplates basses"}]},
+    amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
+      ["A","15 Monster walk band","genoux écartés, bassin stable"],["B","15 Face pull élastique","rotation externe"],["C","30 s Planche iso","gainage neutre"]]}},
+  {zpsafe:true, name:"Unipodal & Push", emom:{kind:"emom",minutes:14,label:"Force — fente + poussée",moves:[
+      {name:"FENTE ARRIÈRE",cue:"8/jambe · genou aligné, descente contrôlée"},
+      {name:"POMPES",cue:"10-12 · corps gainé, amplitude"}]},
+    amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
+      ["A","12 Rowing élastique unilatéral","alt., dos"],["B","15 Glute bridge","fessiers en haut"],["C","20 Mountain climbers","bassin bas"]]}},
+  {zpsafe:true, name:"Épaules & Dos band", emom:{kind:"emom",minutes:14,label:"Force — épaules + dos",moves:[
+      {name:"DÉVELOPPÉ MILITAIRE BAND",cue:"12 · band sous les pieds, gainé"},
+      {name:"TIRAGE ÉLASTIQUE",cue:"12 · coudes le long du corps"}]},
+    amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
+      ["A","15 Pull-apart band","bras tendus"],["B","15 Air squats","profondeur"],["C","40 s Corde à sauter","souple"]]}},
+  {zpsafe:true, name:"Chaîne postérieure douce", emom:{kind:"emom",minutes:14,label:"Force — charnière légère",moves:[
+      {name:"GOOD MORNING BAND",cue:"12 · charnière de hanche, dos gainé, jamais dans le rouge"},
+      {name:"TIRAGE ÉLASTIQUE",cue:"12 · omoplates"}]},
+    amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
+      ["A","15 Hip thrust au sol","verrouille"],["B","12 Bird-dog + tirage band","sans tourner le bassin"],["C","30 s Planche latérale /côté","hanche haute"]]}},
+  {zpsafe:true, name:"Push endurance", emom:{kind:"emom",minutes:14,label:"Force — poussée + dos",moves:[
+      {name:"POMPES TEMPO",cue:"10 · 3s à la descente, gainé"},
+      {name:"ROWING ÉLASTIQUE",cue:"12 · dos"}]},
+    amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
+      ["A","15 Air squats","talons ancrés"],["B","15 Élévations latérales band","contrôlé"],["C","20 Corde à sauter","cadence"]]}},
+  {zpsafe:true, name:"Glute med & stabilité", emom:{kind:"emom",minutes:14,label:"Force — hanche latérale",moves:[
+      {name:"MONSTER WALK BAND",cue:"12 pas/sens · genoux écartés, bassin fixe"},
+      {name:"POMPES",cue:"10 · gainé"}]},
+    amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
+      ["A","15 Clamshell band /côté","ouvre le genou, bassin fixe"],["B","12 Rowing élastique","dos"],["C","15 Glute bridge","fessiers"]]}},
+  {zpsafe:true, name:"Full body band", emom:{kind:"emom",minutes:14,label:"Force — fente + tirage",moves:[
+      {name:"FENTE ARRIÈRE",cue:"8/jambe · contrôle"},
+      {name:"TIRAGE ÉLASTIQUE",cue:"12 · omoplates basses"}]},
+    amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
+      ["A","10 Burpees","fluide"],["B","15 Développé band","gainé"],["C","30 s Corde à sauter","souple"]]}},
+  {zpsafe:true, name:"Gainage & Tirage", emom:{kind:"emom",minutes:14,label:"Force — dos + fessiers",moves:[
+      {name:"ROWING ÉLASTIQUE",cue:"14 · dos, tempo"},
+      {name:"HIP THRUST AU SOL",cue:"15 · fessiers"}]},
+    amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
+      ["A","30 s Planche iso","neutre"],["B","15 Face pull band","rotation externe"],["C","20 Mountain climbers","bassin bas"]]}}
+];
 function warmSegRenfo(){ return {kind:"renfowarm",rounds:2,label:"Échauffement",items:TF_WARM[weekCounter()%TF_WARM.length]}; }
 function buildSuppRenfo(signal){
   var flags=(signal&&signal.zones)||[];
-  var idx=pickLeastLoading(RENFO_SUPP,"renfo",flags,lastRenfoIdx);
-  lastRenfoIdx=idx; var r=RENFO_SUPP[idx];
+  var bank = vacMode ? RENFO_SUPP_VAC : RENFO_SUPP;
+  var idx=pickLeastLoading(bank,"renfo",flags,lastRenfoIdx);
+  lastRenfoIdx=idx; var r=bank[idx];
   var warm=[warmSegRenfo()];
   var emom=Object.assign({},r.emom,{minutes:rnd([12,14,16])});
   var amrap=Object.assign({},r.amrap,{sec:rnd([480,600,720])});
@@ -744,13 +798,14 @@ function pickLeastLoading(bank,kind,flags,lastIdx){
 var checkinFlags=[], pSignal={zones:[],text:""};
 function openCheckin(k,kind){
   var z=document.getElementById("suppZone"); if(!z)return;
-  checkinFlags=[];
+  checkinFlags=[]; vacMode=false;
   var chips=Object.keys(ZONE_LBL).map(function(zk){
     return '<button type="button" id="ck-'+zk+'" onclick="toggleFlag(\''+zk+'\')" style="border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer">'+ZONE_LBL[zk]+'</button>';
   }).join("");
   z.innerHTML='<div class="card" style="padding:13px;margin-top:8px;border-left:3px solid var(--orange)">'+
     '<div style="font-weight:700;font-size:13.5px;margin-bottom:9px">Quelque chose à signaler aujourd\'hui ?</div>'+
     '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">'+chips+'</div>'+
+    '<button type="button" id="ck-vac" onclick="toggleVac()" style="width:100%;box-sizing:border-box;border:1px dashed var(--line);background:transparent;color:var(--mut);border-radius:10px;padding:9px;font-size:12.5px;font-weight:700;cursor:pointer;margin-bottom:10px">🏖️ Mode vacances — élastique + poids du corps + corde</button>'+
     '<textarea id="ckTxt" placeholder="Optionnel : ex. mal avant-bras droit, raideur épaule…" style="width:100%;box-sizing:border-box;min-height:54px;font-size:13px;padding:9px;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit"></textarea>'+
     '<div style="display:flex;gap:8px;margin-top:11px">'+
       '<button class="btn btn-ghost" style="flex:1" onclick="runCheckin(\''+k+'\',\''+kind+'\',true)">RAS → génère</button>'+
@@ -763,6 +818,12 @@ function toggleFlag(z){
   var el=document.getElementById("ck-"+z); var i=checkinFlags.indexOf(z);
   if(i>=0){ checkinFlags.splice(i,1); if(el){el.style.background="transparent";el.style.color="var(--mut)";el.style.borderColor="var(--line)";} }
   else { checkinFlags.push(z); if(el){el.style.background="var(--ink)";el.style.color="#fff";el.style.borderColor="var(--ink)";} }
+}
+function toggleVac(){
+  vacMode=!vacMode;
+  var el=document.getElementById("ck-vac"); if(!el)return;
+  if(vacMode){ el.style.background="var(--acid)"; el.style.color="#1a1d12"; el.style.borderStyle="solid"; el.style.borderColor="var(--acid)"; el.textContent="🏖️ Mode vacances ✓ — élastique + poids du corps + corde"; }
+  else { el.style.background="transparent"; el.style.color="var(--mut)"; el.style.borderStyle="dashed"; el.style.borderColor="var(--line)"; el.textContent="🏖️ Mode vacances — élastique + poids du corps + corde"; }
 }
 function runCheckin(k,kind,ras){
   var txt=ras?"":(((document.getElementById("ckTxt")||{}).value)||"").trim();
@@ -2071,8 +2132,9 @@ function startSuppRenfo(k,signal){
 function startSuppWod(k,signal){
   unlockAudio(); reqWake(); beep(660,.12);
   pKey=k; pIsSupp=true; pSuppKind="wod"; pWeekly=false; pState={}; pSignal=signal||{zones:[],text:""};
-  var idx=pickLeastLoading(WODS_SUPP,"wod",(pSignal.zones||[]),lastWodIdx); lastWodIdx=idx;
-  var wod=WODS_SUPP[idx], r=Math.random(), seg;
+  var bankW = vacMode ? WODS_SUPP_VAC : WODS_SUPP;
+  var idx=pickLeastLoading(bankW,"wod",(pSignal.zones||[]),lastWodIdx); lastWodIdx=idx;
+  var wod=bankW[idx], r=Math.random(), seg;
   if(r<0.5){ seg={kind:"amrap",sec:600,label:"WOD SUPP",name:wod.name,moves:wod.moves}; }
   else if(r<0.8){ var mv=wod.moves.map(function(m){return {name:m[1],reps:"",cue:m[2]||""};}); var rd=Math.max(3,Math.floor(12/mv.length)); seg={kind:"emom",minutes:rd*mv.length,label:"WOD SUPP",name:wod.name,moves:mv}; }
   else { seg={kind:"fortime",cap:720,rounds:4,label:"WOD SUPP",name:wod.name,moves:wod.moves}; }

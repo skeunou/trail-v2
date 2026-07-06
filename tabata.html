@@ -16,28 +16,20 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--txt);font-family:'DM Sans',system-ui,sans-serif;line-height:1.4}
 h1,h2,h3,.bebas{font-family:'Bebas Neue',sans-serif;letter-spacing:1px;font-weight:400}
-
-/* ---- HEADER ---- */
 header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:2px solid var(--acc);
   padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
 header h1{font-size:30px;letter-spacing:2px}
 header .badge{font-size:13px;color:var(--mut);font-family:'DM Sans';letter-spacing:0}
-
-/* ---- LAYOUT ---- */
 .wrap{max-width:640px;margin:0 auto;padding:16px}
 .card{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:16px;margin-bottom:14px}
 .card h2{font-size:22px;letter-spacing:1.5px;margin-bottom:12px;color:var(--acc)}
 .lbl{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:block}
-
-/* ---- STEPPER ---- */
 .stepper{display:flex;align-items:center;gap:14px}
 .stepper button{width:48px;height:48px;border-radius:10px;border:1px solid var(--bdr);
   background:var(--surf2);color:var(--txt);font-size:26px;font-family:'Bebas Neue';cursor:pointer}
 .stepper button:active{background:var(--bdr)}
 .stepper .val{font-family:'Bebas Neue';font-size:44px;min-width:56px;text-align:center;color:var(--acc)}
 .stepper .sub{font-size:13px;color:var(--mut)}
-
-/* ---- TOGGLE ---- */
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0}
 .tgl{position:relative;width:52px;height:30px;flex:0 0 auto}
 .tgl input{opacity:0;width:0;height:0}
@@ -47,16 +39,11 @@ header .badge{font-size:13px;color:var(--mut);font-family:'DM Sans';letter-spaci
   background:var(--mut);border-radius:50%;transition:.2s}
 .tgl input:checked + .track{background:rgba(232,255,71,.15);border-color:var(--acc)}
 .tgl input:checked + .track:before{transform:translateX(22px);background:var(--acc)}
-
-/* ---- EXO CHIPS ---- */
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{padding:9px 12px;border-radius:8px;border:1px solid var(--bdr);background:var(--surf2);
   font-size:14px;color:var(--txt);cursor:pointer;user-select:none;transition:.12s}
 .chip.on{border-color:var(--acc);background:rgba(232,255,71,.12);color:var(--acc)}
-.chip .zp{font-size:10px;color:var(--grn);margin-left:5px;letter-spacing:1px}
 .hint{font-size:12px;color:var(--mut);margin-top:10px}
-
-/* ---- PRIMARY BTN ---- */
 .btn{width:100%;padding:16px;border:none;border-radius:10px;background:var(--acc);color:#0d0d0f;
   font-family:'Bebas Neue';font-size:26px;letter-spacing:2px;cursor:pointer}
 .btn:active{opacity:.85}
@@ -65,8 +52,6 @@ header .badge{font-size:13px;color:var(--mut);font-family:'DM Sans';letter-spaci
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .recap-line{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;border-bottom:1px solid var(--bdr)}
 .recap-line span:last-child{color:var(--acc)}
-
-/* ---- RUN SCREEN (fullscreen) ---- */
 #run{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;
   flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
 #run.show{display:flex}
@@ -89,7 +74,6 @@ header .badge{font-size:13px;color:var(--mut);font-family:'DM Sans';letter-spaci
 .progress i{display:block;height:100%;background:var(--acc);width:0;transition:width .25s linear}
 .run-ctrl{display:flex;gap:12px;width:100%;max-width:420px}
 .run-ctrl .btn{font-size:22px;padding:14px}
-
 .footer{text-align:center;color:var(--mut);font-size:12px;padding:20px 0}
 </style>
 </head>
@@ -97,53 +81,42 @@ header .badge{font-size:13px;color:var(--mut);font-family:'DM Sans';letter-spaci
 
 <header>
   <h1>TABATA</h1>
-  <span class="badge">P.P.L · Cardio ZP-safe</span>
+  <span class="badge">P.P.L · Full abdo</span>
 </header>
 
-<!-- ============ CONFIG ============ -->
 <div class="wrap" id="config">
-
   <div class="card">
     <h2>Format</h2>
     <span class="lbl">Nombre de blocs · 1 bloc = 8 × (20s / 10s) = 4 min</span>
     <div class="stepper">
-      <button id="blkMinus">−</button>
-      <div>
-        <div class="val" id="blkVal">2</div>
-        <div class="sub" id="blkSub">≈ 8 min</div>
-      </div>
+      <button id="blkMinus">&minus;</button>
+      <div><div class="val" id="blkVal">2</div><div class="sub" id="blkSub">≈ 8 min</div></div>
       <button id="blkPlus">+</button>
     </div>
   </div>
 
   <div class="card">
-    <h2>Exercices</h2>
+    <h2>Abdos</h2>
     <span class="lbl">Sélection en rotation · 1 seul = tabata classique</span>
     <div class="chips" id="chips"></div>
-    <div class="hint">Banque filtrée <b style="color:var(--grn)">ZP-safe</b> : zéro adduction, zéro impact pelvien. Ordre de rotation = ordre de sélection.</div>
+    <div class="hint">Ordre de rotation = ordre de sélection. Reclique pour retirer un exo.</div>
   </div>
 
   <div class="card">
     <h2>Options</h2>
     <div class="toggle-row">
-      <div>
-        <div style="font-size:15px">Musique rythmée</div>
-        <div style="font-size:12px;color:var(--mut)">Beat généré, synchro parfaite au chrono</div>
-      </div>
+      <div><div style="font-size:15px">Musique rythmée</div>
+        <div style="font-size:12px;color:var(--mut)">Beat généré, synchro parfaite au chrono</div></div>
       <label class="tgl"><input type="checkbox" id="tglMusic" checked><span class="track"></span></label>
     </div>
     <div class="toggle-row">
-      <div>
-        <div style="font-size:15px">Bips de transition</div>
-        <div style="font-size:12px;color:var(--mut)">3-2-1 + signal work/rest</div>
-      </div>
+      <div><div style="font-size:15px">Bips de transition</div>
+        <div style="font-size:12px;color:var(--mut)">3-2-1 + signal work/rest</div></div>
       <label class="tgl"><input type="checkbox" id="tglBeep" checked><span class="track"></span></label>
     </div>
     <div class="toggle-row">
-      <div>
-        <div style="font-size:15px">Bloc préparatoire</div>
-        <div style="font-size:12px;color:var(--mut)">10s « prêt ? » avant le round 1</div>
-      </div>
+      <div><div style="font-size:15px">Bloc préparatoire</div>
+        <div style="font-size:12px;color:var(--mut)">10s « prêt ? » avant le round 1</div></div>
       <label class="tgl"><input type="checkbox" id="tglPrep" checked><span class="track"></span></label>
     </div>
   </div>
@@ -152,7 +125,6 @@ header .badge{font-size:13px;color:var(--mut);font-family:'DM Sans';letter-spaci
   <div class="footer">P.P.L · Web Audio synchronisé · Aucune pub</div>
 </div>
 
-<!-- ============ RUN (fullscreen) ============ -->
 <div id="run" class="ready">
   <div class="phase" id="phaseLbl">PRÊT ?</div>
   <div class="clock" id="clock">10</div>
@@ -165,7 +137,6 @@ header .badge{font-size:13px;color:var(--mut);font-family:'DM Sans';letter-spaci
   </div>
 </div>
 
-<!-- ============ BILAN ============ -->
 <div class="wrap" id="done" style="display:none">
   <div class="card">
     <h2>Terminé 💪</h2>
@@ -181,35 +152,27 @@ header .badge{font-size:13px;color:var(--mut);font-family:'DM Sans';letter-spaci
 "use strict";
 
 /* ======================================================
-   BANQUE EXOS ZP-SAFE (sous-ensemble filtré coach-wod)
-   Aucun mouvement d'adduction / impact pelvien.
+   BANQUE EXOS — FULL ABDO
    ====================================================== */
 var EXOS = [
+  "Crunchs",
   "Mountain Climbers",
-  "Corde à sauter",
-  "Pompes",
-  "KB Swing russe",
-  "Hollow Rocks",
-  "Shoulder Taps",
-  "Burpees",
-  "Genoux hauts (sur place)",
+  "Hollow Hold",
   "Planche dynamique",
-  "Squat air (contrôlé)"
+  "Russian Twists",
+  "Bicycle (pédalage)",
+  "Reverse Crunch",
+  "Sit-ups",
+  "Relevés de jambes",
+  "Ciseaux",
+  "V-ups",
+  "Bear Hold"
 ];
-/* NB : "Squat air contrôlé" = OK ZP tant que non dynamique/sauté.
-   Volontairement PAS de : jumping lunges, box jump, wall ball,
-   goblet squat, fentes sautées (adduction / impact pelvien). */
 
-/* ---- ÉTAT CONFIG ---- */
 var blocks = 2;
-var selected = [0,1,2,3]; // indices EXOS par défaut
-
-/* ---- CONSTANTES ---- */
+var selected = [0,1,2,3,4,5];
 var WORK = 20, REST = 10, ROUNDS_PER_BLOCK = 8, PREP = 10;
 
-/* ======================================================
-   RENDER CONFIG
-   ====================================================== */
 var chipsEl = document.getElementById("chips");
 function renderChips(){
   chipsEl.innerHTML = "";
@@ -217,7 +180,7 @@ function renderChips(){
     var pos = selected.indexOf(i);
     var el = document.createElement("div");
     el.className = "chip" + (pos>=0 ? " on" : "");
-    el.innerHTML = (pos>=0 ? (pos+1)+". " : "") + name + '<span class="zp">ZP✓</span>';
+    el.textContent = (pos>=0 ? (pos+1)+". " : "") + name;
     el.onclick = function(){
       var p = selected.indexOf(i);
       if(p>=0){ if(selected.length>1) selected.splice(p,1); }
@@ -235,7 +198,7 @@ function fmtDur(sec){
 }
 function updateBlocks(){
   document.getElementById("blkVal").textContent = blocks;
-  var per = ROUNDS_PER_BLOCK*(WORK+REST); // 240s
+  var per = ROUNDS_PER_BLOCK*(WORK+REST);
   document.getElementById("blkSub").textContent = "≈ "+fmtDur(blocks*per);
 }
 document.getElementById("blkMinus").onclick=function(){ if(blocks>1){blocks--;updateBlocks();} };
@@ -243,12 +206,27 @@ document.getElementById("blkPlus").onclick =function(){ if(blocks<8){blocks++;up
 renderChips(); updateBlocks();
 
 /* ======================================================
-   WEB AUDIO — beat procédural + bips, synchro au chrono
+   WEB AUDIO — beat aéré + pad chaud + réverb, gated WORK
    ====================================================== */
-var actx = null;
+var actx = null, reverbIn = null;
 function ensureAudio(){
-  if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); }
+  if(!actx){
+    actx = new (window.AudioContext||window.webkitAudioContext)();
+    reverbIn = buildReverb();
+  }
   if(actx.state === "suspended") actx.resume();
+}
+function buildReverb(){
+  var len = Math.floor(actx.sampleRate*1.5);
+  var buf = actx.createBuffer(2, len, actx.sampleRate);
+  for(var ch=0;ch<2;ch++){
+    var d = buf.getChannelData(ch);
+    for(var i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6);
+  }
+  var conv = actx.createConvolver(); conv.buffer = buf;
+  var wet = actx.createGain(); wet.gain.value = 0.3;
+  conv.connect(wet); wet.connect(actx.destination);
+  return conv;
 }
 function tone(freq, t, dur, type, gain){
   var o = actx.createOscillator(), g = actx.createGain();
@@ -262,54 +240,99 @@ function tone(freq, t, dur, type, gain){
 }
 function kick(t){
   var o = actx.createOscillator(), g = actx.createGain();
-  o.type="sine"; o.frequency.setValueAtTime(150,t);
-  o.frequency.exponentialRampToValueAtTime(50,t+0.12);
-  g.gain.setValueAtTime(0.9,t);
-  g.gain.exponentialRampToValueAtTime(0.001,t+0.16);
+  o.type="sine";
+  o.frequency.setValueAtTime(140,t);
+  o.frequency.exponentialRampToValueAtTime(48,t+0.14);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.68,t+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.24);
   o.connect(g); g.connect(actx.destination);
-  o.start(t); o.stop(t+0.18);
+  o.start(t); o.stop(t+0.26);
 }
-function hat(t){
-  var b = actx.createBufferSource();
-  var buf = actx.createBuffer(1, actx.sampleRate*0.03, actx.sampleRate);
+function clap(t){
+  for(var k=0;k<3;k++){
+    var len = Math.floor(actx.sampleRate*0.05);
+    var buf = actx.createBuffer(1,len,actx.sampleRate);
+    var d = buf.getChannelData(0);
+    for(var i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3);
+    var s = actx.createBufferSource(); s.buffer = buf;
+    var bp = actx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=1600; bp.Q.value=1.1;
+    var g = actx.createGain(); g.gain.value=0.2;
+    s.connect(bp); bp.connect(g); g.connect(actx.destination); g.connect(reverbIn);
+    s.start(t + k*0.012);
+  }
+}
+function hat(t, vol){
+  var len = Math.floor(actx.sampleRate*0.025);
+  var buf = actx.createBuffer(1,len,actx.sampleRate);
   var d = buf.getChannelData(0);
-  for(var i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
-  b.buffer = buf;
-  var g = actx.createGain(); g.gain.value = 0.18;
-  var hp = actx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=7000;
-  b.connect(hp); hp.connect(g); g.connect(actx.destination);
-  b.start(t);
+  for(var i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
+  var s = actx.createBufferSource(); s.buffer = buf;
+  var hp = actx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=8500;
+  var g = actx.createGain(); g.gain.value = vol||0.09;
+  s.connect(hp); hp.connect(g); g.connect(actx.destination);
+  s.start(t);
+}
+function bass(t, freq){
+  var o = actx.createOscillator(), g = actx.createGain();
+  o.type="triangle"; o.frequency.value=freq;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.2,t+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.35);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t+0.4);
+}
+/* pad harmonique persistant, gated par phase (chaleur anti-sec) */
+var padOsc=[], padGain=null;
+function startPad(){
+  if(padGain) return;
+  padGain = actx.createGain(); padGain.gain.value = 0.0001;
+  var lp = actx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=850;
+  padGain.connect(lp); lp.connect(actx.destination); lp.connect(reverbIn);
+  var chord=[110, 164.81, 220]; // La mineur doux
+  chord.forEach(function(f){
+    var o = actx.createOscillator(); o.type="sawtooth"; o.frequency.value=f;
+    o.detune.value = (Math.random()*4-2);
+    o.connect(padGain); o.start(); padOsc.push(o);
+  });
+}
+function padTo(v){
+  if(padGain) padGain.gain.exponentialRampToValueAtTime(Math.max(0.0001,v), actx.currentTime+0.3);
+}
+function stopPad(){
+  padOsc.forEach(function(o){ try{o.stop();}catch(e){} });
+  padOsc=[]; padGain=null;
 }
 /* signaux */
 function beepGo(){ if(!optBeep) return; ensureAudio(); var t=actx.currentTime;
-  tone(880,t,0.12,"square",0.35); tone(1320,t+0.12,0.18,"square",0.35); }
-function beepStop(){ if(!optBeep) return; ensureAudio(); var t=actx.currentTime;
-  tone(440,t,0.25,"sine",0.35); }
-function beepCount(){ if(!optBeep) return; ensureAudio(); tone(660,actx.currentTime,0.09,"square",0.3); }
+  tone(880,t,0.12,"square",0.32); tone(1320,t+0.12,0.18,"square",0.32); }
+function beepStop(){ if(!optBeep) return; ensureAudio(); tone(440,actx.currentTime,0.25,"sine",0.32); }
+function beepCount(){ if(!optBeep) return; ensureAudio(); tone(660,actx.currentTime,0.09,"square",0.28); }
 
-/* --- séquenceur beat (lookahead) --- */
-var BPM = 128, beatDur = 60/BPM, nextBeat = 0, beatIdx = 0, schedTimer = null;
+/* séquenceur (lookahead), pattern aéré : kick sur 1 & 3 */
+var BPM = 122, beatDur = 60/BPM, nextBeat = 0, beatIdx = 0, schedTimer = null;
 function startBeatScheduler(){
   if(!optMusic) return;
-  ensureAudio();
+  ensureAudio(); startPad();
   nextBeat = actx.currentTime + 0.1; beatIdx = 0;
   scheduleLoop();
 }
 function scheduleLoop(){
   if(!running || !optMusic){ schedTimer=null; return; }
-  var ahead = 0.2;
+  var ahead = 0.25;
   while(nextBeat < actx.currentTime + ahead){
-    // n'est audible que si ce temps tombe dans une phase WORK
     if(beatFallsInWork(nextBeat)){
-      kick(nextBeat);
-      if(beatIdx % 2 === 1) hat(nextBeat + beatDur/2);
-      if(beatIdx % 4 === 0) tone(80, nextBeat, 0.18, "triangle", 0.25); // basse
+      var b = beatIdx % 4;
+      if(b===0){ kick(nextBeat); bass(nextBeat, 55); }       // La1
+      else if(b===2){ kick(nextBeat); bass(nextBeat, 82.41); } // Mi2
+      if(b===1 || b===3){ clap(nextBeat); }
+      hat(nextBeat, 0.09);
+      hat(nextBeat + beatDur/2, 0.055);
     }
     nextBeat += beatDur; beatIdx++;
   }
   schedTimer = setTimeout(scheduleLoop, 60);
 }
-/* mappe un instant audio → phase de la timeline pour gater le beat */
 function beatFallsInWork(audioTime){
   var elapsed = timelineElapsedAt(audioTime);
   if(elapsed < prepDur) return false;
@@ -323,15 +346,10 @@ function beatFallsInWork(audioTime){
    ====================================================== */
 var running=false, paused=false;
 var totalRounds=0, prepDur=0, totalDur=0;
-var startClock=0;      // performance.now() du début (hors pauses)
-var pausedAccum=0, pauseStart=0;
-var audioAnchor=0;     // actx.currentTime aligné sur startClock
-var rafId=null, lastPhase="", lastWholeSec=-1;
+var startClock=0, pausedAccum=0, pauseStart=0;
+var audioAnchor=0, rafId=null, lastPhase="", lastWholeSec=-1;
 
-function timelineElapsedAt(audioTime){
-  // convertit un temps AudioContext en secondes de timeline
-  return (audioTime - audioAnchor);
-}
+function timelineElapsedAt(audioTime){ return (audioTime - audioAnchor); }
 
 var runEl=document.getElementById("run");
 var phaseLbl=document.getElementById("phaseLbl");
@@ -339,44 +357,34 @@ var clockEl=document.getElementById("clock");
 var exoLbl=document.getElementById("exoLbl");
 var roundsLbl=document.getElementById("roundsLbl");
 var progBar=document.getElementById("progBar");
-
 var optMusic=true, optBeep=true, optPrep=true;
 
 function startSession(){
   optMusic=document.getElementById("tglMusic").checked;
   optBeep =document.getElementById("tglBeep").checked;
   optPrep =document.getElementById("tglPrep").checked;
-
   ensureAudio();
   totalRounds = blocks*ROUNDS_PER_BLOCK;
   prepDur = optPrep ? PREP : 0;
   totalDur = prepDur + totalRounds*(WORK+REST);
-
   running=true; paused=false; pausedAccum=0;
   startClock = performance.now();
-  audioAnchor = actx.currentTime; // t=0 timeline aligné
+  audioAnchor = actx.currentTime;
   lastPhase=""; lastWholeSec=-1;
-
   document.getElementById("config").style.display="none";
   document.getElementById("done").style.display="none";
   runEl.classList.add("show");
   startBeatScheduler();
   tick();
 }
-
-function elapsedNow(){
-  return (performance.now() - startClock - pausedAccum)/1000;
-}
+function elapsedNow(){ return (performance.now() - startClock - pausedAccum)/1000; }
 
 function tick(){
   if(!running){ return; }
   if(paused){ rafId=requestAnimationFrame(tick); return; }
-
   var e = elapsedNow();
   if(e >= totalDur){ finishSession(); return; }
-
   var phase, remain, roundNum, exoName, prog;
-
   if(e < prepDur){
     phase="ready"; remain = Math.ceil(prepDur - e);
     roundNum=0; exoName = selected.length ? EXOS[selected[0]] : "";
@@ -386,16 +394,14 @@ function tick(){
     roundsLbl.textContent = "DÉPART DANS "+remain+"s";
   } else {
     var into = e - prepDur;
-    var rIdx = Math.floor(into/(WORK+REST));       // 0-based
+    var rIdx = Math.floor(into/(WORK+REST));
     var pos = into - rIdx*(WORK+REST);
     roundNum = rIdx+1;
-    var exoIndex = selected[rIdx % selected.length];
-    exoName = EXOS[exoIndex];
+    exoName = EXOS[selected[rIdx % selected.length]];
     prog = into/(totalRounds*(WORK+REST));
     if(pos < WORK){
       phase="work"; remain=Math.ceil(WORK-pos);
-      phaseLbl.textContent="GO";
-      exoLbl.textContent = exoName;
+      phaseLbl.textContent="GO"; exoLbl.textContent = exoName;
     } else {
       phase="rest"; remain=Math.ceil((WORK+REST)-pos);
       phaseLbl.textContent="REPOS";
@@ -404,48 +410,38 @@ function tick(){
     }
     roundsLbl.textContent = "ROUND "+roundNum+" / "+totalRounds;
   }
-
-  // couleur de fond
   runEl.className = "show "+phase;
-
-  // affichage chrono + progression
   clockEl.textContent = remain;
   progBar.style.width = Math.min(100, prog*100).toFixed(1)+"%";
-
-  // --- signaux sonores sur bord de phase / décompte ---
   var whole = Math.floor(e);
   if(phase !== lastPhase){
-    if(phase==="work") beepGo();
-    else if(phase==="rest") beepStop();
+    if(phase==="work"){ beepGo(); if(optMusic) padTo(0.05); }
+    else if(phase==="rest"){ beepStop(); if(optMusic) padTo(0.0001); }
+    else { if(optMusic) padTo(0.0001); }
     lastPhase = phase;
   }
-  // décompte 3-2-1 en fin de repos/prep
   if(whole !== lastWholeSec){
     lastWholeSec = whole;
     if((phase==="rest"||phase==="ready") && remain<=3 && remain>=1) beepCount();
   }
-
   rafId=requestAnimationFrame(tick);
 }
 
-/* ======================================================
-   PAUSE / STOP / FIN
-   ====================================================== */
 function togglePause(){
   if(!running) return;
   paused=!paused;
   var b=document.getElementById("pauseBtn");
-  if(paused){ pauseStart=performance.now(); b.textContent="▶ REPRENDRE";
-    if(actx) actx.suspend(); }
+  if(paused){ pauseStart=performance.now(); b.textContent="▶ REPRENDRE"; if(actx) actx.suspend(); }
   else{ pausedAccum += performance.now()-pauseStart; b.textContent="II PAUSE";
     if(actx) actx.resume();
-    audioAnchor = actx.currentTime - elapsedNow(); // réaligne le beat
+    audioAnchor = actx.currentTime - elapsedNow();
   }
 }
 function stopSession(){
   running=false; paused=false;
   if(rafId) cancelAnimationFrame(rafId);
   if(schedTimer){ clearTimeout(schedTimer); schedTimer=null; }
+  stopPad();
   if(actx) actx.suspend();
   runEl.classList.remove("show");
   document.getElementById("config").style.display="";
@@ -458,7 +454,8 @@ function finishSession(){
   running=false;
   if(rafId) cancelAnimationFrame(rafId);
   if(schedTimer){ clearTimeout(schedTimer); schedTimer=null; }
-  beepGo(); beepGo();
+  stopPad();
+  beepGo();
   if(actx) setTimeout(function(){ actx.suspend(); }, 400);
   runEl.classList.remove("show");
   document.getElementById("rBlocks").textContent = blocks;
@@ -468,10 +465,7 @@ function finishSession(){
   document.getElementById("done").style.display="";
 }
 
-document.getElementById("startBtn").onclick = function(){
-  if(selected.length===0) return;
-  startSession();
-};
+document.getElementById("startBtn").onclick = function(){ if(selected.length===0) return; startSession(); };
 document.getElementById("pauseBtn").onclick = togglePause;
 document.getElementById("stopBtn").onclick  = stopSession;
 document.getElementById("againBtn").onclick = function(){
@@ -479,9 +473,7 @@ document.getElementById("againBtn").onclick = function(){
   document.getElementById("config").style.display="";
 };
 
-/* ======================================================
-   WAKE LOCK (Chrome Android — pas Firefox)
-   ====================================================== */
+/* WAKE LOCK (Chrome Android — pas Firefox) */
 var wakeLock=null;
 function requestWakeLock(){
   if("wakeLock" in navigator){

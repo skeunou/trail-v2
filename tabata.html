@@ -289,7 +289,7 @@ function startPad(){
   padGain = actx.createGain(); padGain.gain.value = 0.0001;
   var lp = actx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=850;
   padGain.connect(lp); lp.connect(actx.destination); lp.connect(reverbIn);
-  var chord=[110, 164.81, 220]; // La mineur doux
+  var chord=[110, 130.81, 164.81]; // La mineur (piloté ensuite par la progression)
   chord.forEach(function(f){
     var o = actx.createOscillator(); o.type="sawtooth"; o.frequency.value=f;
     o.detune.value = (Math.random()*4-2);
@@ -308,13 +308,31 @@ function beepGo(){ if(!optBeep) return; ensureAudio(); var t=actx.currentTime;
   tone(880,t,0.12,"square",0.32); tone(1320,t+0.12,0.18,"square",0.32); }
 function beepStop(){ if(!optBeep) return; ensureAudio(); tone(440,actx.currentTime,0.25,"sine",0.32); }
 function beepCount(){ if(!optBeep) return; ensureAudio(); tone(660,actx.currentTime,0.09,"square",0.28); }
+function beepFinal(n){ if(!optBeep) return; ensureAudio();
+  var f={5:520,4:580,3:660,2:760,1:900};
+  tone(f[n]||600, actx.currentTime, 0.11, "square", 0.36); }
 
-/* séquenceur (lookahead), pattern aéré : kick sur 1 & 3 */
+/* séquenceur (lookahead) : progression d'accords + fills = variation */
 var BPM = 122, beatDur = 60/BPM, nextBeat = 0, beatIdx = 0, schedTimer = null;
+var CHORDS = [
+  { pad:[110.00,130.81,164.81], bassLow:55.00, bassHi:82.41 }, // Am
+  { pad:[ 87.31,110.00,130.81], bassLow:43.65, bassHi:65.41 }, // F
+  { pad:[130.81,164.81,196.00], bassLow:65.41, bassHi:98.00 }, // C
+  { pad:[ 98.00,123.47,146.83], bassLow:49.00, bassHi:73.42 }  // G
+];
+var lastChordIdx = -1;
+function padSetChord(freqs){
+  if(!padGain || !padOsc.length) return;
+  var t = actx.currentTime;
+  for(var i=0;i<padOsc.length && i<freqs.length;i++){
+    padOsc[i].frequency.setValueAtTime(padOsc[i].frequency.value, t);
+    padOsc[i].frequency.linearRampToValueAtTime(freqs[i], t+0.12);
+  }
+}
 function startBeatScheduler(){
   if(!optMusic) return;
   ensureAudio(); startPad();
-  nextBeat = actx.currentTime + 0.1; beatIdx = 0;
+  nextBeat = actx.currentTime + 0.1; beatIdx = 0; lastChordIdx = -1;
   scheduleLoop();
 }
 function scheduleLoop(){
@@ -323,11 +341,20 @@ function scheduleLoop(){
   while(nextBeat < actx.currentTime + ahead){
     if(beatFallsInWork(nextBeat)){
       var b = beatIdx % 4;
-      if(b===0){ kick(nextBeat); bass(nextBeat, 55); }       // La1
-      else if(b===2){ kick(nextBeat); bass(nextBeat, 82.41); } // Mi2
+      var barIdx = Math.floor(beatIdx/4);
+      var chordIdx = Math.floor(barIdx/2) % CHORDS.length; // 2 mesures / accord
+      var ch = CHORDS[chordIdx];
+      if(chordIdx !== lastChordIdx){ padSetChord(ch.pad); lastChordIdx = chordIdx; }
+      if(b===0){ kick(nextBeat); bass(nextBeat, ch.bassLow); }
+      else if(b===2){ kick(nextBeat); bass(nextBeat, ch.bassHi); }
       if(b===1 || b===3){ clap(nextBeat); }
       hat(nextBeat, 0.09);
       hat(nextBeat + beatDur/2, 0.055);
+      // fill toutes les 4 mesures : roll de hats + pickup kick sur le dernier temps
+      if(b===3 && (barIdx % 4 === 3)){
+        for(var f=1;f<=3;f++) hat(nextBeat + f*(beatDur/4), 0.08);
+        kick(nextBeat + beatDur*0.75);
+      }
     }
     nextBeat += beatDur; beatIdx++;
   }
@@ -422,7 +449,8 @@ function tick(){
   }
   if(whole !== lastWholeSec){
     lastWholeSec = whole;
-    if((phase==="rest"||phase==="ready") && remain<=3 && remain>=1) beepCount();
+    if(phase==="work" && remain<=5 && remain>=1) beepFinal(remain);
+    else if((phase==="rest"||phase==="ready") && remain<=3 && remain>=1) beepCount();
   }
   rafId=requestAnimationFrame(tick);
 }

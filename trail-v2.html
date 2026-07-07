@@ -580,106 +580,116 @@ function randWod(){
    (EMOM) + bloc complémentaire (AMRAP). Rowing horizontal présent partout.
    Aucun hinge lourd / adduction / Copenhagen (sécurité zone pubienne). STEP exploité. */
 var RENFO_SUPP=[
-  {zpsafe:false, name:"Hinge & Tirage", emom:{kind:"emom",minutes:14,label:"Force — hinge + tirage",moves:[
+  {accent:"full",zpsafe:false, name:"Hinge & Tirage", emom:{kind:"emom",minutes:14,label:"Force — hinge + tirage",moves:[
       {name:"RDL BARRE",cue:"8 reps · charge lourde, hanche en arrière, dos neutre"},
       {name:"TRACTIONS",cue:"6-8 · amplitude complète, omoplates basses"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","10 Hip thrust barre","verrouille les fessiers en haut"],["B","12 TRX row","omoplates serrées"],["C","30 s Planche iso","gainage neutre"]]}},
-  {zpsafe:false, name:"Squat & Poussée", emom:{kind:"emom",minutes:14,label:"Force — squat + poussée",moves:[
+  {accent:"full",zpsafe:true, name:"Squat & Poussée", emom:{kind:"emom",minutes:14,label:"Force — squat + poussée",moves:[
       {name:"GOBLET SQUAT KB",cue:"10 · lourd, buste droit, profondeur"},
       {name:"DÉVELOPPÉ INCLINÉ",cue:"8 · contrôlé, amplitude"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","8 Bulgarian split squat /jambe (STEP)","pied arrière sur le step"],["B","12 Rowing haltère /bras","tire vers la hanche"],["C","10 Pallof press /côté","anti-rotation"]]}},
-  {zpsafe:false, name:"Soulevé & Press", emom:{kind:"emom",minutes:14,label:"Force — chaîne post. + épaules",moves:[
+  {accent:"full",zpsafe:false, name:"Soulevé & Press", emom:{kind:"emom",minutes:14,label:"Force — chaîne post. + épaules",moves:[
       {name:"SOULEVÉ DE TERRE JAMBES TENDUES",cue:"8 · ischios sous tension, dos plat"},
       {name:"PUSH PRESS",cue:"8 · jambes donnent l'impulsion"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","10 Step-up lesté /jambe (STEP)","montée explosive"],["B","12 TRX row","omoplates"],["C","6 Tractions","sans à-coup"]]}},
-  {zpsafe:false, name:"Chaîne postérieure", emom:{kind:"emom",minutes:14,label:"Force — fessiers + tirage",moves:[
+  {accent:"bas",zpsafe:true, name:"Chaîne postérieure", emom:{kind:"emom",minutes:14,label:"Force — fessiers + tirage",moves:[
       {name:"HIP THRUST BARRE",cue:"10 · pause 1 s en haut, fessiers"},
       {name:"TRACTIONS PRONATION",cue:"6 · dos large"}]},
     amrap:{kind:"amrap",sec:540,label:"Complémentaire",moves:[
       ["A","8 RDL unilatéral KB /jambe","équilibre, hanche en arrière"],["B","15 Face pull élastique","rotation externe"],["C","Gainage latéral 30 s /côté","hanche haute"]]}},
-  {zpsafe:false, name:"Squat & Tirage", emom:{kind:"emom",minutes:14,label:"Force — squat + rowing",moves:[
+  {accent:"full",zpsafe:true, name:"Squat & Tirage", emom:{kind:"emom",minutes:14,label:"Force — squat + rowing",moves:[
       {name:"FRONT SQUAT BARRE",cue:"6 · coudes hauts, profondeur"},
       {name:"ROWING BARRE",cue:"8 · buste penché, dos gainé"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","10 Fentes marchées lestées /jambe","grand pas, genou contrôlé"],["B","6 Tractions","amplitude"],["C","10 Pallof walk /côté","gainage"]]}},
-  {zpsafe:false, name:"Puissance", emom:{kind:"emom",minutes:14,label:"Force — puissance",moves:[
+  {accent:"full",zpsafe:true, name:"Puissance", emom:{kind:"emom",minutes:14,label:"Force — puissance",moves:[
       {name:"POWER CLEAN",cue:"5 · explosif, triple extension"},
       {name:"PUSH PRESS",cue:"8 · enchaîné, gainage serré"}]},
     amrap:{kind:"amrap",sec:540,label:"Complémentaire",moves:[
       ["A","15 KB swing américain","propulsion hanche"],["B","10 Step-up lesté /jambe","explosif"],["C","12 TRX row","omoplates"]]}},
-  {zpsafe:true, name:"Haut du corps & gainage", emom:{kind:"emom",minutes:12,label:"Haut du corps — tirage + poussée",moves:[
+  {accent:"haut",zpsafe:true, name:"Haut du corps & gainage", emom:{kind:"emom",minutes:12,label:"Haut du corps — tirage + poussée",moves:[
       {name:"TRACTIONS",cue:"6-8 · amplitude complète"},
       {name:"DÉVELOPPÉ INCLINÉ",cue:"8 · contrôlé"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","12 TRX row","serre les omoplates"],["B","8 Push press","gainage serré"],["C","10 Pallof press /côté","anti-rotation"],["D","40 s Planche iso","neutre"]]}},
-  {zpsafe:true, name:"Tirage & épaules", emom:{kind:"emom",minutes:12,label:"Haut du corps — tirage + épaules",moves:[
+  {accent:"haut",zpsafe:true, name:"Tirage & épaules", emom:{kind:"emom",minutes:12,label:"Haut du corps — tirage + épaules",moves:[
       {name:"TRACTIONS PRONATION",cue:"6 · dos large"},
       {name:"ROWING HALTÈRE",cue:"10 /bras · amplitude, omoplate"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","12 Face pull élastique","rotation externe"],["B","12 Élévations latérales","5 kg, contrôlé"],["C","10 Curls /bras","tempo"],["D","20 Shoulder taps","bassin fixe"]]}},
-  {name:"Squat & Presse verticale", emom:{kind:"emom",minutes:14,label:"Force — squat + presse",moves:[
+  {accent:"full",zpsafe:true, name:"Squat & Presse verticale", emom:{kind:"emom",minutes:14,label:"Force — squat + presse",moves:[
       {name:"FRONT SQUAT",cue:"6 · lourd, coudes hauts, profondeur"},
       {name:"PUSH PRESS",cue:"6 · les jambes donnent l'impulsion"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","10 Goblet squat","talons ancrés"],["B","8 Développé incliné DB","contrôlé"],["C","12 Face pull","rotation externe"]]}},
-  {name:"Explosif haltères", emom:{kind:"emom",minutes:12,label:"Puissance — haltères",moves:[
+  {accent:"full",zpsafe:false, name:"Explosif haltères", emom:{kind:"emom",minutes:12,label:"Puissance — haltères",moves:[
       {name:"DB SNATCH ALTERNÉ",cue:"5 /côté · explosif, gainé"},
       {name:"DB THRUSTER",cue:"8 · jambes puis épaules"}]},
     amrap:{kind:"amrap",sec:540,label:"Complémentaire",moves:[
       ["A","10 Devil's press","full body"],["B","12 Rowing renégat","bassin fixe"],["C","20 Mountain climbers","gaine"]]}},
-  {name:"Deadlift & Portés", emom:{kind:"emom",minutes:14,label:"Force — soulevé + tirage",moves:[
+  {accent:"full",zpsafe:false, name:"Deadlift & Portés", emom:{kind:"emom",minutes:14,label:"Force — soulevé + tirage",moves:[
       {name:"SOULEVÉ DE TERRE",cue:"5 · lourd, dos plat, gainé"},
       {name:"TRACTIONS",cue:"6 · contrôle, amplitude"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","Farmer carry 30 m","lourd, posture droite"],["B","10 KB swing","propulsion hanche"],["C","20 Shoulder taps","gainage"]]}},
-  {name:"Kettlebell complet", emom:{kind:"emom",minutes:14,label:"Force — kettlebell",moves:[
+  {accent:"full",zpsafe:true, name:"Kettlebell complet", emom:{kind:"emom",minutes:14,label:"Force — kettlebell",moves:[
       {name:"KB CLEAN & PRESS",cue:"5 /côté · enchaîné"},
       {name:"KB SWING AMÉRICAIN",cue:"12 · hanche explosive"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","12 Goblet squat","profond"],["B","10 KB row penché","omoplate"],["C","30 s Planche latérale /côté","bassin haut"]]}},
-  {name:"Puissance barre", emom:{kind:"emom",minutes:12,label:"Puissance — barre",moves:[
+  {accent:"full",zpsafe:true, name:"Puissance barre", emom:{kind:"emom",minutes:12,label:"Puissance — barre",moves:[
       {name:"POWER CLEAN",cue:"5 · explosif, triple extension"},
       {name:"PUSH PRESS",cue:"6 · gainé, enchaîné"}]},
     amrap:{kind:"amrap",sec:540,label:"Complémentaire",moves:[
       ["A","10 Front squat","barre"],["B","8 Tractions","amplitude"],["C","12 Hollow rock","lombaires plaquées"]]}},
-  {name:"Poussée & Tirage", emom:{kind:"emom",minutes:14,label:"Force — poussée + tirage",moves:[
+  {accent:"haut",zpsafe:true, name:"Poussée & Tirage", emom:{kind:"emom",minutes:14,label:"Force — poussée + tirage",moves:[
       {name:"DÉVELOPPÉ BARRE",cue:"6 · contrôlé, gainé"},
       {name:"ROWING BARRE",cue:"8 · buste penché, dos plat"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","10 Dips","amplitude"],["B","12 Face pull","rotation externe"],["C","15 Élévations latérales","léger"]]}},
-  {name:"Unilatéral chargé", emom:{kind:"emom",minutes:14,label:"Force — unilatéral",moves:[
+  {accent:"bas",zpsafe:true, name:"Unilatéral chargé", emom:{kind:"emom",minutes:14,label:"Force — unilatéral",moves:[
       {name:"SPLIT SQUAT BULGARE",cue:"8 /côté · profond, contrôlé"},
       {name:"SOULEVÉ UNILATÉRAL DB",cue:"8 /côté · équilibre, ischios"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","10 Fente marchée lestée /côté","genou stable"],["B","12 Rowing haltère","omoplate"],["C","20 Dead bug","anti-extension"]]}},
-  {name:"Fessiers & Charnière", emom:{kind:"emom",minutes:14,label:"Force — chaîne postérieure",moves:[
+  {accent:"bas",zpsafe:true, name:"Fessiers & Charnière", emom:{kind:"emom",minutes:14,label:"Force — chaîne postérieure",moves:[
       {name:"HIP THRUST BARRE",cue:"10 · pause 1s en haut"},
       {name:"GOOD MORNING",cue:"10 · charnière gainée, léger"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","12 Pont fessier unilatéral","poussée talon"],["B","15 KB swing","hanche"],["C","30 s Gainage latéral /côté","aligné"]]}},
-  {name:"Circuit métabolique", emom:{kind:"emom",minutes:12,label:"Cardio-force",moves:[
+  {accent:"full",zpsafe:false, name:"Circuit métabolique", emom:{kind:"emom",minutes:12,label:"Cardio-force",moves:[
       {name:"KB SWING AMÉRICAIN",cue:"12 · propulsion hanche"},
       {name:"BURPEE",cue:"8 · rythme régulier"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","10 DB thruster","full body"],["B","12 Box step-up lesté","6 /jambe"],["C","15 Mountain climbers","gaine"]]}},
-  {name:"Gainage & Anti-rotation", emom:{kind:"emom",minutes:12,label:"Tronc — anti-rotation",moves:[
+  {accent:"haut",zpsafe:true, name:"Gainage & Anti-rotation", emom:{kind:"emom",minutes:12,label:"Tronc — anti-rotation",moves:[
       {name:"PALLOF PRESS MARCHANT",cue:"10 /côté · résiste à la rotation"},
       {name:"RENEGADE ROW",cue:"8 /côté · bassin fixe"}]},
     amrap:{kind:"amrap",sec:540,label:"Complémentaire",moves:[
       ["A","20 Dead bug","lombaires plaquées"],["B","30 s Hollow hold","gaine"],["C","10 Ab wheel (ou TRX fallout)","contrôle"]]}},
-  {name:"Snatch & Squat", emom:{kind:"emom",minutes:14,label:"Puissance — snatch + squat",moves:[
+  {accent:"full",zpsafe:true, name:"Snatch & Squat", emom:{kind:"emom",minutes:14,label:"Puissance — snatch + squat",moves:[
       {name:"DB SNATCH",cue:"5 /côté · gainé, explosif"},
       {name:"GOBLET SQUAT",cue:"10 · profond, buste droit"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","12 KB swing","hanche"],["B","8 Push press","gainé"],["C","15 V-ups","contrôle"]]}},
-  {name:"Force lourde bas du corps", emom:{kind:"emom",minutes:14,label:"Force — bas du corps lourd",moves:[
+  {accent:"bas",zpsafe:false, name:"Force lourde bas du corps", emom:{kind:"emom",minutes:14,label:"Force — bas du corps lourd",moves:[
       {name:"BACK SQUAT",cue:"5 · lourd, profondeur"},
       {name:"RDL BARRE",cue:"6 · ischios sous tension"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
-      ["A","10 Step-up lesté /jambe","explosif"],["B","12 Hip thrust","fessiers"],["C","20 Gainage climber","gaine"]]}}
+      ["A","10 Step-up lesté /jambe","explosif"],["B","12 Hip thrust","fessiers"],["C","20 Gainage climber","gaine"]]}},
+  {accent:"bas",zpsafe:true, name:"Step-up & Tirage (ZP-safe)", emom:{kind:"emom",minutes:14,label:"Bas ZP-safe — step-up + tirage",moves:[
+      {name:"STEP-UP LESTÉ EXCENTRIQUE",cue:"8 /jambe · montée contrôlée, descente lente 3 s"},
+      {name:"TRACTIONS",cue:"6-8 · amplitude complète, omoplates basses"}]},
+    amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
+      ["A","12 Hip thrust barre","verrouille les fessiers 1 s en haut"],["B","12 TRX row","omoplates serrées"],["C","30 s Gainage latéral /côté","hanche haute"]]}},
+  {accent:"bas",zpsafe:true, name:"Chaîne postérieure légère (ZP-safe)", emom:{kind:"emom",minutes:14,label:"Bas ZP-safe — charnière légère + rowing",moves:[
+      {name:"RDL UNILATÉRAL KB",cue:"8 /jambe · hanche en arrière, léger, dos neutre"},
+      {name:"ROWING HALTÈRE UNILATÉRAL",cue:"10 /bras · tire vers la hanche, omoplate"}]},
+    amrap:{kind:"amrap",sec:540,label:"Complémentaire",moves:[
+      ["A","12 Pont fessier unilatéral","poussée talon, bassin stable"],["B","15 KB swing américain","propulsion hanche"],["C","20 Dead bug","lombaires plaquées"]]}}
 ];
 var lastRenfoIdx=-1;
 var TABATA_ABDO={kind:"tabata",label:"Finisher — Tabata abdo",rounds:8,work:20,rest:10,moves:[
@@ -701,53 +711,76 @@ var WODS_SUPP_VAC=[
   {name:"Full body express",sec:600,moves:[["","10 Burpees","rythme régulier"],["","15 Rowing élastique","dos"],["","15 Fentes marchées","grande amplitude, buste droit"]]}
 ];
 var RENFO_SUPP_VAC=[
-  {zpsafe:true, name:"Fessiers & Tirage band", emom:{kind:"emom",minutes:14,label:"Force — fessiers + tirage",moves:[
+  {name:"Fessiers & Tirage band", emom:{kind:"emom",minutes:14,label:"Force — fessiers + tirage",moves:[
       {name:"HIP THRUST AU SOL",cue:"12 · verrouille les fessiers 1s en haut, menton rentré"},
       {name:"ROWING ÉLASTIQUE",cue:"12 · tire au nombril, omoplates basses"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","15 Monster walk band","genoux écartés, bassin stable"],["B","15 Face pull élastique","rotation externe"],["C","30 s Planche iso","gainage neutre"]]}},
-  {zpsafe:true, name:"Unipodal & Push", emom:{kind:"emom",minutes:14,label:"Force — fente + poussée",moves:[
+  {name:"Unipodal & Push", emom:{kind:"emom",minutes:14,label:"Force — fente + poussée",moves:[
       {name:"FENTE ARRIÈRE",cue:"8/jambe · genou aligné, descente contrôlée"},
       {name:"POMPES",cue:"10-12 · corps gainé, amplitude"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","12 Rowing élastique unilatéral","alt., dos"],["B","15 Glute bridge","fessiers en haut"],["C","20 Mountain climbers","bassin bas"]]}},
-  {zpsafe:true, name:"Épaules & Dos band", emom:{kind:"emom",minutes:14,label:"Force — épaules + dos",moves:[
+  {name:"Épaules & Dos band", emom:{kind:"emom",minutes:14,label:"Force — épaules + dos",moves:[
       {name:"DÉVELOPPÉ MILITAIRE BAND",cue:"12 · band sous les pieds, gainé"},
       {name:"TIRAGE ÉLASTIQUE",cue:"12 · coudes le long du corps"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","15 Pull-apart band","bras tendus"],["B","15 Air squats","profondeur"],["C","40 s Corde à sauter","souple"]]}},
-  {zpsafe:true, name:"Chaîne postérieure douce", emom:{kind:"emom",minutes:14,label:"Force — charnière légère",moves:[
+  {name:"Chaîne postérieure douce", emom:{kind:"emom",minutes:14,label:"Force — charnière légère",moves:[
       {name:"GOOD MORNING BAND",cue:"12 · charnière de hanche, dos gainé, jamais dans le rouge"},
       {name:"TIRAGE ÉLASTIQUE",cue:"12 · omoplates"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","15 Hip thrust au sol","verrouille"],["B","12 Bird-dog + tirage band","sans tourner le bassin"],["C","30 s Planche latérale /côté","hanche haute"]]}},
-  {zpsafe:true, name:"Push endurance", emom:{kind:"emom",minutes:14,label:"Force — poussée + dos",moves:[
+  {name:"Push endurance", emom:{kind:"emom",minutes:14,label:"Force — poussée + dos",moves:[
       {name:"POMPES TEMPO",cue:"10 · 3s à la descente, gainé"},
       {name:"ROWING ÉLASTIQUE",cue:"12 · dos"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","15 Air squats","talons ancrés"],["B","15 Élévations latérales band","contrôlé"],["C","20 Corde à sauter","cadence"]]}},
-  {zpsafe:true, name:"Glute med & stabilité", emom:{kind:"emom",minutes:14,label:"Force — hanche latérale",moves:[
+  {name:"Glute med & stabilité", emom:{kind:"emom",minutes:14,label:"Force — hanche latérale",moves:[
       {name:"MONSTER WALK BAND",cue:"12 pas/sens · genoux écartés, bassin fixe"},
       {name:"POMPES",cue:"10 · gainé"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","15 Clamshell band /côté","ouvre le genou, bassin fixe"],["B","12 Rowing élastique","dos"],["C","15 Glute bridge","fessiers"]]}},
-  {zpsafe:true, name:"Full body band", emom:{kind:"emom",minutes:14,label:"Force — fente + tirage",moves:[
+  {name:"Full body band", emom:{kind:"emom",minutes:14,label:"Force — fente + tirage",moves:[
       {name:"FENTE ARRIÈRE",cue:"8/jambe · contrôle"},
       {name:"TIRAGE ÉLASTIQUE",cue:"12 · omoplates basses"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","10 Burpees","fluide"],["B","15 Développé band","gainé"],["C","30 s Corde à sauter","souple"]]}},
-  {zpsafe:true, name:"Gainage & Tirage", emom:{kind:"emom",minutes:14,label:"Force — dos + fessiers",moves:[
+  {name:"Gainage & Tirage", emom:{kind:"emom",minutes:14,label:"Force — dos + fessiers",moves:[
       {name:"ROWING ÉLASTIQUE",cue:"14 · dos, tempo"},
       {name:"HIP THRUST AU SOL",cue:"15 · fessiers"}]},
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","30 s Planche iso","neutre"],["B","15 Face pull band","rotation externe"],["C","20 Mountain climbers","bassin bas"]]}}
 ];
 function warmSegRenfo(){ return {kind:"renfowarm",rounds:2,label:"Échauffement",items:TF_WARM[weekCounter()%TF_WARM.length]}; }
+var lastRenfoName="";
+// Garantit un tirage HORIZONTAL dans la séance (règle : rowing horizontal obligatoire)
+function ensureTirage(sess){
+  var txt=(sess.emom.moves||[]).map(function(m){return m.name||"";}).join(" ")+" "+
+          (sess.amrap.moves||[]).map(function(m){return m[1]||"";}).join(" ");
+  if(/rowing|trx row|face pull|renegade|\brow\b/i.test(txt)) return sess;
+  var s=Object.assign({},sess); s.amrap=Object.assign({},sess.amrap);
+  s.amrap.moves=(sess.amrap.moves||[]).concat([["+","12 TRX row","tirage horizontal — omoplates serrées, dos gainé"]]);
+  return s;
+}
 function buildSuppRenfo(signal){
   var flags=(signal&&signal.zones)||[];
-  var bank = vacMode ? RENFO_SUPP_VAC : RENFO_SUPP;
-  var idx=pickLeastLoading(bank,"renfo",flags,lastRenfoIdx);
-  lastRenfoIdx=idx; var r=bank[idx];
+  var accent=(signal&&signal.accent)||"full";
+  var bankAll = vacMode ? RENFO_SUPP_VAC : RENFO_SUPP;
+  var bank = vacMode ? bankAll : bankAll.filter(function(s){
+    var a=s.accent||"full";
+    if(accent==="haut") return a==="haut";
+    if(accent==="bas")  return a==="bas" && s.zpsafe!==false; // « bas » = ZP-safe auto (pas de hinge/squat lourd)
+    return a==="full";
+  });
+  if(!bank.length) bank=bankAll;
+  var idx=pickLeastLoading(bank,"renfo",flags,-1);
+  if(bank.length>1 && bank[idx].name===lastRenfoName){
+    var alt=[]; for(var i=0;i<bank.length;i++){ if(bank[i].name!==lastRenfoName) alt.push(i); }
+    if(alt.length) idx=alt[Math.floor(Math.random()*alt.length)];
+  }
+  lastRenfoName=bank[idx].name;
+  var r=ensureTirage(bank[idx]);
   var warm=[warmSegRenfo()];
   var emom=Object.assign({},r.emom,{minutes:rnd([12,14,16])});
   var amrap=Object.assign({},r.amrap,{sec:rnd([480,600,720])});
@@ -757,9 +790,10 @@ function buildSuppRenfo(signal){
   else if(pick===2) main=[emom, amrapAsFortime(r.amrap, rnd([600,720]))];
   else if(pick===3) main=[amrapAsFortime(r.amrap, rnd([600,720])), emom];
   else main=[emom, amrapAsEmom(r.amrap, rnd([8,10]))];
-  var fin=rnd([TABATA_ABDO, TABATA_ABDO, null]); // ~2/3 avec finisher
-  var segs=warm.concat(main); if(fin) segs.push(fin);
-  return {name:r.name, segs:segs};
+  var fin=TABATA_ABDO; // gainage garanti à chaque séance
+  var segs=warm.concat(main); segs.push(fin);
+  var accLabel=accent==="haut"?"Accent haut":accent==="bas"?"Accent bas":"Full";
+  return {name:r.name+" · "+accLabel, segs:segs};
 }
 function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
 function amrapAsEmom(amrap,minutes){ return {kind:"emom",minutes:minutes,label:"EMOM densité",moves:(amrap.moves||[]).map(function(x){return {name:x[1],cue:x[2]||""};})}; }
@@ -798,13 +832,33 @@ function pickLeastLoading(bank,kind,flags,lastIdx){
   return cand[Math.floor(Math.random()*cand.length)].i;
 }
 var checkinFlags=[], pSignal={zones:[],text:""};
+var _suppAccent="full";
+function setSuppAccent(a){
+  _suppAccent=a;
+  ["haut","bas","full"].forEach(function(k){
+    var el=document.getElementById("acc-"+k); if(!el)return;
+    var on=(k===a);
+    el.style.background=on?"var(--acid)":"transparent";
+    el.style.color=on?"#1a1d12":"var(--mut)";
+    el.style.borderColor=on?"var(--acid)":"var(--line)";
+    el.style.fontWeight=on?"800":"600";
+  });
+}
 function openCheckin(k,kind){
   var z=document.getElementById("suppZone"); if(!z)return;
-  checkinFlags=[]; vacMode=false;
+  checkinFlags=[]; vacMode=false; _suppAccent="full";
   var chips=Object.keys(ZONE_LBL).map(function(zk){
     return '<button type="button" id="ck-'+zk+'" onclick="toggleFlag(\''+zk+'\')" style="border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer">'+ZONE_LBL[zk]+'</button>';
   }).join("");
+  var accentBlock = kind==="renfo" ? (
+    '<div style="font-weight:700;font-size:13.5px;margin-bottom:8px">Accent de la séance</div>'+
+    '<div style="display:flex;gap:6px;margin-bottom:6px">'+
+      ['haut','bas','full'].map(function(kk){var lbl=kk==="haut"?"Haut du corps":kk==="bas"?"Bas du corps":"Full";var on=(kk==="full");return '<button type="button" id="acc-'+kk+'" onclick="setSuppAccent(\''+kk+'\')" style="flex:1;border:1px solid '+(on?'var(--acid)':'var(--line)')+';background:'+(on?'var(--acid)':'transparent')+';color:'+(on?'#1a1d12':'var(--mut)')+';border-radius:10px;padding:8px 4px;font-size:12px;font-weight:'+(on?'800':'600')+';cursor:pointer">'+lbl+'</button>';}).join("")+
+    '</div>'+
+    '<div style="font-size:11px;color:var(--mut);margin-bottom:13px;line-height:1.4">Toujours full-body (tirage + gainage). « Bas » filtre auto pour la zone pubienne.</div>'
+  ) : "";
   z.innerHTML='<div class="card" style="padding:13px;margin-top:8px;border-left:3px solid var(--orange)">'+
+    accentBlock+
     '<div style="font-weight:700;font-size:13.5px;margin-bottom:9px">Quelque chose à signaler aujourd\'hui ?</div>'+
     '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">'+chips+'</div>'+
     '<button type="button" id="ck-vac" onclick="toggleVac()" style="width:100%;box-sizing:border-box;border:1px dashed var(--line);background:transparent;color:var(--mut);border-radius:10px;padding:9px;font-size:12.5px;font-weight:700;cursor:pointer;margin-bottom:10px">🏖️ Mode vacances — élastique + poids du corps + corde</button>'+
@@ -829,7 +883,7 @@ function toggleVac(){
 }
 function runCheckin(k,kind,ras){
   var txt=ras?"":(((document.getElementById("ckTxt")||{}).value)||"").trim();
-  var signal={zones:ras?[]:checkinFlags.slice(), text:txt};
+  var signal={zones:ras?[]:checkinFlags.slice(), text:txt, accent:_suppAccent};
   if(kind==="renfo") startSuppRenfo(k,signal); else startSuppWod(k,signal);
 }
 function signalNote(){

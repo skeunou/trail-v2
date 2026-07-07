@@ -1542,14 +1542,61 @@ function coachCotes(a){
   out+='</div>';
   return out;
 }
-function coachRun(a,typeKey){
+/* ===== Nature de la course hors-plan (EF / SL / Tempo / Qualité) — pilote l'analyse ===== */
+var RUN_INTENTS={
+  ef:     {head:"EF",            hint:"Z1–Z2 · facile"},
+  sl:     {head:"Sortie longue", hint:"Z2 dominante · durée / durabilité"},
+  tempo:  {head:"Tempo",         hint:"Z3–Z4 · seuil"},
+  qualite:{head:"Qualité",       hint:"Z4+ · VMA / intervalles"}
+};
+function guessRunIntent(e){ var mn=(e&&e.durMin)||0, km=(e&&e.km)||0; return (mn>=75||km>=15)?"sl":"ef"; }
+function runIntent(e){ return (e&&e.runType&&RUN_INTENTS[e.runType])?e.runType:guessRunIntent(e); }
+function setExtraRunType(xid,type){ extrasSet(extrasGet().map(function(e){ if(e.xid===xid){ e.runType=type; e._u=Date.now(); } return e; })); }
+// Verdict FC selon l'intention (z = numéro de zone 1..5)
+function runVerdict(intent,z){
+  if(intent==="sl"){
+    if(z<=2) return ["allure de longue bien contenue ✓","var(--grn)"];
+    if(z===3) return ["tempo sur la longue — ok si voulu, sinon Z2 dominante pour durer","var(--warn)"];
+    return ["trop rapide (Z"+z+") pour une longue","var(--orange)"];
+  }
+  if(intent==="tempo"){
+    if(z===3||z===4) return ["tempo / seuil dans la cible ✓","var(--grn)"];
+    if(z<=2) return ["un peu doux pour un tempo","var(--warn)"];
+    return ["au-dessus du tempo (Z5) — proche VMA","var(--orange)"];
+  }
+  if(intent==="qualite"){
+    if(z>=4) return ["intensité au rendez-vous ✓","var(--grn)"];
+    if(z===3) return ["sous la cible qualité — pousse en Z4+","var(--warn)"];
+    return ["trop facile (Z"+z+") pour de la qualité","var(--mut)"];
+  }
+  if(z<=2) return ["EF tenu en "+(z===1?"Z1":"Z2")+" ✓","var(--grn)"];
+  if(z===3) return ["un cran trop haut (Z3) — vise Z2","var(--warn)"];
+  return ["trop rapide (Z"+z+") pour de l'EF","var(--orange)"];
+}
+// Barre de sélection de la nature (course/trail uniquement), rendue en tête de l'analyse
+function runIntentBar(e){
+  if(!e||(e.sport!=="course"&&e.sport!=="trail")) return "";
+  var cur=runIntent(e), auto=!e.runType;
+  var btns=["ef","sl","tempo","qualite"].map(function(k){
+    var on=(k===cur);
+    return '<button onclick="renderExtraIntent(this,\''+e.xid+'\',\''+k+'\')" style="flex:1;min-width:0;font-family:inherit;cursor:pointer;font-size:10.5px;font-weight:700;padding:5px 3px;border-radius:7px;border:1px solid '+(on?'var(--acid)':'var(--line)')+';background:'+(on?'rgba(232,255,71,.18)':'var(--paper)')+';color:var(--ink)">'+RUN_INTENTS[k].head+'</button>';
+  }).join("");
+  return '<div style="margin-bottom:10px">'+
+    '<div style="font-size:9px;font-weight:800;letter-spacing:.5px;color:var(--mut);margin-bottom:5px">NATURE'+(auto?' · estimée auto':'')+'</div>'+
+    '<div style="display:flex;gap:5px">'+btns+'</div>'+
+    '<div style="font-size:10px;color:var(--mut);margin-top:5px">'+RUN_INTENTS[cur].hint+'</div></div>';
+}
+function coachRun(a,typeKey,intent,e){
   if(typeKey==="cotes") return coachCotes(a);
+  if(!intent) intent=(typeKey==="longue")?"sl":"ef";
   var hr=a.hrAvg, z=hrZone(hr), hot=(a.temp!=null&&a.temp>=25);
+  var head=(RUN_INTENTS[intent]&&RUN_INTENTS[intent].head)||"EF";
   var rows='<div class="summary" style="border-left:3px solid var(--blue)">';
-  rows+='<div class="row"><span style="color:var(--blue);font-weight:700">⌁ EF — analyse</span><b></b></div>';
-  var verdict = z.z<=2?"EF tenu en Z2 ✓":(z.z===3?"un cran trop haut (Z3)":"trop rapide ("+z.l+")");
+  rows+=(e?runIntentBar(e):'');
+  rows+='<div class="row"><span style="color:var(--blue);font-weight:700">⌁ '+head+' — analyse</span><b></b></div>';
+  var vv=runVerdict(intent,z.z);
   rows+='<div class="row"><span>FC moy</span><b style="color:'+zColor(z.z)+'">'+hr+' = '+z.l+'</b></div>';
-  rows+='<div class="row"><span>Verdict</span><b style="color:'+zColor(z.z)+'">'+verdict+'</b></div>';
+  rows+='<div class="row"><span>Verdict</span><b style="color:'+vv[1]+'">'+vv[0]+'</b></div>';
   var dc=decoupling(a.splits);
   if(dc){
     var msg;
@@ -1559,8 +1606,8 @@ function coachRun(a,typeKey){
     rows+='<div class="row"><span style="font-size:12px;line-height:1.4">'+msg+'</span><b></b></div>';
   }
   var kick=efFinalKick(a.splits);
-  if(kick!=null && kick>8){
-    rows+='<div class="row"><span style="font-size:12px;color:var(--mut);line-height:1.4">⚡ Dernier km +'+kick.toFixed(0)+'% : accélération finale (groupe / volontaire). OK ponctuellement, mais garde l\'EM <b>vraiment facile</b> jusqu\'au bout — sinon c\'est un tempo déguisé.</span><b></b></div>';
+  if(kick!=null && kick>8 && (intent==="ef"||intent==="sl")){
+    rows+='<div class="row"><span style="font-size:12px;color:var(--mut);line-height:1.4">⚡ Dernier km +'+kick.toFixed(0)+'% : accélération finale (groupe / volontaire). OK ponctuellement, mais garde l\'allure <b>vraiment facile</b> jusqu\'au bout'+(intent==="sl"?' sur une longue':'')+'.</span><b></b></div>';
   }
   if(hot && z.z>2) rows+='<div class="row"><span style="font-size:12px;color:var(--mut);line-height:1.4">⚠️ '+Math.round(a.temp)+'° : une partie de la FC haute est thermique. En chaleur, <b>ralentis pour tenir la zone</b> au lieu de tenir l\'allure.</span><b></b></div>';
   rows+=coachWeekCtx(a);
@@ -1570,17 +1617,17 @@ function coachRun(a,typeKey){
 // B — analyse terrain : VAM en montée, allure en descente/plat (que du mesuré, via splits elev/d)
 function coachTerrain(a){
   var sp=a.splits; if(!sp||!sp.length)return "";
-  var cE=0,cS=0, dS=0,dD=0, fS=0,fD=0;
+  var cE=0,cS=0, dS=0,dD=0,dDrop=0, fS=0,fD=0;
   sp.forEach(function(s){
     if(!s.sec||!s.d)return;
     var grade=(s.elev/s.d)*100;
     if(grade>=4){ cE+=s.elev; cS+=s.sec; }
-    else if(grade<=-4){ dS+=s.sec; dD+=s.d; }
+    else if(grade<=-4){ dS+=s.sec; dD+=s.d; dDrop+=(-s.elev); }
     else { fS+=s.sec; fD+=s.d; }
   });
   var out=[];
   if(cS>=90 && cE>=25){ var vam=Math.round(cE/cS*3600); out.push(['⛰️ Montée','<b>VAM '+vam+' m/h</b> · '+Math.round(cE)+' m en '+fmtMin(cS/60)]); }
-  if(dD>=400){ out.push(['↘ Descente','<b>'+fmtPace(dS/(dD/1000))+' /km</b>']); }
+  if(dD>=800 && dDrop>=40){ out.push(['↘ Descente','<b>'+fmtPace(dS/(dD/1000))+' /km</b>']); }
   if(fD>=400){ out.push(['➡️ Plat','<b>'+fmtPace(fS/(fD/1000))+' /km</b>']); }
   if(out.length<1)return "";
   var body=out.map(function(r){return '<div class="row"><span>'+r[0]+'</span><b style="font-weight:400">'+r[1]+'</b></div>';}).join('');
@@ -2755,12 +2802,14 @@ function coachExtra(e){
   if(!e.hrAvg) return ''; // pas de données cardio → pas de verdict (log manuel)
   var pct=e.hrAvg/FCMAX, p=Math.round(pct*100);
   var isRide=(e.sport==="velo_ht"||e.sport==="velo_route");
+  var isRun=(e.sport==="course"||e.sport==="trail");
   var lvl,msg;
   if(pct<0.60){ lvl="récup"; msg=isRide?"Pédalage très doux : récup active, les jambes tournent sans charge. Idéal lendemain de séance.":"Très facile : récup active, parfait pour relancer sans fatiguer."; }
   else if(pct<0.72){ lvl="EF"; msg=isRide?"Endurance fondamentale vélo : base aérobie propre, zéro stress musculaire.":"Endurance fondamentale, bien dans la zone facile. C'est le pain quotidien."; }
   else if(pct<0.82){ lvl="tempo"; msg="Allure modérée (tempo). Bien si c'était voulu — sinon un cran trop haut pour de l'easy."; }
   else if(pct<0.90){ lvl="soutenu"; msg="Effort soutenu (qualité). À doser : 1-2 fois/semaine max, pas la veille d'une grosse séance."; }
   else { lvl="intense"; msg="Grosse intensité. Surveille la récup et l'enchaînement derrière."; }
+  if(isRun){ var iv=runVerdict(runIntent(e),hrZone(e.hrAvg).z); msg=iv[0].charAt(0).toUpperCase()+iv[0].slice(1)+'.'; }
   var w=e.wAvg?(' · '+e.wAvg+'W'):'';
   return '<div style="margin-top:9px;padding-top:9px;border-top:1px solid var(--line)">'+
     '<div style="font-size:11px;color:var(--blue);font-weight:700;letter-spacing:.4px">⌁ COACH · FC '+e.hrAvg+' ('+p+'% · '+lvl+')'+w+'</div>'+
@@ -2790,7 +2839,16 @@ function extraCard(e){
     '<button class="x" onclick="delExtraUI(\''+e.xid+'\')" style="border:none;background:none;color:var(--mut);font-size:15px;cursor:pointer;padding:0 0 0 8px">✕</button>'+
     '</div>'+coachExtra(e)+detailBtn+'</div>';
 }
-var _exDetCache={};
+var _exDetCache={}, _exActCache={};
+// Re-render de l'analyse quand on change la nature de la course (via la barre)
+function renderExtraIntent(btn,xid,type){
+  if(type) setExtraRunType(xid,type);
+  var det=btn&&btn.closest&&btn.closest('[id="exdet-'+xid+'"]'); if(!det)return;
+  var e=null; extrasGet().forEach(function(x){if(x.xid===xid)e=x;});
+  var a=_exActCache[xid]; if(!e||!a)return;
+  var html=coachRun(a,"fond",runIntent(e),e);
+  _exDetCache[xid]=html; det.innerHTML=html;
+}
 function toggleExtraDetail(btn,xid){
   var det=btn&&btn.nextElementSibling;
   if(!det)return;
@@ -2805,8 +2863,9 @@ function toggleExtraDetail(btn,xid){
     .then(function(r){return r.json();})
     .then(function(a){
       if(!a||a.error){ det.innerHTML='<div style="color:var(--mut);font-size:12px;padding:4px 0">Analyse indisponible pour cette sortie.</div>'; return; }
+      _exActCache[xid]=a;
       var isRide=(e.sport==="velo_ht"||e.sport==="velo_route");
-      var html=e.sport==="hiit"?coachHiit(a):(isRide?coachRide(a):coachRun(a,"fond"));
+      var html=e.sport==="hiit"?coachHiit(a):(isRide?coachRide(a):coachRun(a,"fond",runIntent(e),e));
       _exDetCache[xid]=html; det.innerHTML=html;
     })
     .catch(function(){ det.innerHTML='<div style="color:var(--mut);font-size:12px;padding:4px 0">⚠️ Réseau — réessaie.</div>'; });

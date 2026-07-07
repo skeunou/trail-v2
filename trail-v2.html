@@ -1612,7 +1612,7 @@ function coachRun(a,typeKey,intent,e){
   if(hot && z.z>2) rows+='<div class="row"><span style="font-size:12px;color:var(--mut);line-height:1.4">⚠️ '+Math.round(a.temp)+'° : une partie de la FC haute est thermique. En chaleur, <b>ralentis pour tenir la zone</b> au lieu de tenir l\'allure.</span><b></b></div>';
   rows+=coachWeekCtx(a);
   rows+='</div>';
-  return rows+coachTerrain(a);
+  return rows+coachTerrain(a)+(e?'<div class="exLaius" style="margin-top:8px"></div>':'');
 }
 // B — analyse terrain : VAM en montée, allure en descente/plat (que du mesuré, via splits elev/d)
 function coachTerrain(a){
@@ -2848,13 +2848,48 @@ function renderExtraIntent(btn,xid,type){
   var a=_exActCache[xid]; if(!e||!a)return;
   var html=coachRun(a,"fond",runIntent(e),e);
   _exDetCache[xid]=html; det.innerHTML=html;
+  var pbox=det.querySelector('.exLaius'); if(pbox) fillExtraProseBox(pbox,e,a,false);
+}
+var _exProseCache={};
+// Mot du coach IA (Haiku) sur une activité hors-plan — juge selon la NATURE déclarée
+function fillExtraProseBox(box,e,a,force){
+  if(!box||!e||!a)return;
+  var intent=runIntent(e), key=e.xid+"_"+intent;
+  if(!force && _exProseCache[key]){ box.innerHTML=_exProseCache[key]; return; }
+  box.innerHTML='<div style="color:var(--mut);font-size:12px;padding:6px 0">⌁ Le coach rédige…</div>';
+  var facts="Nature de la séance déclarée par l'athlète : "+RUN_INTENTS[intent].head+" ("+RUN_INTENTS[intent].hint+").\n"+coachFactsText(a,"fond");
+  var sys="Tu es le coach trail personnel de Laurent (athlète diesel d'ultra-endurance, prépare l'UT4M 180 en 2027, vigilance permanente = pubalgie / score ZP). Tu commentes UNE séance de course. RÈGLES ABSOLUES : (1) appuie-toi UNIQUEMENT sur les données chiffrées fournies, n'invente AUCUN chiffre ni fait absent ; (2) la séance a une NATURE déclarée (EF, Sortie longue, Tempo, Qualité) : juge-la au regard de CETTE intention, jamais d'un standard EF générique — une FC en Z3 sur une Sortie longue n'est pas 'trop haute', c'est souvent normal ; (3) ton direct de coach à athlète, tutoiement, français ; (4) 4 à 6 phrases en prose continue, pas de liste ni de titre ; (5) relie les chiffres entre eux et termine par 1 à 2 réglages concrets pour la prochaine fois ; pas de motivation creuse.";
+  fetch(GEN,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+    model:"claude-haiku-4-5",max_tokens:500,system:sys,
+    messages:[{role:"user",content:"DONNÉES MESURÉES (n'utilise rien d'autre) :\n"+facts+"\n\nRédige le mot du coach sur cette séance."+(force?" Reformule différemment.":"")}]
+  })})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    var txt=(d&&d.content)?d.content.map(function(c){return c.text||"";}).join("").trim():"";
+    if(!txt){ box.innerHTML='<div style="color:var(--mut);font-size:12px;padding:4px 0">Mot du coach indisponible (réessaie).</div>'; return; }
+    var htmlBlock='<div class="summary" style="border-left:3px solid var(--orange);padding:12px 13px">'+
+      '<div style="font-weight:700;color:var(--orange);font-size:11px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px">Le mot du coach</div>'+
+      '<div style="font-size:13.5px;line-height:1.6;white-space:pre-wrap">'+txt.replace(/</g,"&lt;")+'</div>'+
+      '<button class="btn btn-ghost" style="margin-top:9px;font-size:11.5px;padding:5px 11px" onclick="regenExtraProse(this,\''+e.xid+'\')">⟳ Régénérer</button></div>';
+    _exProseCache[key]=htmlBlock; box.innerHTML=htmlBlock;
+  })
+  .catch(function(){ box.innerHTML='<div style="color:var(--mut);font-size:12px;padding:4px 0">⚠️ Réseau — réessaie.</div>'; });
+}
+function regenExtraProse(btn,xid){
+  var box=btn&&btn.closest&&btn.closest('.exLaius'); if(!box)return;
+  var e=null; extrasGet().forEach(function(x){if(x.xid===xid)e=x;});
+  var a=_exActCache[xid]; if(!e||!a)return;
+  fillExtraProseBox(box,e,a,true);
 }
 function toggleExtraDetail(btn,xid){
   var det=btn&&btn.nextElementSibling;
   if(!det)return;
   if(det.style.display!=="none"){ det.style.display="none"; btn.textContent="+ détails coach"; return; }
   det.style.display="block"; btn.textContent="− masquer";
-  if(_exDetCache[xid]){ det.innerHTML=_exDetCache[xid]; return; }
+  if(_exDetCache[xid]){ det.innerHTML=_exDetCache[xid];
+    var ce=null; extrasGet().forEach(function(x){if(x.xid===xid)ce=x;});
+    var cbox=det.querySelector('.exLaius'); if(cbox&&ce&&_exActCache[xid]) fillExtraProseBox(cbox,ce,_exActCache[xid],false);
+    return; }
   var e=null; extrasGet().forEach(function(x){if(x.xid===xid)e=x;});
   if(!e||!e.sid){ det.innerHTML='<div style="color:var(--mut);font-size:12px;padding:4px 0">Pas de données fines (activité manuelle).</div>'; return; }
   if(!stravaToken){ det.innerHTML='<div style="color:var(--mut);font-size:12px;padding:4px 0">Connecte Strava pour l\'analyse détaillée.</div>'; return; }
@@ -2867,6 +2902,7 @@ function toggleExtraDetail(btn,xid){
       var isRide=(e.sport==="velo_ht"||e.sport==="velo_route");
       var html=e.sport==="hiit"?coachHiit(a):(isRide?coachRide(a):coachRun(a,"fond",runIntent(e),e));
       _exDetCache[xid]=html; det.innerHTML=html;
+      var pbox=det.querySelector('.exLaius'); if(pbox) fillExtraProseBox(pbox,e,a,false);
     })
     .catch(function(){ det.innerHTML='<div style="color:var(--mut);font-size:12px;padding:4px 0">⚠️ Réseau — réessaie.</div>'; });
 }

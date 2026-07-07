@@ -993,6 +993,7 @@ function renderSLWeek(){ renderAFaire(); }
 function afaireBtn(o){
   var accent=o.done?"var(--grn)":"var(--acid)";
   return '<button style="background:var(--paper);border:1px solid var(--line);border-left:4px solid '+accent+';border-radius:12px;padding:12px 13px;text-align:left;cursor:pointer;font-family:inherit" onclick="'+o.onclick+'">'+
+    (o.tag?'<div style="font-size:9px;font-weight:800;letter-spacing:.6px;color:var(--mut);text-transform:uppercase;margin-bottom:5px">'+o.tag+'</div>':'')+
     (o.done?'<div style="font-size:10.5px;font-weight:800;color:var(--grn);letter-spacing:.5px;margin-bottom:4px">✓ FAIT</div>':'')+
     '<div style="font-size:14px;font-weight:700;line-height:1.2;color:var(--ink)">'+o.label+'</div>'+
     '<div style="font-size:11px;color:var(--mut);margin-top:5px">'+o.sub+'</div></button>';
@@ -1009,10 +1010,10 @@ function renderAFaire(){
   box.innerHTML='<div class="card" style="padding:13px;margin-top:10px">'+
     '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px">À FAIRE</div><div style="font-size:10.5px;color:var(--mut)">cette semaine · où tu veux</div></div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
-      afaireBtn({label:"Sortie longue",sub:slSub,done:!!slE,onclick:"openSL()"})+
-      afaireBtn({label:"Qualité",sub:vSub,done:!!vE,onclick:"openVMA()"})+
-      afaireBtn({label:ra.name,sub:ra.blocks.length+" blocs · "+(ra.cat==="A"?"force":"puissance / access."),done:slotDone(1),onclick:(slotDone(1)?"reviewWeeklyRenfo":"startWeeklyRenfo")+"(1)"})+
-      afaireBtn({label:rb.name,sub:rb.blocks.length+" blocs · "+(rb.cat==="A"?"force":"puissance / access."),done:slotDone(2),onclick:(slotDone(2)?"reviewWeeklyRenfo":"startWeeklyRenfo")+"(2)"})+
+      afaireBtn({tag:"Sortie longue",label:"Sortie longue",sub:slSub,done:!!slE,onclick:"openSL()"})+
+      afaireBtn({tag:"VMA",label:"Qualité",sub:vSub,done:!!vE,onclick:"openVMA()"})+
+      afaireBtn({tag:"Renfo 1/2",label:ra.name,sub:ra.blocks.length+" blocs · "+(ra.cat==="A"?"force":"puissance / access."),done:slotDone(1),onclick:(slotDone(1)?"reviewWeeklyRenfo":"startWeeklyRenfo")+"(1)"})+
+      afaireBtn({tag:"Renfo 2/2",label:rb.name,sub:rb.blocks.length+" blocs · "+(rb.cat==="A"?"force":"puissance / access."),done:slotDone(2),onclick:(slotDone(2)?"reviewWeeklyRenfo":"startWeeklyRenfo")+"(2)"})+
     '</div>'+
     '<div style="font-size:10.5px;color:var(--mut);margin-top:9px">Longue · VMA · 2 renfos — à poser quand ta vie le permet. Nouvelle paire de renfos chaque lundi.</div>'+
     '<div id="afaireDetail"></div></div>';
@@ -2781,7 +2782,7 @@ function extraCard(e){
   if(e.dplus) stats+=(stats?' · ':'')+e.dplus+' m D+';
   if(e.note) stats+=(stats?' · ':'')+e.note;
   var src=e.manual?'<span style="color:var(--mut);font-size:10px"> · manuel</span>':'';
-  var detailBtn = e.sid ? '<button class="btn btn-ghost" style="width:100%;margin-top:9px;font-size:12.5px;padding:7px" onclick="toggleExtraDetail(\''+e.xid+'\')" id="exbtn-'+e.xid+'">+ détails coach</button><div id="exdet-'+e.xid+'" style="display:none;margin-top:8px"></div>' : '';
+  var detailBtn = e.sid ? '<button class="btn btn-ghost" style="width:100%;margin-top:9px;font-size:12.5px;padding:7px" onclick="toggleExtraDetail(this,\''+e.xid+'\')" id="exbtn-'+e.xid+'">+ détails coach</button><div id="exdet-'+e.xid+'" style="display:none;margin-top:8px"></div>' : '';
   return '<div class="card" style="border-left:3px solid var(--blue);padding:12px 14px;margin-top:8px">'+
     '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
     '<div><div style="font-weight:700">'+sp.ic+' '+(extraLiveName(e)||sp.l)+' · '+fmtMin(e.durMin)+src+'</div>'+
@@ -2790,11 +2791,11 @@ function extraCard(e){
     '</div>'+coachExtra(e)+detailBtn+'</div>';
 }
 var _exDetCache={};
-function toggleExtraDetail(xid){
-  var det=document.getElementById("exdet-"+xid), btn=document.getElementById("exbtn-"+xid);
+function toggleExtraDetail(btn,xid){
+  var det=btn&&btn.nextElementSibling;
   if(!det)return;
-  if(det.style.display!=="none"){ det.style.display="none"; if(btn)btn.textContent="+ détails coach"; return; }
-  det.style.display="block"; if(btn)btn.textContent="− masquer";
+  if(det.style.display!=="none"){ det.style.display="none"; btn.textContent="+ détails coach"; return; }
+  det.style.display="block"; btn.textContent="− masquer";
   if(_exDetCache[xid]){ det.innerHTML=_exDetCache[xid]; return; }
   var e=null; extrasGet().forEach(function(x){if(x.xid===xid)e=x;});
   if(!e||!e.sid){ det.innerHTML='<div style="color:var(--mut);font-size:12px;padding:4px 0">Pas de données fines (activité manuelle).</div>'; return; }

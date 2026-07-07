@@ -992,7 +992,7 @@ function renderRenfoWeek(){ renderAFaire(); }
 function renderSLWeek(){ renderAFaire(); }
 function afaireBtn(o){
   var accent=o.done?"var(--grn)":"var(--acid)";
-  return '<button style="background:var(--paper);border:1px solid var(--line);border-left:4px solid '+accent+';border-radius:12px;padding:12px 13px;text-align:left;cursor:pointer;font-family:inherit" onclick="'+o.onclick+'">'+
+  return '<button style="display:flex;flex-direction:column;justify-content:flex-start;background:var(--paper);border:1px solid var(--line);border-left:4px solid '+accent+';border-radius:12px;padding:12px 13px;text-align:left;cursor:pointer;font-family:inherit" onclick="'+o.onclick+'">'+
     (o.tag?'<div style="font-size:9px;font-weight:800;letter-spacing:.6px;color:var(--mut);text-transform:uppercase;margin-bottom:5px">'+o.tag+'</div>':'')+
     (o.done?'<div style="font-size:10.5px;font-weight:800;color:var(--grn);letter-spacing:.5px;margin-bottom:4px">✓ FAIT</div>':'')+
     '<div style="font-size:14px;font-weight:700;line-height:1.2;color:var(--ink)">'+o.label+'</div>'+

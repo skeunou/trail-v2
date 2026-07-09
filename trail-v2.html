@@ -270,6 +270,7 @@
     </div>
     <div id="extrasBox"></div>
     <div id="slWeek"></div>
+    <div id="suppHome"></div>
     <div id="renfoWeek"></div>
     <div id="loadCard"></div>
     <div class="card stravacard">
@@ -1993,6 +1994,7 @@ function renderToday(){
   renderLoadCard();
   renderExtras();
   renderRenfoWeek();
+  renderSuppHome();
   renderSLWeek();
 }
 var weekOffset=0;
@@ -2197,7 +2199,6 @@ function openSheet(k,focus){
     btns='<button class="btn btn-ghost" onclick="closeSheet()">Fermer</button><button class="btn btn-go" onclick="openForm()">AJOUTER LE RESSENTI</button>';
   } else {
     if(hasPlayer(s.typeKey)) playBtn='<button class="btn btn-orange" style="margin-bottom:8px" onclick="startPlayer(\''+k+'\')">▶ DÉMARRER (guidé · chrono)</button>';
-    playBtn+='<div id="suppZone">'+suppBtn(k)+'</div>';
     btns='<button class="btn btn-ghost" onclick="closeSheet()">Fermer</button><button class="btn btn-go" onclick="openForm()">'+(hasPlayer(s.typeKey)?'VALIDER À LA MAIN':'VALIDER')+'</button>';
   }
   document.getElementById("shSummary").innerHTML=sum;
@@ -2266,6 +2267,13 @@ function startPlayer(k){
   renderSeg();
 }
 function suppBtn(k){ return '<button class="btn btn-go" style="background:var(--purp);margin-top:6px" onclick="chooseSupp(\''+k+'\')">⚡ WOD / RENFO SUPPLÉMENTAIRE</button>'; }
+function renderSuppHome(){
+  var z=document.getElementById("suppHome"); if(!z)return;
+  var k=iso(today);
+  z.innerHTML='<div class="card" style="padding:13px;margin-top:10px">'+
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px">EN PLUS</div><div style="font-size:10.5px;color:var(--mut)">optionnel · aujourd\'hui</div></div>'+
+    '<div id="suppZone">'+suppBtn(k)+'</div></div>';
+}
 function resetSupp(k){ var z=document.getElementById("suppZone"); if(z)z.innerHTML=suppBtn(k); }
 function chooseSupp(k){
   var z=document.getElementById("suppZone"); if(!z)return;

@@ -151,33 +151,6 @@
   .alert{background:#fff4f3;border:1px solid #f6cfca;border-radius:12px;padding:11px 13px;font-size:13px;color:#9a3027;line-height:1.45;margin-top:8px}
 
   /* nav */
-  /* ===== MODULE 10 TRACTIONS ===== */
-  .pullgauge{display:flex;align-items:flex-end;gap:14px;margin-bottom:12px}
-  .pullgauge .now{font-family:'Bebas Neue',sans-serif;font-size:64px;line-height:.8;color:var(--ink)}
-  .pullgauge .goal{font-size:14px;color:var(--ink2);font-weight:700;padding-bottom:8px}
-  .pullbar{height:12px;background:var(--bg);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:4px 0 6px}
-  .pullbar>i{display:block;height:100%;background:var(--acid);border-radius:999px;transition:width .4s}
-  .pullstep{display:flex;align-items:center;gap:10px}
-  .pullstep button{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--paper);font-size:22px;font-weight:800;color:var(--ink);cursor:pointer;line-height:1}
-  .pullstep .val{font-family:'Bebas Neue',sans-serif;font-size:34px;min-width:34px;text-align:center;color:var(--ink)}
-  .gtgbig{background:var(--acid);border-radius:20px;padding:18px;text-align:center;cursor:pointer;user-select:none;box-shadow:var(--shadow)}
-  .gtgbig:active{transform:scale(.99)}
-  .gtgbig .cnt{font-family:'Bebas Neue',sans-serif;font-size:72px;line-height:.85;color:#1a1d12}
-  .gtgbig .cnt small{font-size:30px;opacity:.55}
-  .gtgbig .lbl{font-size:13px;font-weight:800;letter-spacing:.5px;color:#1a1d12;text-transform:uppercase;margin-top:4px}
-  .gtghint{font-size:12.5px;color:var(--ink2);text-align:center;margin-top:9px;line-height:1.45}
-  .brick{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
-  .brick:last-child{border-bottom:none}
-  .brick .chk{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;font-weight:800}
-  .brick.done .chk{background:var(--grn);border-color:var(--grn)}
-  .brick .bt{font-weight:800;font-size:14.5px;color:var(--ink)}
-  .brick .bd{font-size:12.5px;color:var(--ink2);margin-top:1px}
-  .ptable{width:100%;border-collapse:collapse;font-size:13px}
-  .ptable th{text-align:left;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--mut);font-weight:800;padding:6px 4px;border-bottom:1px solid var(--line)}
-  .ptable td{padding:9px 4px;border-bottom:1px solid var(--line);color:var(--ink2);font-weight:600}
-  .ptable td b{color:var(--ink);font-family:'Bebas Neue',sans-serif;font-size:19px;font-weight:400}
-  .ptesthint{background:var(--acid);color:#1a1d12;border-radius:12px;padding:10px 13px;font-size:12.5px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;line-height:1.4}
-
   .nav{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;z-index:40}
   .nav button{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--mut);font-family:'DM Sans',sans-serif}
   .nav button.on{color:var(--ink)}
@@ -311,13 +284,6 @@
     </div>
     <div class="card"><div class="empty" id="logEmpty">Aucune séance validée pour l'instant.<br>Valide ta première depuis l'accueil.</div><div id="logList"></div></div>
   </section>
-  <section class="view" id="v-pull">
-    <div class="topline">
-      <div><div class="eyebrow">Objectif force</div><div class="bigtitle bebas">10 TRACTIONS</div></div>
-      <div class="blockbadge">Strict</div>
-    </div>
-    <div id="pullBody"></div>
-  </section>
 </div>
 
 <!-- SHEET -->
@@ -378,14 +344,13 @@
   <button id="nav-week" onclick="nav('week')"><span class="ni">▦</span><span class="nl">Semaine</span></button>
   <button id="nav-horizon" onclick="nav('horizon')"><span class="ni">⛰</span><span class="nl">Horizon</span></button>
   <button id="nav-log" onclick="nav('log')"><span class="ni">▤</span><span class="nl">Historique</span></button>
-  <button id="nav-pull" onclick="nav('pull')"><span class="ni">💪</span><span class="nl">Tractions</span></button>
 </nav>
 
 <script>
 /* ================= AUDIO + WAKELOCK ================= */
 var actx=null;
 function unlockAudio(){ if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}} }
-function beep(f,d){ if(!actx)return; try{var o=actx.createOscillator(),g=actx.createGain();o.type='sine';o.frequency.value=f;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(.0001,actx.currentTime);g.gain.exponentialRampToValueAtTime(.9,actx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);o.start();o.stop(actx.currentTime+d);}catch(e){} }
+function beep(f,d){ if(!actx)return; try{var o=actx.createOscillator(),g=actx.createGain();o.type='sine';o.frequency.value=f;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(.0001,actx.currentTime);g.gain.exponentialRampToValueAtTime(.5,actx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);o.start();o.stop(actx.currentTime+d);}catch(e){} }
 function dbeep(){ beep(880,.16); setTimeout(function(){beep(1100,.2);},170); }
 var wl=null; async function reqWake(){ try{ if('wakeLock' in navigator) wl=await navigator.wakeLock.request('screen'); }catch(e){} }
 document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible' && document.getElementById('player').classList.contains('on')) reqWake(); });
@@ -580,6 +545,7 @@ function gen(d){
   // Titre façon Strava : "S1 — EF 30' Z2" (runs) · sinon le label simple
   o.displayTitle = (o.sid && o.short) ? (o.sid+" — "+o.short) : o.label;
   o.stravaName  = (o.sid && o.short) ? (o.sid+" - "+o.short) : "";
+  o.linkid = isRun(o.typeKey) ? ("plan:"+iso(d)) : ""; // id de liaison stable (indépendant du mode manuel/auto)
   if(wi.deload) o.detail.push("⚠️ SEMAINE ALLÈGEMENT — tu dois te sentir soulagé, pas déçu.");
   return o;
 }
@@ -787,20 +753,7 @@ var RENFO_SUPP_VAC=[
     amrap:{kind:"amrap",sec:600,label:"Complémentaire",moves:[
       ["A","30 s Planche iso","neutre"],["B","15 Face pull band","rotation externe"],["C","20 Mountain climbers","bassin bas"]]}}
 ];
-/* Échauffement HAUT DU CORPS (accent haut) — mobilité épaule/thoracique + activation dorsale, zéro impact */
-var TF_WARM_HAUT=[
-  [ {name:"Cercles de bras + rotations d'épaules",cue:"Avant puis arrière, amplitude progressive, relâché.",reps:"15 / sens"},
-    {name:"Band pull-apart",cue:"Élastique tendu devant, serre les omoplates, coudes semi-tendus.",reps:"15"},
-    {name:"Dislocations élastique (ou bâton)",cue:"Bras tendus, passe l'élastique derrière la tête et reviens, lent.",reps:"10"},
-    {name:"Chat-vache thoracique",cue:"Mobilise le haut du dos, respire, amplitude complète.",reps:"8 cycles"},
-    {name:"Pompes tempo montée en température",cue:"3s à la descente, corps gainé, amplitude.",reps:"8"} ],
-  [ {name:"Cercles poignets + coudes",cue:"Assouplis les articulations dans les deux sens.",reps:"15 / sens"},
-    {name:"Face pull élastique léger",cue:"Coudes hauts, rotation externe, omoplates basses.",reps:"15"},
-    {name:"Open book (rotation thoracique au sol)",cue:"Sur le côté, ouvre le buste, suis la main du regard.",reps:"6 / côté"},
-    {name:"Activation dorsale suspendue (scapular)",cue:"Suspendu, descends les omoplates sans plier les bras.",reps:"8"},
-    {name:"Pompes lentes",cue:"Corps gainé, amplitude complète, contrôle.",reps:"8"} ]
-];
-function warmSegRenfo(accent){ var pool=(accent==="haut")?TF_WARM_HAUT:TF_WARM; return {kind:"renfowarm",rounds:2,label:"Échauffement",items:pool[weekCounter()%pool.length]}; }
+function warmSegRenfo(){ return {kind:"renfowarm",rounds:2,label:"Échauffement",items:TF_WARM[weekCounter()%TF_WARM.length]}; }
 var lastRenfoName="";
 // Garantit un tirage HORIZONTAL dans la séance (règle : rowing horizontal obligatoire)
 function ensureTirage(sess){
@@ -829,7 +782,7 @@ function buildSuppRenfo(signal){
   }
   lastRenfoName=bank[idx].name;
   var r=ensureTirage(bank[idx]);
-  var warm=[warmSegRenfo(accent)];
+  var warm=[warmSegRenfo()];
   var emom=Object.assign({},r.emom,{minutes:rnd([12,14,16])});
   var amrap=Object.assign({},r.amrap,{sec:rnd([480,600,720])});
   var main, pick=Math.floor(Math.random()*5);
@@ -1555,7 +1508,7 @@ function stravaCompare(s,lk){
   h+='<div class="row"><span style="color:var(--mut);font-size:11px;max-width:70%">'+lk.name+'</span><b></b></div>';
   h+='</div>'; return h;
 }
-function sessionDone(s){return !!planEntryFor(s.dateKey)||extrasForDay(s.dateKey).length>0||(s.plan&&s.plan.sid&&isLinked(s.plan.sid));}
+function sessionDone(s){return !!planEntryFor(s.dateKey)||extrasForDay(s.dateKey).length>0||(s.plan&&s.plan.linkid&&isLinked(s.plan.linkid));}
 
 /* ===== ANALYSE COACH (V3+) ===== */
 function hrZone(hr){
@@ -1931,11 +1884,11 @@ function runActsForLink(){ return lastActs.filter(function(a){ return actMatches
 function renderPlanLink(s){
   var el=document.getElementById("shPlanLink"); if(!el)return;
   var isRun=(s.typeKey==="fond"||s.typeKey==="longue"||s.typeKey==="cotes");
-  if(!isRun||!s.plan.sid){ el.innerHTML=""; return; }
+  if(!isRun||!s.plan.linkid){ el.innerHTML=""; return; }
   if(!stravaToken){ el.innerHTML='<div style="color:var(--mut);font-size:12px;margin-top:6px">Connecte Strava pour l\'analyse coach de cette séance.</div>'; return; }
-  var lk=linkedData(s.plan.sid);
+  var lk=linkedData(s.plan.linkid);
   if(lk){
-    el.innerHTML='<button class="btn btn-ghost" style="width:100%;font-size:11.5px;padding:6px;margin-top:6px;color:var(--mut)" onclick="unlinkPlan(\''+s.plan.sid+'\',\''+s.dateKey+'\')">↗ Lié à « '+(lk.name||"Strava")+' » · délier</button>';
+    el.innerHTML='<button class="btn btn-ghost" style="width:100%;font-size:11.5px;padding:6px;margin-top:6px;color:var(--mut)" onclick="unlinkPlan(\''+s.plan.linkid+'\',\''+s.dateKey+'\')">↗ Lié à « '+(lk.name||"Strava")+' » · délier</button>';
   } else {
     el.innerHTML='<button class="btn btn-ghost" style="width:100%;font-size:12.5px;padding:8px;margin-top:6px" onclick="showPlanLinkList(\''+s.dateKey+'\')">🔗 Lier à ma séance Strava (analyse coach)</button><div id="shPlanLinkList"></div>';
   }
@@ -1946,7 +1899,7 @@ function showPlanLinkList(k){
   if(!acts.length){ el.innerHTML='<div style="color:var(--mut);font-size:12px;padding:6px 0">Aucune course Strava récente. Recharge Strava (↻).</div>'; return; }
   el.innerHTML=acts.map(function(a){
     var d=a.date?a.date.split("-").reverse().slice(0,2).join("/"):"";
-    return '<div class="card" style="padding:9px 12px;margin-top:6px;cursor:pointer" onclick="linkPlanStrava(\''+k+'\',\''+s.plan.sid+'\',\''+a.id+'\')"><div style="font-weight:700;font-size:13px">'+(a.name||"Course")+'</div><div style="color:var(--mut);font-size:11px">'+d+(a.km?' · '+a.km+' km':'')+' · '+fmtMin(a.movingMin)+(a.hrAvg?' · FC '+a.hrAvg:'')+'</div></div>';
+    return '<div class="card" style="padding:9px 12px;margin-top:6px;cursor:pointer" onclick="linkPlanStrava(\''+k+'\',\''+s.plan.linkid+'\',\''+a.id+'\')"><div style="font-weight:700;font-size:13px">'+(a.name||"Course")+'</div><div style="color:var(--mut);font-size:11px">'+d+(a.km?' · '+a.km+' km':'')+' · '+fmtMin(a.movingMin)+(a.hrAvg?' · FC '+a.hrAvg:'')+'</div></div>';
   }).join("")+'<button class="btn btn-ghost" style="width:100%;font-size:12px;padding:6px;margin-top:6px" onclick="renderPlanLink(sessionFor(parse(\''+k+'\')))">← annuler</button>';
 }
 function linkPlanStrava(k,sid,id){
@@ -2143,7 +2096,7 @@ function renderCoachRead(){
   var mon=new Date(today); mon.setHours(0,0,0,0); mon.setDate(today.getDate()-(dowMon(today)-1));
   var easyOk=0,easyTot=0,cote=0,hi=0;
   for(var i=0;i<7;i++){
-    var d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i), s=sessionFor(d), sid=s.plan.sid;
+    var d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i), s=sessionFor(d), sid=s.plan.linkid;
     if(!sid||!isLinked(sid))continue;
     var lk=linkedData(sid); if(!lk||!lk.hrAvg)continue;
     if(s.typeKey==="fond"||s.typeKey==="longue"){ easyTot++; if(hrZone(lk.hrAvg).z<=2)easyOk++; else hi++; }
@@ -2178,7 +2131,7 @@ function openSheet(k,focus){
   document.getElementById("shForm").style.display="none";
   document.getElementById("shFields").innerHTML="";
   // summary if done
-  var linked = s.plan.sid ? linkedData(s.plan.sid) : null;
+  var linked = s.plan.linkid ? linkedData(s.plan.linkid) : null;
   var sum="", playBtn="", btns="";
   if(linked) sum+=stravaCompare(s,linked);
   if(editing){
@@ -2853,7 +2806,7 @@ function renderStravaCard(){
     if(tx) tx.innerHTML=""; /* bouton token retiré — réactiver via tokExportHTML() si besoin */ }
   else { stravaMsg("Strava à connecter"); document.getElementById("stravaGo").textContent='Connecter →'; var el=document.getElementById("stravaActs"); if(el)el.innerHTML=""; if(tx)tx.innerHTML=""; }
 }
-function nav(v){["today","week","horizon","log","pull"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("on",x===v);document.getElementById("nav-"+x).classList.toggle("on",x===v);});if(v==="week")renderWeekView();if(v==="horizon")renderHorizon();if(v==="log")renderLog();if(v==="pull")renderPull();window.scrollTo(0,0);}
+function nav(v){["today","week","horizon","log"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("on",x===v);document.getElementById("nav-"+x).classList.toggle("on",x===v);});if(v==="week")renderWeekView();if(v==="horizon")renderHorizon();if(v==="log")renderLog();window.scrollTo(0,0);}
 
 /* ===== UI ACTIVITÉS EXTRA (suivi hors plan) ===== */
 var addSport="course", addMode="strava", addShowAll=false, addDay=null;
@@ -3139,118 +3092,7 @@ function addManual(){
 }
 
 /* ================= INIT ================= */
-
-/* ===== MODULE 10 TRACTIONS ===== */
-var PULL_KEY="pullups:v1";
-function pullGet(){try{var o=JSON.parse(localStorage.getItem(PULL_KEY)||"null");if(o&&typeof o==="object")return o;}catch(e){}
-  return {max:2,maxDate:pullDay(),maxHist:[{d:pullDay(),m:2}],target:6,gtg:{},sessions:[]};}
-function pullSet(o){try{localStorage.setItem(PULL_KEY,JSON.stringify(o));}catch(e){}}
-function pullDay(dt){var d=dt||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-function pullDaysAgo(iso){var p=iso.split("-");var d=new Date(+p[0],+p[1]-1,+p[2]);return Math.floor((new Date(pullDay())-pullDay0(d))/86400000);}
-function pullDay0(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
-
-// dosage dérivé du max courant
-function pullRepsPerPass(m){return Math.max(1,Math.floor(m/2));}   // GTG ~50% du max
-function pullSubReps(m){return Math.max(1,m-1);}                    // séries sous-max
-function pullSubSets(nSessions){return Math.min(8,5+Math.floor(nSessions/2));} // +1 série / 2 séances, cap 8
-
-// semaine glissante (7 derniers jours)
-function pullWeekPasses(o){var t=0;for(var k in o.gtg){if(pullDaysAgo(k)>=0&&pullDaysAgo(k)<7)t+=o.gtg[k];}return t;}
-
-function pullGtgAdd(){var o=pullGet();var k=pullDay();o.gtg[k]=(o.gtg[k]||0)+1;pullSet(o);renderPull();}
-function pullGtgUndo(){var o=pullGet();var k=pullDay();if(o.gtg[k]){o.gtg[k]=Math.max(0,o.gtg[k]-1);if(o.gtg[k]===0)delete o.gtg[k];pullSet(o);}renderPull();}
-
-// édition du max (stepper temporaire dans renderPull via variable module)
-var _pullEditMax=null;
-function pullMaxStep(delta){var o=pullGet();if(_pullEditMax===null)_pullEditMax=o.max;_pullEditMax=Math.max(0,Math.min(15,_pullEditMax+delta));renderPull();}
-function pullMaxSave(){var o=pullGet();if(_pullEditMax===null)return;o.max=_pullEditMax;o.maxDate=pullDay();o.maxHist=o.maxHist||[];o.maxHist.push({d:pullDay(),m:o.max});pullSet(o);_pullEditMax=null;renderPull();}
-function pullMaxCancel(){_pullEditMax=null;renderPull();}
-
-// séance dédiée du jour
-function pullBrick(b){var o=pullGet();var k=pullDay();o.sessions=o.sessions||[];var s=null;for(var i=0;i<o.sessions.length;i++){if(o.sessions[i].d===k){s=o.sessions[i];break;}}
-  if(!s){s={d:k,neg:false,sub:false,band:false};o.sessions.push(s);}s[b]=!s[b];pullSet(o);renderPull();}
-function pullTodaySession(o){var k=pullDay();o.sessions=o.sessions||[];for(var i=0;i<o.sessions.length;i++){if(o.sessions[i].d===k)return o.sessions[i];}return null;}
-
-function renderPull(){
-  var o=pullGet();var k=pullDay();
-  var max=o.max, todayPass=o.gtg[k]||0, rpp=pullRepsPerPass(max);
-  var pct=Math.min(100,Math.round(max/10*100));
-  var weekPass=pullWeekPasses(o);
-  var since=pullDaysAgo(o.maxDate);
-  var nSess=(o.sessions||[]).length;
-  var sess=pullTodaySession(o)||{neg:false,sub:false,band:false};
-  var subReps=pullSubReps(max), subSets=pullSubSets(nSess);
-  var h="";
-
-  // rappel test max
-  if(since>=14){h+='<div class="ptesthint">⏱ '+since+' jours depuis ton dernier test — refais un max strict pour voir la courbe monter.</div>';}
-
-  // BLOC 1 — jauge objectif
-  h+='<div class="card" style="margin-bottom:14px">';
-  h+='<div class="eyebrow" style="margin-bottom:8px">Où tu en es</div>';
-  if(_pullEditMax===null){
-    h+='<div class="pullgauge"><div class="now">'+max+'</div><div class="goal">/ 10 strict</div></div>';
-    h+='<div class="pullbar"><i style="width:'+pct+'%"></i></div>';
-    h+='<div style="display:flex;justify-content:space-between;align-items:center">';
-    h+='<div style="font-size:12px;color:var(--mut);font-weight:600">Testé il y a '+(since<=0?"aujourd\'hui":(since+" j"))+'</div>';
-    h+='<button class="btn btn-ghost" style="width:auto;padding:8px 14px;font-size:13px" onclick="pullMaxStep(0)">J\'ai retesté</button>';
-    h+='</div>';
-  }else{
-    h+='<div style="font-size:13px;color:var(--ink2);font-weight:700;margin-bottom:10px">Ton max strict aujourd\'hui ?</div>';
-    h+='<div class="pullstep" style="margin-bottom:12px"><button onclick="pullMaxStep(-1)">−</button><div class="val">'+_pullEditMax+'</div><button onclick="pullMaxStep(1)">+</button></div>';
-    h+='<div class="btn-row"><button class="btn btn-acid" onclick="pullMaxSave()">Enregistrer</button><button class="btn btn-ghost" onclick="pullMaxCancel()">Annuler</button></div>';
-  }
-  h+='</div>';
-
-  // BLOC 2 — GTG du jour
-  h+='<div class="card" style="margin-bottom:14px">';
-  h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px"><div class="eyebrow">Grease the groove · aujourd\'hui</div><div style="font-size:12px;color:var(--mut);font-weight:700">cible '+o.target+'</div></div>';
-  h+='<div class="gtgbig" onclick="pullGtgAdd()"><div class="cnt">'+todayPass+'<small>/'+o.target+'</small></div><div class="lbl">+1 passage · tape en passant devant la barre</div></div>';
-  h+='<div class="gtghint">'+rpp+' traction'+(rpp>1?'s':'')+' <b>parfaite'+(rpp>1?'s':'')+'</b> par passage (≈50% de ton max). Jamais dans le dur — tu repars frais.</div>';
-  if(todayPass>0){h+='<div style="text-align:center;margin-top:8px"><button class="btn btn-ghost" style="width:auto;padding:7px 16px;font-size:12.5px" onclick="pullGtgUndo()">− Annuler un passage</button></div>';}
-  h+='</div>';
-
-  // BLOC 3 — séance dédiée
-  h+='<div class="card" style="margin-bottom:14px">';
-  h+='<div class="eyebrow" style="margin-bottom:4px">Séance dédiée · 2×/sem</div>';
-  h+='<div style="font-size:12.5px;color:var(--ink2);margin-bottom:12px">Dosée sur ton max ('+max+'). Coche au fur et à mesure.</div>';
-  var bricks=[
-    ["neg","Négatives lestées du poids de corps","3-4 séries × 3-4 reps · descente 4-5 s contrôlées (saute en haut)"],
-    ["sub","Séries sous-max","<b>"+subSets+" séries × "+subReps+" rep"+(subReps>1?"s":"")+"</b> propres · repos 90 s · on ajoute des séries, pas des reps"],
-    ["band","Assistées élastique (Medium/Hard)","2 séries × 6-8 · amplitude complète, menton au-dessus de la barre"]
-  ];
-  for(var i=0;i<bricks.length;i++){var b=bricks[i];var on=sess[b[0]];
-    h+='<div class="brick'+(on?' done':'')+'" onclick="pullBrick(\''+b[0]+'\')"><div class="chk">'+(on?'✓':'')+'</div><div><div class="bt">'+b[1]+'</div><div class="bd">'+b[2]+'</div></div></div>';
-  }
-  h+='<div style="font-size:11.5px;color:var(--mut);margin-top:11px;line-height:1.45">+ ton rowing horizontal & face pull restent dans le renfo normal — base dos/coiffe.</div>';
-  h+='</div>';
-
-  // BLOC 4 — tableau de suivi
-  h+='<div class="card">';
-  h+='<div class="eyebrow" style="margin-bottom:10px">Progression du max</div>';
-  var hist=(o.maxHist||[]).slice().reverse();
-  if(hist.length<=1&&(!hist.length||hist[0].m===2)){
-    h+='<div style="font-size:13px;color:var(--ink2);line-height:1.5">Départ : <b>'+max+' strict</b>. Enregistre chaque nouveau test pour voir la courbe grimper vers 10.</div>';
-  }else{
-    h+='<table class="ptable"><thead><tr><th>Date</th><th>Max</th><th>Δ</th></tr></thead><tbody>';
-    for(var j=0;j<hist.length;j++){var e=hist[j];var prev=hist[j+1];var delta=prev?(e.m-prev.m):null;
-      var dd=e.d.split("-");var lbl=dd[2]+"/"+dd[1];
-      var dcol=delta>0?'var(--grn)':(delta<0?'var(--red)':'var(--mut)');
-      var dtxt=delta===null?'—':(delta>0?'+'+delta:(''+delta));
-      h+='<tr><td>'+lbl+'</td><td><b>'+e.m+'</b></td><td style="color:'+dcol+';font-weight:800">'+dtxt+'</td></tr>';
-    }
-    h+='</tbody></table>';
-  }
-  h+='<div style="display:flex;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">';
-  h+='<div><div style="font-size:11px;color:var(--mut);font-weight:800;letter-spacing:.5px;text-transform:uppercase">Passages (7 j)</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:30px;color:var(--ink);line-height:1">'+weekPass+'</div></div>';
-  h+='<div style="text-align:right"><div style="font-size:11px;color:var(--mut);font-weight:800;letter-spacing:.5px;text-transform:uppercase">Séances dédiées</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:30px;color:var(--ink);line-height:1">'+nSess+'</div></div>';
-  h+='</div>';
-  h+='</div>';
-
-  document.getElementById("pullBody").innerHTML=h;
-}
-
-renderToday(); renderHorizon(); renderLog(); renderStravaCard(); renderPull();
+renderToday(); renderHorizon(); renderLog(); renderStravaCard();
 if(stravaToken) loadStravaData();
 initCloud();
 /* initPush(); — rappel notifs désactivé (ne fonctionnait pas). Réactiver cette ligne + le bouton cloche pour le remettre. */

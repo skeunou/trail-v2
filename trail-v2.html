@@ -989,7 +989,9 @@ var EXBANK=[
 ];
 var EXCATS=["Tirage","Poussée & bras","Squat & genou","Charnière & fessiers","Unilatéral & step","Hanche & stabilité","Mollets & pied","Pliométrie","Gainage","Portés"];
 function exBySlug(s){ for(var i=0;i<EXBANK.length;i++){ if(EXBANK[i].s===s) return EXBANK[i]; } return null; }
-var PERSO_SEL=[];
+var PERSO_KEY="renfo:perso:v1";
+var PERSO_SEL=(function(){ try{ var a=JSON.parse(localStorage.getItem(PERSO_KEY)||"[]"); return Array.isArray(a)?a.filter(function(s){return exBySlug(s);}):[]; }catch(e){ return []; } })();
+function persoSave(){ try{ localStorage.setItem(PERSO_KEY, JSON.stringify(PERSO_SEL)); }catch(e){} }
 /* ---- grille de sélection ---- */
 function persoGridHTML(){
   var h='<div style="font-size:11px;color:var(--mut);line-height:1.45;margin:2px 0 10px">Coche ce que tu veux. <b>Conseillé : ~6 exos</b> — 2 force + 3 complémentaires + 1 gainage. Contrainte ZP non appliquée ici (sélection consciente).</div>';
@@ -1006,13 +1008,19 @@ function persoGridHTML(){
     }).join("")+'</div>';
   });
   h+='<div id="persoCount" style="text-align:center;font-size:12px;color:var(--mut);margin-top:10px"></div>';
+  h+='<button type="button" class="btn btn-ghost" style="width:100%;margin-top:6px;font-size:12px;padding:6px" onclick="persoClear()">Tout décocher</button>';
   return h;
 }
 function persoToggle(s){
   var i=PERSO_SEL.indexOf(s);
   if(i>=0) PERSO_SEL.splice(i,1); else PERSO_SEL.push(s);
   var el=document.getElementById("px-"+s); if(el) el.classList.toggle("on",PERSO_SEL.indexOf(s)>=0);
-  persoRefresh();
+  persoSave(); persoRefresh();
+}
+function persoClear(){
+  PERSO_SEL=[]; persoSave();
+  var pw=document.getElementById("persoWrap");
+  if(pw){ pw.innerHTML=persoGridHTML(); persoRefresh(); }
 }
 /* ---- check de cohérence NON BLOQUANT ---- */
 function persoCheck(){

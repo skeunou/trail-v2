@@ -205,6 +205,14 @@
   .plist .li{display:flex;gap:11px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
   .plist .li:last-child{border-bottom:none}
   .plist .li .k{font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--acid-d);min-width:22px}
+  /* ===== PICKER PERSONNALISER ===== */
+  .pxgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .pxit{display:flex;flex-direction:column;align-items:stretch;gap:3px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:5px;cursor:pointer;font-family:inherit;text-align:left;overflow:hidden}
+  .pxit img{width:100%;aspect-ratio:16/10;object-fit:contain;background:#fff;border-radius:6px}
+  .pxit .pxn{font-size:10.5px;font-weight:700;line-height:1.2;color:var(--ink)}
+  .pxit .pxr{font-size:9px;color:var(--mut);line-height:1.2}
+  .pxit.on{border-color:var(--acid);border-width:2px;padding:4px;background:#f7ffd9}
+  .pxit.on .pxn{color:#1a1d12}
   /* ===== RENFO : figurine + compteur série/récup + cue repliable ===== */
   .rfig{width:118px;height:132px;display:flex;align-items:center;justify-content:center}
   .rfig svg{width:100%;height:100%}
@@ -814,6 +822,7 @@ function ensureTirage(sess){
   return s;
 }
 function buildSuppRenfo(signal){
+  if(signal&&signal.custom&&signal.custom.length) return buildCustomRenfo(signal.custom);
   var flags=(signal&&signal.zones)||[];
   var accent=(signal&&signal.accent)||"full";
   var bankAll = vacMode ? RENFO_SUPP_VAC : RENFO_SUPP;
@@ -881,11 +890,198 @@ function pickLeastLoading(bank,kind,flags,lastIdx){
   if(!cand.length) cand=scored.filter(function(x){return x.sc===min;});
   return cand[Math.floor(Math.random()*cand.length)].i;
 }
+/* ============== PICKER « PERSONNALISER » — banque des 80 exos ==============
+   s=slug image (eximg/<s>.png) · n=nom · c=catégorie · r=rôle (force|comp|core)
+   p=pattern (pull|row|push|squat|hinge|uni|hip|calf|plyo|core|carry)
+   k=reps par défaut · q=cue court · h=true si haut du corps (choix échauffement)
+   ⚠️ La contrainte ZP n'est PAS appliquée ici : sélection consciente de Laurent. */
+var EXBANK=[
+/* — TIRAGE — */
+{s:"tractions-pronation",n:"Tractions pronation",c:"Tirage",r:"force",p:"pull",k:"6-8",q:"Amplitude complète, omoplates basses, pas d'à-coup.",h:1},
+{s:"tractions-supination",n:"Tractions supination",c:"Tirage",r:"force",p:"pull",k:"6-8",q:"Prise mains vers toi, coudes le long du corps.",h:1},
+{s:"tractions-prise-neutre",n:"Tractions prise neutre",c:"Tirage",r:"force",p:"pull",k:"6-8",q:"Prise marteau, la plus tolérante pour l'épaule.",h:1},
+{s:"dead-hang",n:"Dead hang",c:"Tirage",r:"comp",p:"pull",k:"30 s",q:"Suspendu, épaules actives (pas de haussement passif).",h:1},
+{s:"rowing-barre-buste-penche",n:"Rowing barre buste penché",c:"Tirage",r:"force",p:"row",k:"8-10",q:"Buste penché, dos gainé, tire vers le nombril.",h:1},
+{s:"rowing-haltere-unilateral",n:"Rowing haltère unilatéral",c:"Tirage",r:"force",p:"row",k:"10 /bras",q:"Tire vers la hanche, omoplate qui glisse.",h:1},
+{s:"trx-row",n:"TRX row",c:"Tirage",r:"comp",p:"row",k:"12",q:"Corps gainé, omoplates serrées en fin de tirage.",h:1},
+{s:"rowing-elastique",n:"Rowing élastique",c:"Tirage",r:"comp",p:"row",k:"15",q:"Coudes le long du corps, contrôle le retour.",h:1},
+{s:"renegade-row",n:"Renegade row",c:"Tirage",r:"comp",p:"row",k:"8 /bras",q:"Planche haute, bassin qui ne tourne pas.",h:1},
+{s:"face-pull-elastique",n:"Face pull élastique",c:"Tirage",r:"comp",p:"row",k:"15",q:"Coudes hauts, rotation externe, épaules santé.",h:1},
+{s:"rotation-externe-elastique",n:"Rotation externe élastique",c:"Tirage",r:"comp",p:"row",k:"15 /bras",q:"Coude collé au corps, mouvement lent, coiffe des rotateurs.",h:1},
+/* — POUSSÉE & BRAS — */
+{s:"pompes",n:"Pompes",c:"Poussée & bras",r:"comp",p:"push",k:"12-15",q:"Corps gainé d'un bloc, amplitude complète.",h:1},
+{s:"pompes-declinees",n:"Pompes déclinées",c:"Poussée & bras",r:"comp",p:"push",k:"10-12",q:"Pieds surélevés, accent haut des pectoraux et épaules.",h:1},
+{s:"dips",n:"Dips",c:"Poussée & bras",r:"force",p:"push",k:"8-10",q:"Descente contrôlée, épaules basses, pas de creux.",h:1},
+{s:"developpe-couche-halteres",n:"Développé couché haltères",c:"Poussée & bras",r:"force",p:"push",k:"8-10",q:"Omoplates serrées, trajectoire contrôlée.",h:1},
+{s:"developpe-incline-halteres",n:"Développé incliné haltères",c:"Poussée & bras",r:"force",p:"push",k:"8-10",q:"Banc incliné, amplitude, pas de rebond.",h:1},
+{s:"developpe-halteres-assis",n:"Développé haltères assis",c:"Poussée & bras",r:"force",p:"push",k:"8-10",q:"Dos calé, gainage, pas de cambrure.",h:1},
+{s:"developpe-militaire",n:"Développé militaire",c:"Poussée & bras",r:"force",p:"push",k:"8",q:"Barre au-dessus de la tête, fessiers et abdos serrés.",h:1},
+{s:"push-press",n:"Push press",c:"Poussée & bras",r:"force",p:"push",k:"8",q:"Les jambes donnent l'impulsion, verrouille en haut.",h:1},
+{s:"elevations-laterales",n:"Élévations latérales",c:"Poussée & bras",r:"comp",p:"push",k:"12-15",q:"Léger, contrôlé, pas d'élan du buste.",h:1},
+{s:"curls-halteres",n:"Curls haltères",c:"Poussée & bras",r:"comp",p:"push",k:"10-12",q:"Coudes fixes, contrôle la descente.",h:1},
+{s:"curl-marteau",n:"Curl marteau",c:"Poussée & bras",r:"comp",p:"push",k:"10-12",q:"Prise neutre, accent brachial et avant-bras (grip bâtons).",h:1},
+{s:"triceps-elastique",n:"Triceps élastique",c:"Poussée & bras",r:"comp",p:"push",k:"15",q:"Coudes collés, extension complète.",h:1},
+/* — SQUAT & GENOU — */
+{s:"back-squat",n:"Back squat",c:"Squat & genou",r:"force",p:"squat",k:"6-8",q:"Barre haute, profondeur, dos gainé.",h:0},
+{s:"front-squat",n:"Front squat",c:"Squat & genou",r:"force",p:"squat",k:"6",q:"Coudes hauts, buste droit, profondeur.",h:0},
+{s:"goblet-squat",n:"Goblet squat",c:"Squat & genou",r:"force",p:"squat",k:"10",q:"KB contre la poitrine, buste droit, descends bas.",h:0},
+{s:"split-squat-bulgare",n:"Split squat bulgare",c:"Squat & genou",r:"force",p:"uni",k:"8 /jambe",q:"Pied arrière sur le step, genou avant stable.",h:0},
+{s:"split-squat-excentrique",n:"Split squat excentrique",c:"Squat & genou",r:"force",p:"uni",k:"6 /jambe",q:"3-4 s à la descente : durabilité descente.",h:0},
+{s:"fente-avant-lestee",n:"Fente avant lestée",c:"Squat & genou",r:"comp",p:"uni",k:"10 /jambe",q:"Grand pas, genou aligné sur le pied.",h:0},
+{s:"fente-arriere-lestee",n:"Fente arrière lestée",c:"Squat & genou",r:"comp",p:"uni",k:"10 /jambe",q:"Descente contrôlée, buste droit, plus doux pour le genou.",h:0},
+{s:"fente-laterale-lestee",n:"Fente latérale lestée",c:"Squat & genou",r:"comp",p:"uni",k:"8 /côté",q:"Plan frontal : appuis de côté, dévers.",h:0},
+{s:"fente-laterale-lestee-kb",n:"Fente latérale lestée KB",c:"Squat & genou",r:"comp",p:"uni",k:"8 /côté",q:"KB en goblet, buste droit, pousse la hanche en arrière.",h:0},
+{s:"progression-pistol-sur-box",n:"Progression pistol sur box",c:"Squat & genou",r:"comp",p:"uni",k:"6 /jambe",q:"Assieds-toi sur la box, remonte sans élan.",h:0},
+{s:"montee-de-genou-lestee-sur-banc",n:"Montée de genou lestée sur banc",c:"Squat & genou",r:"comp",p:"uni",k:"10 /jambe",q:"Psoas : monte le genou haut, buste droit.",h:0},
+{s:"montee-de-genou-elastique-debout",n:"Montée de genou élastique debout",c:"Squat & genou",r:"comp",p:"uni",k:"15 /jambe",q:"Psoas contre résistance, appui stable.",h:0},
+/* — CHARNIÈRE & FESSIERS — */
+{s:"rdl-barre",n:"RDL barre",c:"Charnière & fessiers",r:"force",p:"hinge",k:"8",q:"Hanche en arrière, dos neutre, ischios sous tension.",h:0},
+{s:"souleve-de-terre-unilateral-db-kb",n:"Soulevé de terre unilatéral DB/KB",c:"Charnière & fessiers",r:"force",p:"hinge",k:"8 /jambe",q:"Équilibre, bassin qui ne tourne pas.",h:0},
+{s:"good-morning-elastique",n:"Good morning élastique",c:"Charnière & fessiers",r:"comp",p:"hinge",k:"15",q:"Charnière de hanche, dos gainé, jamais dans le rouge.",h:0},
+{s:"kb-swing-americain",n:"KB swing américain",c:"Charnière & fessiers",r:"force",p:"hinge",k:"15",q:"Propulsion de hanche, bras relâchés.",h:0},
+{s:"hip-thrust-barre",n:"Hip thrust barre",c:"Charnière & fessiers",r:"force",p:"hip",k:"10",q:"Pause 1 s en haut, verrouille les fessiers, menton rentré.",h:0},
+{s:"hip-thrust-unilateral",n:"Hip thrust unilatéral",c:"Charnière & fessiers",r:"comp",p:"hip",k:"10 /jambe",q:"Bassin de niveau, poussée talon.",h:0},
+{s:"pont-fessier-bilateral",n:"Pont fessier bilatéral",c:"Charnière & fessiers",r:"comp",p:"hip",k:"15",q:"Verrouille 1 s en haut, pas de cambrure lombaire.",h:0},
+{s:"pont-fessier-unilateral",n:"Pont fessier unilatéral",c:"Charnière & fessiers",r:"comp",p:"hip",k:"12 /jambe",q:"Bassin stable, poussée talon.",h:0},
+{s:"nordic-curl-ou-leg-curl-trx",n:"Nordic curl / leg curl TRX",c:"Charnière & fessiers",r:"force",p:"hinge",k:"6",q:"Excentrique ischios : freine le plus longtemps possible.",h:0},
+{s:"superman-extension-lombaire",n:"Superman — extension lombaire",c:"Charnière & fessiers",r:"comp",p:"hip",k:"12",q:"Extension douce, regard au sol, pas de à-coup.",h:0},
+/* — UNILATÉRAL & STEP — */
+{s:"step-up-explosif-sur-box",n:"Step-up explosif sur box",c:"Unilatéral & step",r:"force",p:"uni",k:"10 /jambe",q:"Montée explosive, extension complète de hanche.",h:0},
+{s:"step-down-freine-du-banc",n:"Step-down freiné du banc",c:"Unilatéral & step",r:"comp",p:"uni",k:"8 /jambe",q:"3 s à la descente, genou anti-valgus : durabilité descente.",h:0},
+{s:"equilibre-unipodal-reach",n:"Équilibre unipodal + reach",c:"Unilatéral & step",r:"comp",p:"uni",k:"8 /jambe",q:"Sur un pied, va chercher loin devant, cheville active.",h:0},
+{s:"equilibre-unipodal-sur-disque-de-glisse",n:"Équilibre unipodal sur disque",c:"Unilatéral & step",r:"comp",p:"uni",k:"30 s /jambe",q:"Instabilité : proprioception cheville, anti-entorse.",h:0},
+/* — HANCHE & STABILITÉ — */
+{s:"abduction-hanche-debout-elastique",n:"Abduction hanche debout élastique",c:"Hanche & stabilité",r:"comp",p:"hip",k:"15 /jambe",q:"Moyen fessier, bassin fixe, pas de bascule.",h:0},
+{s:"clamshell-leste-elastique",n:"Clamshell lesté élastique",c:"Hanche & stabilité",r:"comp",p:"hip",k:"15 /côté",q:"Ouvre le genou, bassin bien vertical.",h:0},
+{s:"monster-walk-elastique",n:"Monster walk élastique",c:"Hanche & stabilité",r:"comp",p:"hip",k:"12 pas /sens",q:"Genoux écartés, pas latéraux, bassin stable.",h:0},
+{s:"monster-walk-squat-walk",n:"Monster walk — squat walk",c:"Hanche & stabilité",r:"comp",p:"hip",k:"12 pas /sens",q:"En position demi-squat, tension constante sur l'élastique.",h:0},
+{s:"copenhagen-plank",n:"Copenhagen plank",c:"Hanche & stabilité",r:"comp",p:"core",k:"20 s /côté",q:"Adducteurs — ⚠️ zone pubienne : à choisir en conscience.",h:0},
+{s:"gainage-lateral-abduction-jambe",n:"Gainage latéral + abduction jambe",c:"Hanche & stabilité",r:"core",p:"core",k:"30 s /côté",q:"Hanche haute, monte la jambe du dessus, moyen fessier.",h:0},
+/* — MOLLETS & PIED — */
+{s:"montee-sur-pointes-jambe-tendue",n:"Montée sur pointes jambe tendue",c:"Mollets & pied",r:"comp",p:"calf",k:"20",q:"Gastrocnémiens, amplitude complète, pause en haut.",h:0},
+{s:"mollet-genou-flechi-soleaire",n:"Mollet genou fléchi (soléaire)",c:"Mollets & pied",r:"comp",p:"calf",k:"20",q:"Genou fléchi = soléaire, le muscle de l'ultra.",h:0},
+{s:"mollet-assis-genou-flechi",n:"Mollet assis genou fléchi",c:"Mollets & pied",r:"comp",p:"calf",k:"20",q:"Charge sur le genou, soléaire ciblé, tempo lent.",h:0},
+{s:"heel-drop-excentrique-sur-marche",n:"Heel drop excentrique sur marche",c:"Mollets & pied",r:"comp",p:"calf",k:"12 /jambe",q:"Descente lente du talon sous le niveau de la marche.",h:0},
+{s:"heel-drop-soleaire-genou-flechi",n:"Heel drop soléaire genou fléchi",c:"Mollets & pied",r:"comp",p:"calf",k:"12 /jambe",q:"Genou fléchi, descente 3 s : tendon d'Achille.",h:0},
+{s:"toe-raise-tibial-elastique",n:"Toe raise tibial élastique",c:"Mollets & pied",r:"comp",p:"calf",k:"20",q:"Tibial antérieur : le muscle de la descente.",h:0},
+{s:"short-foot-pince-serviette",n:"Short foot / pince serviette",c:"Mollets & pied",r:"comp",p:"calf",k:"15",q:"Voûte plantaire active, orteils qui agrippent.",h:0},
+/* — PLIOMÉTRIE — */
+{s:"squat-saute",n:"Squat sauté",c:"Pliométrie",r:"comp",p:"plyo",k:"12",q:"Réception souple, genoux qui amortissent.",h:0},
+{s:"fentes-sautees-alternees",n:"Fentes sautées alternées",c:"Pliométrie",r:"comp",p:"plyo",k:"10 /jambe",q:"Alterne en l'air, réception contrôlée.",h:0},
+{s:"bonds-horizontaux-broad-jump",n:"Bonds horizontaux (broad jump)",c:"Pliométrie",r:"comp",p:"plyo",k:"6",q:"Projection avant, bras qui lancent, réception stable.",h:0},
+{s:"sauts-unipodaux-contacts-brefs",n:"Sauts unipodaux contacts brefs",c:"Pliométrie",r:"comp",p:"plyo",k:"12 /jambe",q:"Contacts au sol très courts, raideur tendineuse.",h:0},
+{s:"pogo-hops",n:"Pogo hops",c:"Pliométrie",r:"comp",p:"plyo",k:"30",q:"Rebonds cheville, jambes quasi tendues, économie de course.",h:0},
+{s:"corde-a-sauter-legere",n:"Corde à sauter légère",c:"Pliométrie",r:"comp",p:"plyo",k:"60 s",q:"Rebond avant-pied, souple, cadence régulière.",h:0},
+/* — GAINAGE — */
+{s:"planche",n:"Planche",c:"Gainage",r:"core",p:"core",k:"45 s",q:"Dos neutre, bassin verrouillé, fessiers serrés.",h:0},
+{s:"gainage-lateral",n:"Gainage latéral",c:"Gainage",r:"core",p:"core",k:"30 s /côté",q:"Hanche haute, corps aligné, anti-bascule (dévers).",h:0},
+{s:"gainage-lateral-pied-sureleve-rotation",n:"Gainage latéral pied surélevé + rotation",c:"Gainage",r:"core",p:"core",k:"10 /côté",q:"Pied sur le step, rotation lente du buste.",h:0},
+{s:"ab-wheel",n:"Ab wheel",c:"Gainage",r:"core",p:"core",k:"10",q:"Anti-extension, ne creuse jamais le bas du dos.",h:0},
+{s:"hollow-rock",n:"Hollow rock",c:"Gainage",r:"core",p:"core",k:"20",q:"Lombaires plaquées, bascule d'un bloc.",h:0},
+{s:"dead-bug-leste",n:"Dead bug lesté",c:"Gainage",r:"core",p:"core",k:"12 /côté",q:"Bras/jambe opposés, dos collé au sol, lent.",h:0},
+{s:"pallof-press",n:"Pallof press",c:"Gainage",r:"core",p:"core",k:"12 /côté",q:"Anti-rotation : le tronc ne bouge pas d'un millimètre.",h:0},
+{s:"pallof-press-marchant",n:"Pallof press marchant",c:"Gainage",r:"core",p:"core",k:"8 pas /côté",q:"Anti-rotation en déplacement, gainage dynamique.",h:0},
+{s:"bird-dog-tirage-elastique",n:"Bird-dog + tirage élastique",c:"Gainage",r:"core",p:"core",k:"10 /côté",q:"Coordination controlatérale, bassin qui ne tourne pas.",h:0},
+{s:"mountain-climber-lent",n:"Mountain climber lent",c:"Gainage",r:"core",p:"core",k:"20",q:"Bassin bas, contrôle, pas de rebond.",h:0},
+/* — PORTÉS — */
+{s:"farmer-carry",n:"Farmer carry",c:"Portés",r:"comp",p:"carry",k:"30 m",q:"Lourd, épaules basses, posture haute (grip + tronc).",h:0},
+{s:"suitcase-carry",n:"Suitcase carry",c:"Portés",r:"comp",p:"carry",k:"30 m /côté",q:"Une main : anti-inclinaison latérale, ne penche pas.",h:0}
+];
+var EXCATS=["Tirage","Poussée & bras","Squat & genou","Charnière & fessiers","Unilatéral & step","Hanche & stabilité","Mollets & pied","Pliométrie","Gainage","Portés"];
+function exBySlug(s){ for(var i=0;i<EXBANK.length;i++){ if(EXBANK[i].s===s) return EXBANK[i]; } return null; }
+var PERSO_SEL=[];
+/* ---- grille de sélection ---- */
+function persoGridHTML(){
+  var h='<div style="font-size:11px;color:var(--mut);line-height:1.45;margin:2px 0 10px">Coche ce que tu veux. <b>Conseillé : ~6 exos</b> — 2 force + 3 complémentaires + 1 gainage. Contrainte ZP non appliquée ici (sélection consciente).</div>';
+  h+='<div id="persoWarn"></div>';
+  EXCATS.forEach(function(c){
+    var list=EXBANK.filter(function(e){return e.c===c;});
+    h+='<div style="font-weight:800;font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--mut);margin:12px 0 6px">'+c+'</div>';
+    h+='<div class="pxgrid">'+list.map(function(e){
+      var on=PERSO_SEL.indexOf(e.s)>=0;
+      return '<button type="button" class="pxit'+(on?' on':'')+'" id="px-'+e.s+'" onclick="persoToggle(\''+e.s+'\')">'+
+        '<img src="eximg/'+e.s+'.png" loading="lazy" alt="">'+
+        '<span class="pxn">'+e.n+'</span>'+
+        '<span class="pxr">'+(e.r==="force"?"force":e.r==="core"?"gainage":"compl.")+' · '+e.k+'</span></button>';
+    }).join("")+'</div>';
+  });
+  h+='<div id="persoCount" style="text-align:center;font-size:12px;color:var(--mut);margin-top:10px"></div>';
+  return h;
+}
+function persoToggle(s){
+  var i=PERSO_SEL.indexOf(s);
+  if(i>=0) PERSO_SEL.splice(i,1); else PERSO_SEL.push(s);
+  var el=document.getElementById("px-"+s); if(el) el.classList.toggle("on",PERSO_SEL.indexOf(s)>=0);
+  persoRefresh();
+}
+/* ---- check de cohérence NON BLOQUANT ---- */
+function persoCheck(){
+  var it=PERSO_SEL.map(exBySlug).filter(Boolean), w=[];
+  if(!it.length) return w;
+  var nRow=it.filter(function(e){return e.p==="row";}).length;
+  var nPull=it.filter(function(e){return e.p==="pull"||e.p==="row";}).length;
+  var nPush=it.filter(function(e){return e.p==="push";}).length;
+  var nCore=it.filter(function(e){return e.r==="core";}).length;
+  var nForce=it.filter(function(e){return e.r==="force";}).length;
+  if(it.length<3) w.push(["Séance très courte ("+it.length+" exos)","Vise au moins 3 exos pour que le format tienne debout."]);
+  if(it.length>9) w.push(["Beaucoup d'exos ("+it.length+")","Au-delà de 9, la séance dépasse largement 45 min. Enlève les moins prioritaires."]);
+  if(!nRow) w.push(["Aucun tirage horizontal","Règle de fond : rowing horizontal à chaque séance. Ajoute TRX row, rowing haltère ou face pull."]);
+  if(!nCore) w.push(["Aucun gainage","Ajoute un exo de gainage (planche, Pallof, dead bug) — sinon un Tabata abdo sera ajouté d'office en finisher."]);
+  if(Math.abs(nPush-nPull)>=2) w.push(["Déséquilibre pousser / tirer ("+nPush+" vs "+nPull+")","Rééquilibre en ajoutant "+(nPush>nPull?"un tirage":"une poussée")+"."]);
+  if(!nForce) w.push(["Aucun exo de force","Sans exo chargeable, la séance devient un circuit. Ajoute 1-2 exos « force » si c'est une séance de renfo."]);
+  var pats={}; it.forEach(function(e){pats[e.p]=1;});
+  if(it.length>=3 && Object.keys(pats).length===1) w.push(["Tout le même pattern","Séance full-body : varie les familles de mouvement."]);
+  return w;
+}
+function persoRefresh(){
+  var c=document.getElementById("persoCount");
+  if(c) c.textContent=PERSO_SEL.length+" exo"+(PERSO_SEL.length>1?"s":"")+" sélectionné"+(PERSO_SEL.length>1?"s":"")+" · conseillé ~6";
+  var z=document.getElementById("persoWarn"); if(!z)return;
+  var w=persoCheck();
+  if(!w.length){ z.innerHTML=PERSO_SEL.length?'<div style="background:#eefbe9;border:1px solid #cbe9bf;border-radius:10px;padding:8px 11px;font-size:11.5px;color:#2f6b1e;line-height:1.4">✓ Sélection cohérente.</div>':''; return; }
+  z.innerHTML='<div style="background:#fff3e6;border:1px solid #ffd2a8;border-radius:10px;padding:9px 11px;font-size:11.5px;color:#8a4b00;line-height:1.45">'+
+    w.map(function(x){return '⚠️ <b>'+x[0]+'</b><br><span style="opacity:.85">'+x[1]+'</span>';}).join('<div style="height:6px"></div>')+
+    '<div style="margin-top:7px;opacity:.75;font-style:italic">Non bloquant — tu peux générer quand même.</div></div>';
+}
+/* ---- moteur de séance perso ---- */
+var LTR=["A","B","C","D","E","F","G","H","I"];
+function buildCustomRenfo(sel){
+  var it=(sel||[]).map(exBySlug).filter(Boolean);
+  var force=it.filter(function(e){return e.r==="force";});
+  var comp =it.filter(function(e){return e.r==="comp";});
+  var core =it.filter(function(e){return e.r==="core";});
+  var allHaut=it.length && it.every(function(e){return e.h;});
+  var segs=[warmSegRenfo(allHaut?"haut":"full")];
+  if(!force.length && comp.length){ force=comp.slice(0,2); comp=comp.slice(2); }
+  if(force.length){
+    var mins = force.length<=2 ? 14 : (force.length===3 ? 15 : 16);
+    segs.push({kind:"emom",minutes:mins,label:"Force — perso",moves:force.map(function(e){
+      return {name:e.n.toUpperCase(),cue:e.k+" · "+e.q};
+    })});
+  }
+  if(comp.length){
+    var sec=Math.max(480,Math.min(720,comp.length*180));
+    segs.push({kind:"amrap",sec:sec,label:"Complémentaire",moves:comp.map(function(e,i){
+      return [LTR[i]||"+", e.k+" "+e.n, e.q];
+    })});
+  }
+  if(core.length){
+    segs.push({kind:"amrap",sec:300,label:"Finisher — gainage",moves:core.map(function(e,i){
+      return [LTR[i]||"+", e.k+" "+e.n, e.q];
+    })});
+  } else {
+    segs.push(TABATA_ABDO);
+  }
+  return {name:"Perso · "+it.length+" exos", segs:segs};
+}
+
 var checkinFlags=[], pSignal={zones:[],text:""};
 var _suppAccent="full";
 function setSuppAccent(a){
   _suppAccent=a;
-  ["haut","bas","full"].forEach(function(k){
+  var pw=document.getElementById("persoWrap");
+  if(pw){ pw.style.display=(a==="perso")?"block":"none"; if(a==="perso"){ pw.innerHTML=persoGridHTML(); persoRefresh(); } }
+  ["haut","bas","full","perso"].forEach(function(k){
     var el=document.getElementById("acc-"+k); if(!el)return;
     var on=(k===a);
     el.style.background=on?"var(--acid)":"transparent";
@@ -903,9 +1099,10 @@ function openCheckin(k,kind){
   var accentBlock = kind==="renfo" ? (
     '<div style="font-weight:700;font-size:13.5px;margin-bottom:8px">Accent de la séance</div>'+
     '<div style="display:flex;gap:6px;margin-bottom:6px">'+
-      ['haut','bas','full'].map(function(kk){var lbl=kk==="haut"?"Haut du corps":kk==="bas"?"Bas du corps":"Full";var on=(kk==="full");return '<button type="button" id="acc-'+kk+'" onclick="setSuppAccent(\''+kk+'\')" style="flex:1;border:1px solid '+(on?'var(--acid)':'var(--line)')+';background:'+(on?'var(--acid)':'transparent')+';color:'+(on?'#1a1d12':'var(--mut)')+';border-radius:10px;padding:8px 4px;font-size:12px;font-weight:'+(on?'800':'600')+';cursor:pointer">'+lbl+'</button>';}).join("")+
+      ['haut','bas','full','perso'].map(function(kk){var lbl=kk==="haut"?"Haut":kk==="bas"?"Bas":kk==="full"?"Full":"⚙️ Perso";var on=(kk==="full");return '<button type="button" id="acc-'+kk+'" onclick="setSuppAccent(\''+kk+'\')" style="flex:1;border:1px solid '+(on?'var(--acid)':'var(--line)')+';background:'+(on?'var(--acid)':'transparent')+';color:'+(on?'#1a1d12':'var(--mut)')+';border-radius:10px;padding:8px 4px;font-size:12px;font-weight:'+(on?'800':'600')+';cursor:pointer">'+lbl+'</button>';}).join("")+
     '</div>'+
-    '<div style="font-size:11px;color:var(--mut);margin-bottom:13px;line-height:1.4">Toujours full-body (tirage + gainage). « Bas » filtre auto pour la zone pubienne.</div>'
+    '<div style="font-size:11px;color:var(--mut);margin-bottom:10px;line-height:1.4">Toujours full-body (tirage + gainage). « Bas » filtre auto pour la zone pubienne. « Perso » = tu choisis les exos.</div>'+
+    '<div id="persoWrap" style="display:none;margin-bottom:13px"></div>'
   ) : "";
   z.innerHTML='<div class="card" style="padding:13px;margin-top:8px;border-left:3px solid var(--orange)">'+
     accentBlock+
@@ -934,6 +1131,10 @@ function toggleVac(){
 function runCheckin(k,kind,ras){
   var txt=ras?"":(((document.getElementById("ckTxt")||{}).value)||"").trim();
   var signal={zones:ras?[]:checkinFlags.slice(), text:txt, accent:_suppAccent};
+  if(kind==="renfo" && _suppAccent==="perso"){
+    if(!PERSO_SEL.length){ alert("Coche au moins un exercice."); return; }
+    signal.custom=PERSO_SEL.slice();
+  }
   if(kind==="renfo") startSuppRenfo(k,signal); else startSuppWod(k,signal);
 }
 function signalNote(){

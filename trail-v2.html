@@ -2604,18 +2604,99 @@ function exSlug(name){
     .replace(/[()\/]/g," ").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
 }
 var EXIMG_REUSE={
+  "ab-wheel-ou-trx-fallout":"ab-wheel",
+  "activation-dorsale-suspendue-scapular":"dead-hang",
+  "band-pull-apart":"face-pull-elastique",
+  "bird-dog":"bird-dog-tirage-elastique",
+  "bird-dog-tirage-band":"bird-dog-tirage-elastique",
+  "box-step-up-leste":"step-up-explosif-sur-box",
+  "bulgarian-split-squat":"split-squat-bulgare",
+  "clamshell-band":"clamshell-leste-elastique",
+  "corde-a-sauter":"corde-a-sauter-legere",
+  "curls":"curls-halteres",
+  "dead-bug":"dead-bug-leste",
+  "developpe-band":"developpe-halteres-assis",
+  "developpe-barre":"developpe-militaire",
+  "developpe-incline":"developpe-incline-halteres",
+  "developpe-incline-db":"developpe-incline-halteres",
+  "developpe-militaire-band":"developpe-militaire",
+  "elevations-laterales-band":"elevations-laterales",
+  "face-pull":"face-pull-elastique",
+  "face-pull-band":"face-pull-elastique",
+  "face-pull-elastique-leger":"face-pull-elastique",
+  "farmer-carry-20-m":"farmer-carry",
+  "farmer-carry-30-m":"farmer-carry",
+  "farmer-carry-lourd-20-m":"farmer-carry",
+  "fente-arriere":"fente-arriere-lestee",
+  "fente-marchee-lestee":"fente-avant-lestee",
+  "fentes-marchees-lestees":"fente-avant-lestee",
+  "front-squat-barre":"front-squat",
+  "gainage-climber":"mountain-climber-lent",
+  "gainage-lateral-30-s":"gainage-lateral",
+  "glute-bridge":"pont-fessier-bilateral",
+  "goblet-squat-kb":"goblet-squat",
+  "good-morning":"good-morning-elastique",
+  "good-morning-band":"good-morning-elastique",
+  "hip-thrust":"hip-thrust-barre",
+  "hip-thrust-au-sol":"pont-fessier-bilateral",
+  "hollow-hold":"hollow-rock",
+  "kb-row-penche":"rowing-haltere-unilateral",
+  "kb-swing":"kb-swing-americain",
+  "kb-swing-technique":"kb-swing-americain",
+  "mollet-debout-jambe-tendue":"montee-sur-pointes-jambe-tendue",
+  "monster-walk-band":"monster-walk-elastique",
+  "montees-sur-pointes-lentes":"montee-sur-pointes-jambe-tendue",
+  "mountain-climbers":"mountain-climber-lent",
+  "pallof-walk":"pallof-press-marchant",
+  "planche-iso":"planche",
+  "planche-laterale":"gainage-lateral",
+  "planche-laterale-cote":"gainage-lateral",
+  "planche-shoulder-taps":"planche",
+  "pogo-hops-legers":"pogo-hops",
+  "pompes-lentes":"pompes",
+  "pompes-tempo":"pompes",
+  "pompes-tempo-montee-en-temperature":"pompes",
+  "pont-fessier":"pont-fessier-bilateral",
+  "pull-apart-band":"face-pull-elastique",
+  "rdl-unilateral-kb":"souleve-de-terre-unilateral-db-kb",
+  "rowing-barre":"rowing-barre-buste-penche",
+  "rowing-elastique-unilateral":"rowing-elastique",
+  "rowing-haltere":"rowing-haltere-unilateral",
+  "rowing-renegat":"renegade-row",
+  "s-corde-a-sauter":"corde-a-sauter-legere",
+  "s-gainage-lateral":"gainage-lateral",
+  "s-hollow-hold":"hollow-rock",
+  "s-planche-iso":"planche",
+  "s-planche-laterale":"gainage-lateral",
+  "souleve-de-terre":"rdl-barre",
+  "souleve-de-terre-jambes-tendues":"rdl-barre",
   "souleve-de-terre-unilateral-db":"souleve-de-terre-unilateral-db-kb",
   "souleve-de-terre-unilateral-kb":"souleve-de-terre-unilateral-db-kb",
-  "step-up-explosif-box":"step-up-explosif-sur-box",
-  "mollet-debout-jambe-tendue":"montee-sur-pointes-jambe-tendue",
-  "monster-walk-squat-walk":"monster-walk-elastique",
+  "souleve-unilateral-db":"souleve-de-terre-unilateral-db-kb",
   "step-down-controle-anti-valgus":"step-down-freine-du-banc",
-  "gainage-lateral-abduction-jambe":"gainage-lateral",
-  "gainage-lateral-abduction":"gainage-lateral"
+  "step-up-explosif-box":"step-up-explosif-sur-box",
+  "step-up-leste":"step-up-explosif-sur-box",
+  "step-up-leste-excentrique":"step-up-explosif-sur-box",
+  "tirage-elastique":"rowing-elastique",
+  "tractions":"tractions-pronation",
+  "tractions-lestees-si-possible":"tractions-pronation"
 };
+var EXIMG_SET={}; EXBANK.forEach(function(e){ EXIMG_SET[e.s]=1; });
+// Retire prefixes de reps/durees ("12 ", "30 s ", "3x ") et suffixes de cote ("/jambe")
+function exCleanName(name){
+  var s=(name||"").trim();
+  s=s.replace(/^\s*\d+\s*[x\u00d7]\s*/i,"");
+  s=s.replace(/^\s*\d+\s*(s|sec|min)\s+/i,"");
+  s=s.replace(/^\s*\d+\s+/,"");
+  s=s.replace(/\s*\/\s*(jambe|bras|c[o\u00f4]t[e\u00e9]|side).*$/i,"");
+  return s.trim();
+}
 function exImgURL(name){
   var s=exSlug(name); s=EXIMG_REUSE[s]||s;
-  return s?("eximg/"+s+".png"):"";
+  if(EXIMG_SET[s]) return "eximg/"+s+".png";
+  var c=exSlug(exCleanName(name)); c=EXIMG_REUSE[c]||c;
+  if(EXIMG_SET[c]) return "eximg/"+c+".png";
+  return ""; // inconnu (echauffement/mobilite) -> figurine, pas de requete 404
 }
 function exPhotoHTML(name, figKey){
   var url=exImgURL(name);

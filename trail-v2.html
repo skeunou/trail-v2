@@ -3554,5 +3554,9 @@ if(stravaToken) loadStravaData();
 initCloud();
 /* initPush(); — rappel notifs désactivé (ne fonctionnait pas). Réactiver cette ligne + le bouton cloche pour le remettre. */
 </script>
+<script>
+/* deep-link : trail-v2.html#pull ouvre directement l'onglet Tractions */
+(function(){try{if((location.hash||"").replace("#","")==="pull"){setTimeout(function(){if(typeof nav==="function")nav("pull");},80);}}catch(e){}})();
+</script>
 </body>
 </html>

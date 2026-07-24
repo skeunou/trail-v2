@@ -2062,6 +2062,73 @@ function loadCoach(activityId,typeKey,boxId){
 /* ===== Liaison manuelle d'une séance de plan à une activité Strava (déclenche l'analyse coach) ===== */
 /* ===== + détails coach sur une séance de plan (run) : découpage par km ===== */
 var _coachAct=null, _coachType="fond";
+/* ===== FAITS TERRAIN pour l'IA : profil de pente par km + caracterisation des tiers ===== */
+function coachTerrainFacts(a){
+  var sp=a.splits; if(!sp||!sp.length) return "";
+  var L=[];
+  // repartition montee / descente / plat (memes seuils que coachTerrain)
+  var cE=0,cS=0, dS=0,dD=0,dDrop=0, fS=0,fD=0;
+  sp.forEach(function(s){
+    if(!s.sec||!s.d)return;
+    var g=(s.elev/s.d)*100;
+    if(g>=4){ cE+=s.elev; cS+=s.sec; }
+    else if(g<=-4){ dS+=s.sec; dD+=s.d; dDrop+=(-s.elev); }
+    else { fS+=s.sec; fD+=s.d; }
+  });
+  var rep=[];
+  if(cS>=90&&cE>=25) rep.push("montee "+fmtMin(cS/60)+" pour "+Math.round(cE)+" m (VAM "+Math.round(cE/cS*3600)+" m/h)");
+  if(dD>=800&&dDrop>=40) rep.push("descente "+fmtPace(dS/(dD/1000))+" /km sur "+(dD/1000).toFixed(1)+" km (-"+Math.round(dDrop)+" m)");
+  if(fD>=400) rep.push("plat "+fmtPace(fS/(fD/1000))+" /km sur "+(fD/1000).toFixed(1)+" km");
+  if(rep.length) L.push("Repartition terrain mesuree : "+rep.join(" | ")+".");
+  // profil de pente km par km
+  var prof=sp.map(function(s,i){ var e=Math.round(s.elev||0); return (i+1)+":"+(e>=0?"+":"")+e; });
+  L.push("Denivele par km (m) : "+prof.join(", ")+".");
+  // caracterisation premier / dernier tiers -> garde-fou anti-contresens
+  var n=sp.length, t=Math.max(1,Math.floor(n/3));
+  function cum(arr){ var s=0; arr.forEach(function(x){ s+=(x.elev||0); }); return Math.round(s); }
+  function lbl(v){ return v<=-30?"DESCENDANT":(v>=30?"MONTANT":"globalement plat"); }
+  var e1=cum(sp.slice(0,t)), e3=cum(sp.slice(n-t));
+  L.push("Premier tiers (km 1 a "+t+") : "+(e1>=0?"+":"")+e1+" m cumules -> terrain "+lbl(e1)+".");
+  L.push("Dernier tiers (km "+(n-t+1)+" a "+n+") : "+(e3>=0?"+":"")+e3+" m cumules -> terrain "+lbl(e3)+".");
+  if(e3<=-30) L.push("CONSEQUENCE OBLIGATOIRE : la fin de seance est en descente. Toute acceleration d'allure et/ou baisse de FC sur cette portion s'explique par la pente. Il est INTERDIT d'y voir une fatigue, une demotivation, un decrochage ou une sortie de zone.");
+  else if(e3>=30) L.push("CONSEQUENCE OBLIGATOIRE : la fin de seance est en montee. Un ralentissement d'allure et/ou une FC haute sur cette portion s'expliquent d'abord par la pente.");
+  if(e1>=30) L.push("CONSEQUENCE OBLIGATOIRE : le debut de seance est en montee. Une FC haute ou une allure lente sur les premiers km s'explique par la pente, pas par un depart trop rapide.");
+  return L.join("\n");
+}
+/* ===== FAITS CHARGE pour l'IA : ce que l'athlete a fait dans les 7 jours precedents ===== */
+function coachLoadFacts(a){
+  if(!a||!a.date||typeof lastActs==="undefined"||!Array.isArray(lastActs)) return "";
+  var dk=(a.date||"").slice(0,10); if(!dk) return "";
+  var d0=parse(dk), L=[], prev=[];
+  lastActs.forEach(function(x){
+    var k=(x.date||"").slice(0,10); if(!k) return;
+    if(a.id&&String(x.id)===String(a.id)) return;
+    if(k>=dk) return;
+    var dj=Math.round((d0-parse(k))/86400000);
+    if(dj<1||dj>7) return;
+    prev.push({dj:dj,x:x});
+  });
+  prev.sort(function(p,q){ return p.dj-q.dj; });
+  if(!prev.length){
+    L.push("Contexte 7 jours : aucune autre activite enregistree avant cette seance. Ne suppose donc aucune fatigue accumulee.");
+  } else {
+    var tk=0,td=0,tm=0;
+    L.push("CONTEXTE DES 7 JOURS PRECEDANT CETTE SEANCE (hors seance commentee) :");
+    prev.slice(0,5).forEach(function(p){
+      var x=p.x, s="- J-"+p.dj+" : "+(x.name||"activite")+" — "+(x.km?x.km+" km":"?")+", "+(x.dplus||0)+" m D+, "+fmtMin(x.movingMin||0)+(x.hrAvg?(", FC moy "+x.hrAvg):"")+".";
+      L.push(s);
+    });
+    prev.forEach(function(p){ tk+=p.x.km||0; td+=p.x.dplus||0; tm+=p.x.movingMin||0; });
+    L.push("Total des 7 jours precedents : "+tk.toFixed(1)+" km, "+Math.round(td)+" m D+, "+fmtMin(tm)+" en "+prev.length+" activite(s).");
+    // seance lourde et recente = explication prioritaire
+    var hv=null;
+    prev.forEach(function(p){ if(!hv && p.dj<=4 && ((p.x.dplus||0)>=1000 || (p.x.km||0)>=20)) hv=p; });
+    if(hv) L.push("SEANCE LOURDE RECENTE : « "+(hv.x.name||"activite")+" » ("+(hv.x.km||"?")+" km / "+(hv.x.dplus||0)+" m D+) il y a seulement "+hv.dj+" jour(s). CONSEQUENCE OBLIGATOIRE : envisage la fatigue residuelle musculaire de cette seance AVANT toute explication psychologique (motivation, mental) d'une FC haute, d'une derive ou d'une allure degradee, et cite-la explicitement.");
+  }
+  var ls=(typeof loadStats==="function")?loadStats():null;
+  if(ls&&ls.acwr!=null&&ls.daysCov>=14) L.push("Charge actuelle ACWR "+ls.acwr.toFixed(2)+" ("+acwrZone(ls.acwr).l+") · D+ du mois "+ls.monthD+" m (plafond realiste ~5000 m).");
+  return L.join("\n");
+}
 function coachFactsText(a,typeKey){
   var typeLbl = typeKey==="cotes"?"séance de côtes":(typeKey==="longue"?"sortie longue":"endurance fondamentale (EF)");
   var L=["Type : "+typeLbl+"."];
@@ -2078,15 +2145,17 @@ function coachFactsText(a,typeKey){
     if(h1.length&&h3.length){ var a1=Math.round(h1.reduce(function(s,x){return s+x.hr;},0)/h1.length), a3=Math.round(h3.reduce(function(s,x){return s+x.hr;},0)/h3.length); L.push("FC 1er tiers "+a1+" → dernier tiers "+a3+" ("+(a3-a1>=0?"+":"")+(a3-a1)+" bpm)."); }
   }
   if(a.temp!=null) L.push("Température "+Math.round(a.temp)+"°C.");
+  var tf=coachTerrainFacts(a); if(tf) L.push("\n--- PROFIL DE TERRAIN (determinant, a lire avant d'interpreter FC et allure) ---\n"+tf);
+  var lf=coachLoadFacts(a);    if(lf) L.push("\n--- CHARGE RECENTE ---\n"+lf);
   return L.join("\n");
 }
 function loadCoachLaius(regen){
   var box=document.getElementById("cdLaius"); if(!box||!_coachAct)return;
   box.innerHTML='<div style="color:var(--mut);font-size:12px;padding:6px 0">⌁ Le coach rédige…</div>';
   var facts=coachFactsText(_coachAct,_coachType);
-  var sys="Tu es le coach trail personnel de Laurent (athlète diesel d'ultra-endurance, prépare l'UT4M 180 en 2027). Tu commentes UNE séance de course. RÈGLES ABSOLUES : (1) appuie-toi UNIQUEMENT sur les données chiffrées fournies, n'invente AUCUN chiffre ni fait absent ; (2) ton direct de coach à athlète, tutoiement, français ; (3) 4 à 6 phrases en prose continue (pas de liste, pas de titre) ; (4) termine par 1 à 2 pistes concrètes d'amélioration ou de réglage pour la prochaine fois ; (5) pas de blabla motivationnel creux, relie les chiffres entre eux.";
+  var sys="Tu es le coach trail personnel de Laurent (athlète diesel d'ultra-endurance, prépare l'UT4M 180 en 2027). Tu commentes UNE séance de course. RÈGLES ABSOLUES : (1) appuie-toi UNIQUEMENT sur les données chiffrées fournies, n'invente AUCUN chiffre ni fait absent ; (2) ton direct de coach à athlète, tutoiement, français ; (3) 4 à 6 phrases en prose continue (pas de liste, pas de titre) ; (4) termine par 1 à 2 pistes concrètes d'amélioration ou de réglage pour la prochaine fois ; (5) pas de blabla motivationnel creux, relie les chiffres entre eux. (6) INTERDICTIONS STRICTES : n'attribue JAMAIS une baisse de FC, une acceleration ou un ralentissement a la fatigue, la demotivation ou un decrochage si le profil de terrain fourni indique une pente qui l'explique — la pente prime toujours sur l'interpretation psychologique ; ne commente jamais la derive cardiaque sans tenir compte du D+, de la temperature et de la charge des 7 derniers jours quand ils sont fournis ; ne produis AUCUN chiffre, pourcentage ou allure qui ne figure pas litteralement dans les donnees ; ne te contredis pas dans le meme texte (si tu juges une FC trop haute, ne la qualifie pas ailleurs de correcte) ; si une seance lourde recente figure au contexte, cite-la nommement quand elle peut expliquer l'etat du jour ; si une donnee manque, tais-toi plutot que de supposer.";
   fetch(GEN,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
-    model:"claude-haiku-4-5",max_tokens:500,system:sys,
+    model:"claude-haiku-4-5",max_tokens:700,system:sys,
     messages:[{role:"user",content:"DONNÉES MESURÉES (n'utilise rien d'autre) :\n"+facts+"\n\nRédige le mot du coach sur cette séance."+(regen?" Reformule différemment de d'habitude.":"")}]
   })})
   .then(function(r){return r.json();})
@@ -3259,9 +3328,9 @@ function fillExtraProseBox(box,e,a,force){
   if(!force && _exProseCache[key]){ box.innerHTML=_exProseCache[key]; return; }
   box.innerHTML='<div style="color:var(--mut);font-size:12px;padding:6px 0">⌁ Le coach rédige…</div>';
   var facts="Nature de la séance déclarée par l'athlète : "+RUN_INTENTS[intent].head+" ("+RUN_INTENTS[intent].hint+").\n"+coachFactsText(a,"fond");
-  var sys="Tu es le coach trail personnel de Laurent (athlète diesel d'ultra-endurance, prépare l'UT4M 180 en 2027, vigilance permanente = pubalgie / score ZP). Tu commentes UNE séance de course. RÈGLES ABSOLUES : (1) appuie-toi UNIQUEMENT sur les données chiffrées fournies, n'invente AUCUN chiffre ni fait absent ; (2) la séance a une NATURE déclarée (EF, Sortie longue, Tempo, Qualité) : juge-la au regard de CETTE intention, jamais d'un standard EF générique — une FC en Z3 sur une Sortie longue n'est pas 'trop haute', c'est souvent normal ; (3) ton direct de coach à athlète, tutoiement, français ; (4) 4 à 6 phrases en prose continue, pas de liste ni de titre ; (5) relie les chiffres entre eux et termine par 1 à 2 réglages concrets pour la prochaine fois ; pas de motivation creuse.";
+  var sys="Tu es le coach trail personnel de Laurent (athlète diesel d'ultra-endurance, prépare l'UT4M 180 en 2027, vigilance permanente = pubalgie / score ZP). Tu commentes UNE séance de course. RÈGLES ABSOLUES : (1) appuie-toi UNIQUEMENT sur les données chiffrées fournies, n'invente AUCUN chiffre ni fait absent ; (2) la séance a une NATURE déclarée (EF, Sortie longue, Tempo, Qualité) : juge-la au regard de CETTE intention, jamais d'un standard EF générique — une FC en Z3 sur une Sortie longue n'est pas 'trop haute', c'est souvent normal ; (3) ton direct de coach à athlète, tutoiement, français ; (4) 4 à 6 phrases en prose continue, pas de liste ni de titre ; (5) relie les chiffres entre eux et termine par 1 à 2 réglages concrets pour la prochaine fois ; pas de motivation creuse. (6) INTERDICTIONS STRICTES : n'attribue JAMAIS une baisse de FC, une acceleration ou un ralentissement a la fatigue, la demotivation ou un decrochage si le profil de terrain fourni indique une pente qui l'explique — la pente prime toujours sur l'interpretation psychologique ; ne commente jamais la derive cardiaque sans tenir compte du D+, de la temperature et de la charge des 7 derniers jours quand ils sont fournis ; ne produis AUCUN chiffre, pourcentage ou allure qui ne figure pas litteralement dans les donnees ; ne te contredis pas dans le meme texte (si tu juges une FC trop haute, ne la qualifie pas ailleurs de correcte) ; si une seance lourde recente figure au contexte, cite-la nommement quand elle peut expliquer l'etat du jour ; si une donnee manque, tais-toi plutot que de supposer.";
   fetch(GEN,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
-    model:"claude-haiku-4-5",max_tokens:500,system:sys,
+    model:"claude-haiku-4-5",max_tokens:700,system:sys,
     messages:[{role:"user",content:"DONNÉES MESURÉES (n'utilise rien d'autre) :\n"+facts+"\n\nRédige le mot du coach sur cette séance."+(force?" Reformule différemment.":"")}]
   })})
   .then(function(r){return r.json();})

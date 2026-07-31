@@ -300,9 +300,7 @@
         <div class="blockbadge" id="blockBadge">—</div>
       </div>
     </div>
-    <div class="weeklbl"><span class="eyebrow" id="weekLbl" style="color:var(--ink)">Ta semaine</span><span style="display:flex;align-items:center;gap:8px"><span onclick="weekNav(-1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">‹</span><span class="eyebrow" id="weekRange">—</span><span onclick="weekNav(1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">›</span></span></div>
-    <div class="week" id="weekStrip"></div>
-    <div class="weeklbl" style="margin-top:22px"><span class="eyebrow" style="color:var(--ink)">Aujourd'hui</span></div>
+    <div class="weeklbl"><span class="eyebrow" style="color:var(--ink)">Aujourd'hui</span></div>
     <div class="card hero" id="heroCard" style="position:relative">
       <div class="type" id="heroType">—</div>
       <div class="sessionid bebas" id="heroId" style="font-size:14px;color:var(--acc);letter-spacing:1px">—</div>
@@ -328,8 +326,10 @@
   <!-- SEMAINE -->
   <section class="view" id="v-week">
     <div class="topline"><div><div class="eyebrow">Vue d'ensemble</div><div class="bigtitle bebas">LA SEMAINE</div></div></div>
-    <div id="coachRead"></div>
+    <div class="weeklbl"><span class="eyebrow" id="weekLbl" style="color:var(--ink)">Ta semaine</span><span style="display:flex;align-items:center;gap:8px"><span onclick="weekNav(-1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">‹</span><span class="eyebrow" id="weekRange">—</span><span onclick="weekNav(1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">›</span></span></div>
+    <div class="week" id="weekStrip"></div>
     <div id="weekRecap"></div>
+    <div id="coachRead"></div>
     <div id="weekViewBody"></div>
     <div class="card stravacard">
       <div class="strava" onclick="goStrava()">
@@ -2525,7 +2525,7 @@ function renderToday(){
   renderSLWeek();
 }
 var weekOffset=0;
-function weekNav(d){ weekOffset+=d; renderWeek(); }
+function weekNav(d){ weekOffset+=d; renderWeek(); renderWeekView(); }
 function renderWeek(){
   var mon=new Date(today); mon.setHours(0,0,0,0); mon.setDate(today.getDate()-(dowMon(today)-1)+weekOffset*7);
   var sun=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+6);
@@ -2540,8 +2540,8 @@ function renderWeek(){
   document.getElementById("weekStrip").innerHTML=html;
 }
 /* ===== RÉCAP VOLUME — semaine en cours (Strava + manuels) ===== */
-function weekRecapData(){
-  var mon=new Date(today); mon.setHours(0,0,0,0); mon.setDate(today.getDate()-(dowMon(today)-1));
+function weekRecapData(off){
+  var mon=new Date(today); mon.setHours(0,0,0,0); mon.setDate(today.getDate()-(dowMon(today)-1)+(off||0)*7);
   var monK=iso(mon), sun=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+6), sunK=iso(sun);
   function inWk(dk){ dk=(dk||"").slice(0,10); return dk>=monK && dk<=sunK; }
   var r={runKm:0,runD:0,rideKm:0,rideD:0,totMin:0,n:0}, seen={};
@@ -2566,12 +2566,13 @@ function weekRecapData(){
 }
 function renderWeekRecap(){
   var box=document.getElementById("weekRecap"); if(!box)return;
-  var r=weekRecapData();
+  var r=weekRecapData(weekOffset);
   var parts=[];
   if(r.runKm>0||r.runD>0) parts.push('🏃 '+Math.round(r.runKm)+' km · '+Math.round(r.runD)+' m D+');
   if(r.rideKm>0||r.rideD>0) parts.push('🚴 '+Math.round(r.rideKm)+' km · '+Math.round(r.rideD)+' m D+');
   if(!parts.length) parts.push('Aucune activité enregistrée');
-  var tg=weekTarget(today), tgHTML='';
+  var _wd=new Date(today); _wd.setDate(today.getDate()+weekOffset*7);
+  var tg=weekTarget(_wd), tgHTML='';
   if(tg && (tg.km>0||tg.dp>0)){
     var pk=tg.km?Math.min(100,Math.round(r.runKm/tg.km*100)):0;
     var pd=tg.dp?Math.min(100,Math.round(r.runD/tg.dp*100)):0;
@@ -2588,7 +2589,7 @@ function renderWeekRecap(){
       '</div></div>';
   }
   box.innerHTML='<div class="card" style="padding:11px 14px;margin-bottom:10px;border-left:3px solid var(--acid)">'+
-    '<div style="font-size:10px;letter-spacing:.6px;color:var(--mut);text-transform:uppercase;font-weight:700;margin-bottom:3px">Cette semaine</div>'+
+    '<div style="font-size:10px;letter-spacing:.6px;color:var(--mut);text-transform:uppercase;font-weight:700;margin-bottom:3px">'+(weekOffset===0?'Cette semaine':'Semaine du '+_wd.getDate()+' '+MOIS[_wd.getMonth()])+'</div>'+
     '<div style="font-size:13.5px;font-weight:600;line-height:1.4">'+parts.join(' &nbsp;·&nbsp; ')+
     ' <span style="color:var(--mut);font-weight:500">— '+durStr(Math.round(r.totMin))+' d\'effort en '+r.n+' activité'+(r.n>1?'s':'')+'</span></div>'+tgHTML+'</div>';
 }
@@ -2642,7 +2643,7 @@ function renderLoadCard(){
     '<b style="color:'+dc+'">'+d.monthD.toLocaleString("fr-FR")+' m <span style="color:var(--mut);font-weight:400">/ '+ceil.toLocaleString("fr-FR")+' m'+(mc.lifted?' ⬆':'')+'</span></b></div>'+
     '<div style="height:7px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+dc+'"></div></div></div>';
   // Jauge hebdo (lundi → dimanche) vs cible du bloc
-  var wr=weekRecapData(), tg=weekTarget(today);
+  var wr=weekRecapData(0), tg=weekTarget(today);
   if(tg && tg.dp>0){
     var wpct=Math.min(100,Math.round(wr.runD/tg.dp*100));
     var wc = wr.runD>tg.dp*1.15 ? "var(--orange)" : (wr.runD>=tg.dp*0.85 ? "var(--grn)" : "var(--blue)");
@@ -2661,10 +2662,22 @@ function renderGtgMini(){
   var box=document.getElementById("gtgMini"); if(!box) return;
   var o=pullGet(), k=pullDay();
   var done=(o.gtg&&o.gtg[k])||0, per=pullRepsPerPass(o.max||2);
-  box.innerHTML='<div class="card" style="padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px" onclick="nav(\'pull\')">'+
-    '<div style="font-size:12.5px"><span style="color:var(--mut)">💪 GTG tractions</span> <b style="font-size:15px">'+done+'</b>'+
-    '<span style="color:var(--mut);font-size:11px"> passage'+(done>1?'s':'')+' aujourd\'hui · '+per+' rep'+(per>1?'s':'')+'/passage</span></div>'+
-    '<div style="font-size:11px;color:var(--blue);font-weight:700;white-space:nowrap">ouvrir →</div></div>';
+  box.innerHTML='<div style="display:flex;gap:9px;margin-bottom:10px">'+
+    '<button onclick="gtgQuickAdd()" style="flex:1;border:none;background:var(--acid);border-radius:14px;padding:13px 10px;box-shadow:var(--shadow);cursor:pointer;font-family:inherit">'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:30px;line-height:.9;color:#1a1d12">+'+per+'</div>'+
+      '<div style="font-size:10.5px;font-weight:800;letter-spacing:.5px;color:#1a1d12;text-transform:uppercase;margin-top:3px">Traction GTG</div>'+
+    '</button>'+
+    '<div onclick="nav(\'pull\')" style="flex:1;border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:13px 10px;text-align:center;cursor:pointer">'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:30px;line-height:.9;color:var(--ink)">'+done+'<small style="font-size:15px;color:var(--mut)"> ×</small></div>'+
+      '<div style="font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--mut);text-transform:uppercase;margin-top:3px">Passages · 💪</div>'+
+    '</div></div>';
+}
+/* Incrément depuis l'accueil : n'appelle pas renderPull() (vue non montée) */
+function gtgQuickAdd(){
+  var o=pullGet(), k=pullDay();
+  o.gtg=o.gtg||{}; o.gtg[k]=(o.gtg[k]||0)+1; pullSet(o);
+  try{ beep(880,.06); }catch(e){}
+  renderGtgMini();
 }
 function realDaySummary(key){
   // ce qui a été RÉELLEMENT fait ce jour (toutes les activités Strava), pour les jours validés
@@ -2685,13 +2698,14 @@ function realDaySummary(key){
 }
 function renderWeekView(){
   var out="";
-  for(var w=0;w<2;w++){
-    var mon=new Date(today); mon.setHours(0,0,0,0); mon.setDate(today.getDate()-(dowMon(today)-1)+w*7);
+  for(var w=0;w<1;w++){
+    var mon=new Date(today); mon.setHours(0,0,0,0); mon.setDate(today.getDate()-(dowMon(today)-1)+(weekOffset+w)*7);
     var sun=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+6);
     var thu=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+3);
     var blk=blockFor(thu);
     var range=mon.getDate()+(mon.getMonth()!==sun.getMonth()?' '+MOIS[mon.getMonth()]:'')+'–'+sun.getDate()+' '+MOIS[sun.getMonth()];
-    out+='<div class="wkhead"><div class="wktitle bebas">'+(w===0?'Cette semaine':'Semaine prochaine')+'</div><div class="wkmeta">'+range+' · '+blk.name+'</div></div>';
+    var wtitle = weekOffset===0 ? 'Cette semaine' : (weekOffset===1 ? 'Semaine prochaine' : (weekOffset===-1 ? 'Semaine dernière' : (weekOffset>0?'Dans '+weekOffset+' semaines':'Il y a '+(-weekOffset)+' semaines')));
+    out+='<div class="wkhead"><div class="wktitle bebas">'+wtitle+'</div><div class="wkmeta">'+range+' · '+blk.name+'</div></div>';
     out+='<div class="card" style="padding:0;margin-bottom:18px;overflow:hidden">';
     for(var i=0;i<7;i++){var d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i);var s=sessionFor(d);var dk=iso(d);var done=sessionDone(s)||extrasForDay(dk).length>0||suppEntriesFor(dk).length>0;var dd=s.plan;
       var real=done?realDaySummary(dk):null;
@@ -2836,13 +2850,11 @@ function startPlayer(k){
   closeSheet(); document.getElementById("player").classList.add("on");
   renderSeg();
 }
-function suppBtn(k){ return '<button class="btn btn-go" style="background:var(--purp);margin-top:6px" onclick="chooseSupp(\''+k+'\')">⚡ WOD / RENFO SUPPLÉMENTAIRE</button>'; }
+function suppBtn(k){ return '<button class="btn btn-ghost" style="width:100%;margin-top:6px;padding:9px;font-size:13px" onclick="chooseSupp(\''+k+'\')">+ WOD / renfo supplémentaire</button>'; }
 function renderSuppHome(){
   var z=document.getElementById("suppHome"); if(!z)return;
   var k=iso(today);
-  z.innerHTML='<div class="card" style="padding:13px;margin-top:10px">'+
-    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px">EN PLUS</div><div style="font-size:10.5px;color:var(--mut)">optionnel · aujourd\'hui</div></div>'+
-    '<div id="suppZone">'+suppBtn(k)+'</div></div>';
+  z.innerHTML='<div id="suppZone">'+suppBtn(k)+'</div>';
 }
 function resetSupp(k){ var z=document.getElementById("suppZone"); if(z)z.innerHTML=suppBtn(k); }
 function chooseSupp(k){

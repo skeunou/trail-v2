@@ -449,17 +449,58 @@ var FCZ2=Math.round(FCMAX*0.70)+"–"+Math.round(FCMAX*0.80);
 var FCZ2HI=Math.round(FCMAX*0.80);
 var FCZ4=Math.round(FCMAX*0.87);
 var BLOCKS=[
-  {id:"trans",name:"Transition",start:"2026-06-14",end:"2026-07-13",intent:"Récup active post-100K.",phase:"recup"},
-  {id:"base1",name:"Reprise base",start:"2026-07-14",end:"2026-08-31",intent:"Aérobie + fondation force.",phase:"base"},
-  {id:"force",name:"Force & côtes",start:"2026-09-01",end:"2026-10-31",intent:"Économie de grimpe + force.",phase:"force"},
-  {id:"baseH",name:"Base hivernale",start:"2026-11-01",end:"2026-12-31",intent:"Volume facile + durabilité.",phase:"base"},
-  {id:"build",name:"Build spécifique",start:"2027-01-01",end:"2027-02-28",intent:"Montée en charge, côtes longues.",phase:"build"},
-  {id:"chianti",name:"Affûtage Chianti",start:"2027-03-01",end:"2027-03-21",intent:"Affûtage 46K.",phase:"affutage"},
-  {id:"paladru",name:"Bloc Paladru",start:"2027-03-22",end:"2027-04-25",intent:"Pic d'endurance — test 84K.",phase:"build"},
-  {id:"maxi",name:"Bloc Maxi-Race",start:"2027-04-26",end:"2027-05-23",intent:"Spécificité longue finale.",phase:"build"},
-  {id:"specUT",name:"Spécifique UT4M",start:"2027-05-24",end:"2027-06-27",intent:"Simulation 4×20 km multi-jours.",phase:"build"},
-  {id:"affUT",name:"Affûtage UT4M",start:"2027-06-28",end:"2027-07-16",intent:"Affûtage final.",phase:"affutage"}
+  {id:"b1",  name:"Vélo & Force",        start:"2026-08-03", end:"2026-08-30", phase:"velo",
+   intent:"Force structurelle + aérobie sans impact.", wk:[[25,700],[28,850],[30,1000],[22,600]]},
+  {id:"b2",  name:"Prépa Hauteville",    start:"2026-08-31", end:"2026-09-27", phase:"force",
+   intent:"Retour trail et absorption du D+ avant le 45K.", wk:[[30,900],[38,1200],[30,800],[20,300]]},
+  {id:"b3",  name:"Automne courses",     start:"2026-09-28", end:"2026-10-20", phase:"force",
+   intent:"Récup Hauteville puis courses courtes comme séances.", wk:[[15,300],[25,600],[28,700],[8,150]]},
+  {id:"perou",name:"Pérou",              start:"2026-10-21", end:"2026-11-08", phase:"recup",
+   intent:"Trek + altitude >3000 m. Transition assumée, entretien élastiques.", wk:[[0,0],[0,0],[0,0]]},
+  {id:"b4",  name:"Réathlétisation",     start:"2026-11-09", end:"2026-11-22", phase:"recup",
+   intent:"Retour progressif. Aucune séance qualité.", wk:[[20,400],[28,700]]},
+  {id:"b5",  name:"Base hivernale",      start:"2026-11-23", end:"2026-12-20", phase:"base",
+   intent:"Volume facile + force maximale (seul bloc lourd de l'année).", wk:[[35,900],[40,1100],[45,1300],[30,800]]},
+  {id:"b6",  name:"Fêtes — allégé",      start:"2026-12-21", end:"2027-01-03", phase:"base",
+   intent:"Maintien. Zéro culpabilité.", wk:[[28,600],[28,600]]},
+  {id:"b7",  name:"Spécifique montée 1", start:"2027-01-04", end:"2027-01-31", phase:"build",
+   intent:"Gros bloc VAM. Tapis 15% + gilet lesté 6-8 kg + bâtons.", wk:[[40,1100],[45,1300],[48,1500],[32,900]]},
+  {id:"b8",  name:"Spécifique montée 2", start:"2027-02-01", end:"2027-02-28", phase:"build",
+   intent:"Tapis 4×12′, côtes 12-14 reps.", wk:[[45,1200],[48,1400],[50,1600],[34,800]]},
+  {id:"b9",  name:"Affûtage Chianti",    start:"2027-03-01", end:"2027-03-21", phase:"affutage",
+   intent:"Affûtage 46K. Volume −40%, intensité maintenue.", wk:[[42,1200],[35,900],[25,500]]},
+  {id:"b10", name:"Bloc Paladru",        start:"2027-03-22", end:"2027-04-25", phase:"build",
+   intent:"Le gros test. Sorties longues 3h → 4h.", wk:[[35,900],[45,1400],[50,1600],[55,1800],[30,700]]},
+  {id:"b11", name:"Bloc Maxi-Race",      start:"2027-04-26", end:"2027-05-23", phase:"build",
+   intent:"Récup Paladru puis relance, spécificité longue.", wk:[[20,400],[38,1100],[45,1500],[28,600]]},
+  {id:"b12", name:"Spécifique UT4M",     start:"2027-05-24", end:"2027-06-27", phase:"build",
+   intent:"Bloc décisif : 3 week-ends chocs, enchaînement multi-jours.", wk:[[40,1300],[48,2500],[52,2800],[55,3300],[32,800]], overCap:true},
+  {id:"b13", name:"Affûtage final",      start:"2027-06-28", end:"2027-07-14", phase:"affutage",
+   intent:"Volume −50%. Dernière séance dure le 6 juillet.", wk:[[35,900],[25,600],[15,300]]},
+  {id:"ut4m",name:"UT4M 180",            start:"2027-07-15", end:"2027-07-18", phase:"affutage",
+   intent:"🏁 4 étapes · ~44 km/j · 11 700 m D+.", wk:[[176,11700]]}
 ];
+/* Courses du calendrier (affichées et prises en compte comme jours de course) */
+var RACES=[
+  {d:"2026-09-26", n:"45K Plateau d'Hauteville", km:45, dp:1980, role:"Course club — sortie longue haute intensité"},
+  {d:"2026-10-11", n:"Trail de l'Aqueduc ~10K",  km:10, dp:300,  role:"Séance VMA déguisée"},
+  {d:"2026-10-18", n:"20K de Caluire",           km:20, dp:200,  role:"Test d'allure — recalage VMA"},
+  {d:"2027-03-14", n:"Chianti Ultra 46K",        km:46, dp:1500, role:"Reprise de compétition (date provisoire)"},
+  {d:"2027-04-18", n:"Trail de Paladru 84K",     km:84, dp:2500, role:"Le gros test (date provisoire)"},
+  {d:"2027-05-16", n:"Maxi-Race",                km:0,  dp:0,    role:"Spécificité longue (date provisoire)"},
+  {d:"2027-07-15", n:"UT4M 180 Challenge",       km:176,dp:11700,role:"OBJECTIF"}
+];
+function raceOn(d){ var k=iso(d); for(var i=0;i<RACES.length;i++){ if(RACES[i].d===k) return RACES[i]; } return null; }
+function nextRace(){ var k=iso(today); for(var i=0;i<RACES.length;i++){ if(RACES[i].d>=k) return RACES[i]; } return null; }
+/* Cible hebdo du bloc pour la semaine contenant d */
+function weekTarget(d){
+  var b=blockFor(d);
+  if(!b.wk||!b.wk.length) return null;
+  var ms=mondayOf(parse(b.start)), md=mondayOf(d);
+  var i=Math.floor((md-ms)/(7*86400000));
+  if(i<0) i=0; if(i>=b.wk.length) i=b.wk.length-1;
+  return {km:b.wk[i][0], dp:b.wk[i][1], wb:i+1, tot:b.wk.length, block:b};
+}
 var TYPES={
   repos:{label:"Repos",type:"REPOS",color:"var(--mut)",why:"Le repos fait partie du plan. C'est là que tu progresses."},
   mobilite:{label:"Mobilité",type:"MOBILITÉ",color:"var(--blue)",why:"Réveil articulaire, hanches, chaîne postérieure. Routine guidée ~15 min."},
@@ -528,8 +569,19 @@ function durStr(min){return min>=60?(Math.floor(min/60)+"h"+(min%60?String(min%6
 
 function weekInfo(d){
   var b=blockFor(d), ms=mondayOf(parse(b.start)), md=mondayOf(d);
-  var wb=Math.floor((md-ms)/(7*86400000))+1, p=(wb-1)%4, deload=(b.phase!=="recup")&&p===3;
-  var m; if(b.phase==="recup")m=0.70; else if(b.phase==="affutage")m=Math.max(0.45,0.78-0.15*Math.max(0,wb-2)); else m=deload?0.80:[0.92,1.0,1.10][p];
+  var wb=Math.floor((md-ms)/(7*86400000))+1, p=(wb-1)%4;
+  var deload, m;
+  if(b.wk&&b.wk.length){
+    // Cibles explicites du bloc : le multiplicateur suit la charge réelle du plan
+    var i=Math.min(Math.max(wb-1,0), b.wk.length-1);
+    var cur=b.wk[i][1], prev=i>0?b.wk[i-1][1]:cur;
+    var mx=0; b.wk.forEach(function(w){ if(w[1]>mx) mx=w[1]; });
+    deload = i>0 && cur<prev;
+    m = mx>0 ? Math.max(0.55, Math.min(1.15, cur/mx)) : (b.phase==="recup"?0.70:1.0);
+  } else {
+    deload=(b.phase!=="recup")&&p===3;
+    if(b.phase==="recup")m=0.70; else if(b.phase==="affutage")m=Math.max(0.45,0.78-0.15*Math.max(0,wb-2)); else m=deload?0.80:[0.92,1.0,1.10][p];
+  }
   return {block:b,phase:b.phase,wb:wb,deload:deload,m:m};
 }
 
@@ -549,7 +601,7 @@ function gen(d){
     else if(dow==="ven"){ o.typeKey="fond"; o.label="EF"; o.short="EF 45' Z2"; o.sub="~45′ · Z2"; o.why="Footing facile — recharge sans forcer."; o.detail=["~45′ EF, allure de conversation, nez qui respire.","Flexible : décale-le si journée chargée."]; o.color="var(--grn)"; o.plan={durMin:45}; }
     else { o.typeKey="repos"; o.label="Séance libre ou SL"; o.sub="week-end · libre"; o.why="Séance libre (EF ou côtes courtes) ou ta sortie longue — comme ta vie le permet (carte À FAIRE)."; o.color="var(--blue)"; o.plan={}; }
   }
-  else if(ph==="base"||ph==="force"||ph==="build"){
+  else if(ph==="base"||ph==="force"||ph==="build"||ph==="velo"){
     var isBuild=ph==="build", isForce=ph==="force";
     
     if(dow==="lun"){
@@ -2372,15 +2424,30 @@ function weekRecapData(){
 function renderWeekRecap(){
   var box=document.getElementById("weekRecap"); if(!box)return;
   var r=weekRecapData();
-  if(r.n===0){ box.innerHTML=""; return; }
   var parts=[];
   if(r.runKm>0||r.runD>0) parts.push('🏃 '+Math.round(r.runKm)+' km · '+Math.round(r.runD)+' m D+');
   if(r.rideKm>0||r.rideD>0) parts.push('🚴 '+Math.round(r.rideKm)+' km · '+Math.round(r.rideD)+' m D+');
-  if(!parts.length) parts.push('—');
+  if(!parts.length) parts.push('Aucune activité enregistrée');
+  var tg=weekTarget(today), tgHTML='';
+  if(tg && (tg.km>0||tg.dp>0)){
+    var pk=tg.km?Math.min(100,Math.round(r.runKm/tg.km*100)):0;
+    var pd=tg.dp?Math.min(100,Math.round(r.runD/tg.dp*100)):0;
+    tgHTML='<div style="margin-top:9px;padding-top:9px;border-top:1px solid var(--line)">'+
+      '<div style="display:flex;justify-content:space-between;font-size:10px;letter-spacing:.6px;color:var(--mut);text-transform:uppercase;font-weight:700;margin-bottom:6px">'+
+        '<span>Cible '+tg.block.name+'</span><span>S'+tg.wb+'/'+tg.tot+'</span></div>'+
+      '<div style="display:flex;gap:14px;font-size:12.5px">'+
+        '<div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="color:var(--mut)">Km</span>'+
+          '<b>'+Math.round(r.runKm)+' <span style="color:var(--mut);font-weight:500">/ '+tg.km+'</span></b></div>'+
+          '<div style="height:4px;background:var(--line);border-radius:3px;margin-top:4px;overflow:hidden"><div style="height:100%;width:'+pk+'%;background:var(--acid-d)"></div></div></div>'+
+        '<div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="color:var(--mut)">D+</span>'+
+          '<b>'+Math.round(r.runD)+' <span style="color:var(--mut);font-weight:500">/ '+tg.dp+'</span></b></div>'+
+          '<div style="height:4px;background:var(--line);border-radius:3px;margin-top:4px;overflow:hidden"><div style="height:100%;width:'+pd+'%;background:var(--orange)"></div></div></div>'+
+      '</div></div>';
+  }
   box.innerHTML='<div class="card" style="padding:11px 14px;margin-bottom:10px;border-left:3px solid var(--acid)">'+
     '<div style="font-size:10px;letter-spacing:.6px;color:var(--mut);text-transform:uppercase;font-weight:700;margin-bottom:3px">Cette semaine</div>'+
     '<div style="font-size:13.5px;font-weight:600;line-height:1.4">'+parts.join(' &nbsp;·&nbsp; ')+
-    ' <span style="color:var(--mut);font-weight:500">— '+durStr(Math.round(r.totMin))+' d\'effort en '+r.n+' activité'+(r.n>1?'s':'')+'</span></div></div>';
+    ' <span style="color:var(--mut);font-weight:500">— '+durStr(Math.round(r.totMin))+' d\'effort en '+r.n+' activité'+(r.n>1?'s':'')+'</span></div>'+tgHTML+'</div>';
 }
 /* ===== Charge (ACWR, load pondéré FC) + D+ du mois vs plafond ===== */
 function loadStats(){

@@ -20,6 +20,28 @@
     --shadow:0 6px 22px rgba(20,30,20,.08);
     --nav:64px;
   }
+  /* ===== RÉFÉRENCES (onglet ex-Historique) ===== */
+  .refSec{margin-bottom:14px}
+  .refH{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 8px}
+  .refH .t{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:1px}
+  .refH .x{font-size:10.5px;color:var(--mut)}
+  .refGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .refCell{border:1px solid var(--line);border-radius:13px;padding:11px 12px;background:var(--bg)}
+  .refCell .k{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.7px}
+  .refCell .v{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1.1;margin-top:2px}
+  .refCell .v small{font-size:13px;color:var(--mut);letter-spacing:0}
+  .refCell .d{font-size:10px;color:var(--mut);margin-top:3px}
+  .refCell .d.est{color:var(--orange)}
+  .refCell button{margin-top:7px;width:100%;padding:5px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--mut);font-size:10.5px;font-family:inherit}
+  .refT{width:100%;border-collapse:collapse;font-size:12.5px}
+  .refT th{text-align:left;font-size:9.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.7px;padding:0 0 7px;font-weight:600}
+  .refT td{padding:7px 0;border-top:1px solid var(--line)}
+  .refT td.n{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.5px;text-align:right;white-space:nowrap}
+  .refT td.m{color:var(--mut);font-size:11px;text-align:right;white-space:nowrap}
+  .refNote{font-size:10.5px;color:var(--mut);line-height:1.5;margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
+  .trend{font-size:11px;font-weight:700}
+  .trend.up{color:var(--grn)} .trend.dn{color:var(--orange)} .trend.eq{color:var(--mut)}
+  .refFold{width:100%;padding:11px;border:1px solid var(--line);border-radius:13px;background:var(--paper);color:var(--mut);font-size:12px;font-family:inherit}
   /* ===== CARNET DE CHARGES (renfo:charges:v1) ===== */
   .chgBox{margin:12px 0 4px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);text-align:left}
   .chgLast{font-size:11.5px;color:var(--mut);margin-bottom:8px;line-height:1.45}
@@ -331,10 +353,13 @@
   <!-- HISTORIQUE -->
   <section class="view" id="v-log">
     <div class="topline">
-      <div><div class="eyebrow">Suivi</div><div class="bigtitle bebas">HISTORIQUE</div></div>
+      <div><div class="eyebrow">Repères</div><div class="bigtitle bebas">RÉFÉRENCES</div></div>
       <div class="blockbadge" id="syncBadge" style="background:var(--bg);border:1px solid var(--line)">Local</div>
     </div>
-    <div class="card"><div class="empty" id="logEmpty">Aucune séance validée pour l'instant.<br>Valide ta première depuis l'accueil.</div><div id="logList"></div></div>
+    <div id="refBody"></div>
+    <!-- Historique brut : replié (conservé, non supprimé) -->
+    <button class="refFold" id="logFold" onclick="toggleLogList()">▾ Historique des séances</button>
+    <div class="card" id="logCard" style="display:none;margin-top:10px"><div class="empty" id="logEmpty">Aucune séance validée pour l'instant.<br>Valide ta première depuis l'accueil.</div><div id="logList"></div></div>
   </section>
   <section class="view" id="v-pull">
     <div class="topline">
@@ -402,7 +427,7 @@
   <button class="on" id="nav-today" onclick="nav('today')"><span class="ni">◎</span><span class="nl">Aujourd'hui</span></button>
   <button id="nav-week" onclick="nav('week')"><span class="ni">▦</span><span class="nl">Semaine</span></button>
   <button id="nav-horizon" onclick="nav('horizon')"><span class="ni">⛰</span><span class="nl">Horizon</span></button>
-  <button id="nav-log" onclick="nav('log')"><span class="ni">▤</span><span class="nl">Historique</span></button>
+  <button id="nav-log" onclick="nav('log')"><span class="ni">▤</span><span class="nl">Repères</span></button>
   <button id="nav-pull" onclick="nav('pull')"><span class="ni">💪</span><span class="nl">Tractions</span></button>
 </nav>
 
@@ -1675,7 +1700,7 @@ function cloudSave(){
   syncTimer=setTimeout(cloudSaveNow,1200); // debounce : 1 écriture par rafale
 }
 function cloudSaveNow(){
-  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet(),charges:chgAll()};
+  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet(),charges:chgAll(),refs:refGet()};
   fetch(SYNC_URL+"?action=save&user="+SYNC_USER,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
     .then(function(r){return r.json();})
     .then(function(d){ setSyncBadge(d&&d.ok?"ok":"err"); })
@@ -1702,6 +1727,8 @@ function mergeCloud(d){
   (d.log||[]).forEach(function(e){ var k=lkey(e), ex=byKey[k]; if(!ex||((e._u||0)>(ex._u||0))) byKey[k]=e; });
   _writeLog(Object.keys(byKey).map(function(k){return byKey[k];}));
   // extras : union par xid, on garde le plus récent
+  // références : le cloud prime si plus récent
+  if(d.refs){ try{ var lr=refGet(); if((d.refs._u||0)>(lr._u||0)) localStorage.setItem(REF_KEY,JSON.stringify(d.refs)); }catch(e){} }
   // charges renfo : union par exercice + par date, on garde la plus récente (_u)
   if(d.charges){
     var locC=chgAll(), clC=d.charges;
@@ -3230,7 +3257,119 @@ function renderHorizon(){
 }
 
 /* ================= HISTORIQUE ================= */
+/* ================= RÉFÉRENCES (moteur, zones, prévisionnel, charges) ================= */
+var REF_KEY="refs:v1";
+function refGet(){
+  var d={vma:16.5, vmaD:"", vam:null, vamD:"", fcmax:179, fcmaxD:"", poids:null, poidsD:""};
+  try{ var o=JSON.parse(localStorage.getItem(REF_KEY)||"{}"); Object.keys(o).forEach(function(k){ d[k]=o[k]; }); }catch(e){}
+  return d;
+}
+function refSet(o){ o._u=Date.now(); try{ localStorage.setItem(REF_KEY, JSON.stringify(o)); }catch(e){} cloudSave(); }
+function refEdit(field,label,unit){
+  var r=refGet(), cur=r[field];
+  var v=prompt(label+(unit?" ("+unit+")":"")+" :", cur===null||cur===undefined?"":cur);
+  if(v===null) return;
+  v=String(v).replace(",",".").trim();
+  if(v===""){ r[field]=null; r[field+"D"]=""; }
+  else { var n=Number(v); if(isNaN(n)){ alert("Valeur non numérique."); return; } r[field]=n; r[field+"D"]=iso(new Date()); }
+  refSet(r); renderRefs();
+}
+/* Allure (min/km) depuis une fraction de VMA */
+function refPace(vma,frac){
+  var s=Math.round(3600/(vma*frac));
+  return Math.floor(s/60)+"'"+String(s%60).padStart(2,"0");
+}
+function refTime(km,vma,frac){
+  var s=Math.round(km*3600/(vma*frac)), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), ss=s%60;
+  return h? h+"h"+String(m).padStart(2,"0")+"'"+String(ss).padStart(2,"0") : m+"'"+String(ss).padStart(2,"0");
+}
+var REF_ZONES=[
+  ["Endurance fond.",0.70,0.65,0.70,0.80],
+  ["Endurance active",0.80,0.75,0.80,0.85],
+  ["Sous-seuil",0.84,0.82,0.85,0.88],
+  ["Seuil",0.88,0.86,0.88,0.91],
+  ["VMA courte",1.05,1.00,0.92,1.00]
+];
+var REF_DIST=[["5 km",5,0.92],["10 km",10,0.88],["Semi",21.1,0.84],["Marathon",42.2,0.78]];
+function refDateFR(d){ if(!d) return "non mesuré"; var p=String(d).split("-"); return "mesuré le "+p[2]+"/"+p[1]+"/"+p[0]; }
+function refCell(k,val,unit,date,field,label,editUnit){
+  var est=!date;
+  return '<div class="refCell"><div class="k">'+k+'</div>'+
+    '<div class="v">'+(val===null||val===undefined||val===""?'—':val)+(unit?' <small>'+unit+'</small>':'')+'</div>'+
+    '<div class="d'+(est?' est':'')+'">'+(est?'estimation':refDateFR(date))+'</div>'+
+    '<button onclick="refEdit(\''+field+'\',\''+label+'\',\''+(editUnit||'')+'\')">modifier</button></div>';
+}
+function renderRefs(){
+  var el=document.getElementById("refBody"); if(!el) return;
+  var r=refGet(), vma=r.vma||16.5, fcm=r.fcmax||179;
+
+  /* 1 — moteur */
+  var h='<div class="refSec"><div class="refH"><div class="t">MOTEUR</div><div class="x">valeurs de travail</div></div>'+
+    '<div class="card" style="padding:14px"><div class="refGrid">'+
+      refCell("VMA",vma,"km/h",r.vmaD,"vma","VMA","km/h")+
+      refCell("VAM côte",r.vam,"m/h",r.vamD,"vam","VAM en côte","m/h")+
+      refCell("FC max",fcm,"bpm",r.fcmaxD,"fcmax","FC max","bpm")+
+      refCell("Poids",r.poids,"kg",r.poidsD,"poids","Poids","kg")+
+    '</div>'+
+    (!r.vmaD?'<div class="refNote">⚠️ VMA non mesurée — toutes les allures ci-dessous en héritent. Le test de 6 min en côte recalera l\'ensemble.</div>':'')+
+    '</div></div>';
+
+  /* 2 — zones */
+  h+='<div class="refSec"><div class="refH"><div class="t">ZONES &amp; ALLURES</div><div class="x">calculé · VMA '+vma+'</div></div>'+
+    '<div class="card" style="padding:14px"><table class="refT"><tr><th>Zone</th><th style="text-align:right">Allure</th><th style="text-align:right">FC</th></tr>'+
+    REF_ZONES.map(function(z){
+      return '<tr><td>'+z[0]+'</td><td class="n">'+refPace(vma,z[1])+'–'+refPace(vma,z[2])+'</td>'+
+             '<td class="m">'+Math.round(fcm*z[3])+'–'+Math.round(fcm*z[4])+'</td></tr>';
+    }).join('')+'</table></div></div>';
+
+  /* 3 — prévisionnel route */
+  h+='<div class="refSec"><div class="refH"><div class="t">PRÉVISIONNEL ROUTE</div><div class="x">estimation VMA</div></div>'+
+    '<div class="card" style="padding:14px"><table class="refT"><tr><th>Distance</th><th style="text-align:right">Temps</th><th style="text-align:right">Allure</th></tr>'+
+    REF_DIST.map(function(d){
+      return '<tr><td>'+d[0]+'</td><td class="n">'+refTime(d[1],vma,d[2])+'</td><td class="m">'+refPace(vma,d[2])+'/km</td></tr>';
+    }).join('')+'</table>'+
+    '<div class="refNote">Temps dérivés de la VMA, pas de performances réelles. Pour un profil trail peu habitué au bitume, ils sont <b>optimistes</b> — compte plutôt 10 à 15 min de plus sur marathon. Le 20K de Caluire (18 oct.) donnera le premier repère mesuré.</div>'+
+    '</div></div>';
+
+  /* 4 — charges de référence */
+  var rows=refChargeRows();
+  h+='<div class="refSec"><div class="refH"><div class="t">CHARGES DE RÉFÉRENCE</div><div class="x">'+rows.length+' exercice'+(rows.length>1?'s':'')+'</div></div>'+
+    '<div class="card" style="padding:14px">'+
+    (rows.length
+      ? '<table class="refT"><tr><th>Exercice</th><th style="text-align:right">Charge</th><th style="text-align:right">Tendance</th></tr>'+
+        rows.map(function(x){
+          var cls=x.delta>0?"up":(x.delta<0?"dn":"eq");
+          var lab=x.delta===null?"—":(x.delta>0?"↑ +"+x.delta:(x.delta<0?"↓ "+x.delta:"→"));
+          return '<tr><td>'+x.name+'<div style="font-size:10px;color:var(--mut)">'+refDateFR(x.date).replace("mesuré le ","")+(x.feel?' · '+x.feel:'')+'</div></td>'+
+                 '<td class="n">'+x.charge+'</td><td class="m"><span class="trend '+cls+'">'+lab+'</span></td></tr>';
+        }).join('')+'</table>'
+      : '<div class="empty" style="padding:24px 10px">Aucune charge enregistrée.<br>Elles se remplissent au fil des séances de renfo.</div>')+
+    '</div></div>';
+
+  el.innerHTML=h;
+}
+/* Toutes les charges connues, la plus récente par exercice + tendance vs séance précédente */
+function refChargeRows(){
+  var o=chgAll(), out=[];
+  Object.keys(o).forEach(function(k){
+    var a=(o[k]||[]).filter(function(e){ return e.c!==undefined && e.c!==null && e.c!==""; });
+    if(!a.length) return;
+    var cur=a[a.length-1], prev=a.length>1?a[a.length-2]:null, delta=null;
+    if(prev && typeof cur.c==="number" && typeof prev.c==="number") delta=Math.round((cur.c-prev.c)*10)/10;
+    out.push({name:cur.n||k, charge:chgFmt(cur), feel:cur.f||"", delta:delta, date:cur.d});
+  });
+  out.sort(function(x,y){ return y.date<x.date?-1:1; });
+  return out;
+}
+function toggleLogList(){
+  var c=document.getElementById("logCard"), b=document.getElementById("logFold");
+  if(!c) return;
+  var open = c.style.display==="none";
+  c.style.display = open?"block":"none";
+  if(b) b.textContent = (open?"▴":"▾")+" Historique des séances";
+}
 function renderLog(){
+  renderRefs();
   var log=loadLog();
   document.getElementById("logEmpty").style.display=log.length?"none":"block";
   document.getElementById("logList").innerHTML=log.map(function(e){

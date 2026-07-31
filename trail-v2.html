@@ -480,6 +480,40 @@ var BLOCKS=[
   {id:"ut4m",name:"UT4M 180",            start:"2027-07-15", end:"2027-07-18", phase:"affutage",
    intent:"🏁 4 étapes · ~44 km/j · 11 700 m D+.", wk:[[176,11700]]}
 ];
+/* Paramètres de séance par bloc — c'est ce qui empêche le bricolage.
+   cotes  : nb de reps du mardi (pilier)
+   mer    : "ht" home-trainer · "tapis" tapis lesté · "ef" endurance
+   qualite: séance qualité du jeudi (false = réadaptation, EF seulement)
+   renfoN : nb de séances de renfo par semaine
+   slPct  : part du D+ hebdo placée sur la sortie longue */
+var BLOCKSESS={
+  b1:   {cotes:[6,8],   mer:"ht",    qualite:false, renfoN:3, slPct:0.55, note:"Bloc vélo & force : la course est en veille, le H.T et le renfo portent la charge."},
+  b2:   {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.60, note:"Retour trail : on remet du D+ dans les jambes avant Hauteville."},
+  b3:   {cotes:[8,10],  mer:"ef",    qualite:false, renfoN:1, slPct:0.50, note:"Les courses font office de séances de qualité."},
+  perou:{cotes:[0,0],   mer:"off",   qualite:false, renfoN:1, slPct:0, off:true, note:"Pérou : marche longue quotidienne + 3 séances élastiques de 20′ sur le séjour. Objectif : ne pas perdre, pas progresser."},
+  b4:   {cotes:[6,6],   mer:"ef",    qualite:false, renfoN:2, slPct:0.50, note:"Réathlétisation : aucune séance dure. Le retour d'altitude trompe les sensations."},
+  b5:   {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.60, note:"Base hivernale : volume facile + force maximale (3×5 RIR 1-2)."},
+  b6:   {cotes:[8,10],  mer:"ef",    qualite:false, renfoN:1, slPct:0.55, note:"Fêtes : maintien, zéro culpabilité."},
+  b7:   {cotes:[12,14], mer:"tapis", qualite:true,  renfoN:2, slPct:0.60, note:"Gros bloc VAM : tapis 15% + gilet lesté + bâtons."},
+  b8:   {cotes:[12,14], mer:"tapis", qualite:true,  renfoN:2, slPct:0.62, note:"Tapis 4×12′, côtes 12-14 reps. Le pic d'économie de grimpe."},
+  b9:   {cotes:[6,6],   mer:"ef",    qualite:true,  renfoN:1, slPct:0.55, note:"Affûtage Chianti : volume −40%, intensité maintenue."},
+  b10:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.65, note:"Bloc Paladru : sorties longues 3h → 4h. Le gros test."},
+  b11:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.62, note:"Récup Paladru puis relance vers la Maxi-Race."},
+  b12:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.70, note:"Bloc décisif : week-ends chocs, partir le dimanche sur jambes entamées."},
+  b13:  {cotes:[6,6],   mer:"ef",    qualite:true,  renfoN:1, slPct:0.50, note:"Affûtage final. Dernière séance dure le 6 juillet."},
+  ut4m: {cotes:[0,0],   mer:"off",   qualite:false, renfoN:0, slPct:0, off:true, note:"🏁 Course."}
+};
+function blockSess(d){ var b=blockFor(d); return BLOCKSESS[b.id]||BLOCKSESS.b2; }
+/* VMA courante : celle mesurée si elle existe, sinon la valeur de travail */
+function curVMA(){ try{ var r=refGet(); if(r&&r.vma) return r.vma; }catch(e){} return VMA; }
+function pStr(frac){ var s=Math.round(3600/(curVMA()*frac)); return Math.floor(s/60)+"'"+String(s%60).padStart(2,"0"); }
+/* Rotation qualité seuil-dominante — le 30/30 n'est jamais programmé */
+var QUALI=[
+  {n:"Seuil long",           body:"5 × 6′",  rec:"90″",   f:[0.88,0.86], why:"Le format qui repousse le seuil sans casser."},
+  {n:"Sous-seuil norvégien", body:"6 × 5′",  rec:"60″",   f:[0.84,0.82], why:"Récup courte : volume au seuil sans la casse."},
+  {n:"Seuil",                body:"3 × 10′", rec:"2′30",  f:[0.88,0.86], why:"Blocs longs : tolérance au lactate, allure d'ultra soutenue."},
+  {n:"VMA courte",           body:"6 × 2′",  rec:"2′",    f:[1.05,1.00], why:"Entretien du plafond aérobie. Rare mais utile."}
+];
 /* Courses du calendrier (affichées et prises en compte comme jours de course) */
 var RACES=[
   {d:"2026-09-26", n:"45K Plateau d'Hauteville", km:45, dp:1980, role:"Course club — sortie longue haute intensité"},
@@ -591,8 +625,24 @@ function getByDow(d){var wd=dowMon(d);return wd===1?"lun":(wd===2?"mar":(wd===3?
 function gen(d){
   var wi=weekInfo(d), dow=getByDow(d), ph=wi.phase, b=wi.block, sid=sessionId(d);
   var o={typeKey:"repos",label:"Repos",sub:"",why:"",detail:[],color:"var(--mut)",plan:{},sid:sid};
+  var BS=blockSess(d), tgt=weekTarget(d);
+
+  // ── Jour de course : prioritaire sur tout le reste ──
+  var rc=raceOn(d);
+  if(rc){
+    o.typeKey="longue"; o.label="🏁 "+rc.n; o.short=rc.n;
+    o.sub=(rc.km?rc.km+" km":"")+(rc.dp?" · "+rc.dp+" m D+":"");
+    o.why=rc.role;
+    o.detail=["Course : "+rc.n+".",(rc.km?rc.km+" km · ":"")+(rc.dp?rc.dp+" m D+.":""),rc.role+".","Nutrition et matériel préparés la veille."];
+    o.color="var(--red)"; o.plan={km:rc.km,dplus:rc.dp};
+    return o;
+  }
   
-  if(ph==="recup"){
+  /* ── ANCIENNE BRANCHE post-100K (juin 2026) — DÉSACTIVÉE, conservée pour référence.
+     Les blocs de récup (Pérou, Réathlétisation) passent désormais par la branche
+     paramétrée ci-dessous, pilotée par BLOCKSESS. Ne pas réactiver sans revoir BLOCKSESS. */
+  var LEGACY_RECUP=false;
+  if(LEGACY_RECUP && ph==="recup"){
     // Réathlé post-100K : semaine PLATE (pas dégressive), ancre lundi club, longue = slot flottant (carte accueil).
     if(dow==="lun"){ o.typeKey="fond"; o.label="EF Club facile"; o.short="EF Club 50'"; o.sub="~50′ · Z2 · club"; o.why="Ancre de la semaine : footing club facile (lundi midi)."; o.detail=["~50′ EF avec le club, allure de conversation.","Nez qui respire, zéro forcing.","Rendez-vous fixe #1."]; o.color="var(--grn)"; o.plan={durMin:50}; }
     else if(dow==="mar"){ o.typeKey="cotes"; o.label="Côte club · reprise"; o.short="Côtes 5×2′ Z3"; o.sub="5×2′ Z3 · reprise"; o.why="Côtes club (mardi soir) — reprise progressive de la VAM."; o.detail=["Échauff : 15′ EF progressif.","Corps : 5× 2′ en montée modérée Z3 (pas à fond, on reprend le geste).","Retour : 10′ EF facile.","Mardi soir = toujours club, ton pilier."]; o.color="var(--orange)"; o.plan={reps:5,format:"Reprise"}; }
@@ -601,8 +651,22 @@ function gen(d){
     else if(dow==="ven"){ o.typeKey="fond"; o.label="EF"; o.short="EF 45' Z2"; o.sub="~45′ · Z2"; o.why="Footing facile — recharge sans forcer."; o.detail=["~45′ EF, allure de conversation, nez qui respire.","Flexible : décale-le si journée chargée."]; o.color="var(--grn)"; o.plan={durMin:45}; }
     else { o.typeKey="repos"; o.label="Séance libre ou SL"; o.sub="week-end · libre"; o.why="Séance libre (EF ou côtes courtes) ou ta sortie longue — comme ta vie le permet (carte À FAIRE)."; o.color="var(--blue)"; o.plan={}; }
   }
-  else if(ph==="base"||ph==="force"||ph==="build"||ph==="velo"){
+  else if(ph==="base"||ph==="force"||ph==="build"||ph==="velo"||ph==="recup"){
     var isBuild=ph==="build", isForce=ph==="force";
+
+    // ── Bloc hors structure (Pérou, semaine de course) ──
+    if(BS.off){
+      if(dow==="ven" && BS.renfoN>0){
+        o.typeKey="renfo"; o.label="Entretien élastiques"; o.short="Entretien 20′"; o.sub="~20′ · élastiques + poids du corps";
+        o.why="Ne pas perdre. On ne cherche pas à progresser ici.";
+        o.detail=["~20′ : pompes, fentes, gainage, tirage élastique.","3 séances sur l'ensemble du séjour, pas plus.","Barre de traction indisponible — tirage élastique en remplacement.","Élastiques Light/Medium/Hard + corde à sauter dans le sac."];
+        o.color="var(--ink)"; o.plan={};
+      } else {
+        o.typeKey="repos"; o.label=(b.id==="ut4m"?"🏁 "+b.name:"Hors structure"); o.sub=b.name;
+        o.why=BS.note; o.detail=[BS.note]; o.color="var(--mut)"; o.plan={};
+      }
+      return o;
+    }
     
     if(dow==="lun"){
       o.typeKey="fond"; o.label="EF Club facile"; o.short="EF Club 50'"; o.sub="~50′ · Z2 · club";
@@ -611,42 +675,113 @@ function gen(d){
       o.color="var(--grn)"; o.plan={durMin:50};
     }
     else if(dow==="mar"){
-      // Côte : pilier du bloc
-      var formats=[
-        {n:"Côtes Z4",desc:"6×2′ montée Z4 · récup descente",reps:6,tag:"2′ Z4"},
-        {n:"VMA ascensionnelle",desc:"8×45″ raide @ Z5 · récup marchée",reps:8,tag:"45″ Z5"},
-        {n:"Côtes longues",desc:"4×4′ Z3–4 montée régulière · récup descente",reps:4,tag:"4′ Z3"}
-      ], fmt=formats[(wi.wb-1)%3], reps=Math.round(fmt.reps*wi.m);
-      o.typeKey="cotes"; o.label="Côte club · "+fmt.n; o.short="Côtes "+reps+"×"+fmt.tag; o.sub=reps+"×"+fmt.desc.split("×")[1].split("·")[0].trim();
-      o.why="VAM & économie de grimpe — pilier de l'année.";
-      o.detail=["Échauff : 15′ EF progressif.","Corps : "+reps+"× "+fmt.desc.toLowerCase()+".","Retour : 10′ EF facile.","Gainée, foulée économe. Mardi soir = toujours club."];
-      o.color="var(--orange)"; o.plan={reps:reps,format:fmt.n};
+      // ── LE PILIER — ne saute jamais, seul le nombre de reps varie ──
+      var rlo=BS.cotes[0], rhi=BS.cotes[1];
+      var reps = wi.deload ? rlo : (wi.m>=1.0 ? rhi : Math.round((rlo+rhi)/2));
+      if(rhi===0){ // Pérou / course
+        o.typeKey="repos"; o.label="Pas de côtes"; o.sub="hors structure"; o.why=BS.note; o.color="var(--mut)"; o.plan={};
+      } else {
+        o.typeKey="cotes"; o.label="Côtes club"; o.short="Côtes "+reps+"×1'30-2'"; o.sub=reps+"×1′30-2′ · 8-12% · RPE 8";
+        o.why="Économie de grimpe (VAM) — le pilier de l'année.";
+        o.detail=[
+          "Échauff : 15′ EF + 3 accélérations de 20″.",
+          "Corps : "+reps+" × 1′30 à 2′ en montée 8-12%, RPE 8.",
+          "Récup : descente trottinée, ratio 1:1,5 (1′30 d'effort → 2′15 de récup).",
+          "Retour au calme : 10′ EF.",
+          "Technique : cadence 170-180 pas/min, foulée courte, buste penché depuis la cheville. Sous 165 en fin de rep = surrégime, ralentis."
+        ];
+        o.color="var(--orange)"; o.plan={reps:reps,format:"Côtes 1'30-2'"};
+      }
     }
     else if(dow==="mer"){
-      var dur=round5((isBuild?60:55)*wi.m), var_focus=["EF continu fluide","+ 6 lignes droites Z3 (30″)","progressif : dernier tiers Z3"];
-      o.typeKey="fond"; o.label="EF moyen"; o.short="EF "+dur+"' Z2"; o.sub=dur+"′ · Z2 · volume aérobie";
-      o.why="Le footing qui nourrit le moteur diesel.";
-      o.detail=["Durée : "+dur+"′ en Z2 ("+Z2PACE+"/km).","Variante : "+var_focus[(wi.wb-1)%3].toLowerCase()+".","Flexible : décale-le si journée chargée."];
-      o.color="var(--grn)"; o.plan={durMin:dur};
+      if(BS.mer==="ht"){
+        // Alternance SFR / Seuil — jamais de SFR à moins de 48h du mardi côtes
+        var sfr=(wi.wb%2===1);
+        o.typeKey="fond"; o.label="Home-trainer · "+(sfr?"SFR":"Seuil"); o.short=sfr?"H.T SFR 5×6'":"H.T Seuil 3×12'";
+        o.sub=sfr?"5×6′ à 50-55 rpm":"3×12′ RPE 7-8";
+        o.why=sfr?"Force spécifique : le meilleur transfert montée sans impact.":"Volume au seuil sans le coût articulaire.";
+        o.detail = sfr
+          ? ["Échauff : 15′ cadence libre.","Corps : 5 × 6′ à 50-55 rpm, gros braquet, RPE 7-8. Assis, buste calme, aucun à-coup.","Récup : 3′ à 90 rpm souple entre les blocs.","Retour : 10′ facile.","⚠️ Jamais de SFR à moins de 48h du mardi côtes — même filière, mêmes tendons."]
+          : ["Échauff : 15′.","Corps : 3 × 12′ à RPE 7-8, cadence 85-90 rpm.","Récup : 4′ entre les blocs.","Retour : 10′ facile."];
+        o.color="var(--purp)"; o.plan={durMin:sfr?75:75};
+      }
+      else if(BS.mer==="tapis"){
+        var nb=(wi.wb>=3?5:4), min=(wi.wb>=4?12:8), lest=(wi.wb>=2?8:6);
+        o.typeKey="cotes"; o.label="Tapis lesté"; o.short="Tapis "+nb+"×"+min+"′ · "+lest+" kg"; o.sub=nb+"×"+min+"′ à 15% · gilet "+lest+" kg";
+        o.why="Le tapis plafonne à 15% : le lest ramène le coût à celui d'une pente à ~20% à vide.";
+        o.detail=["Gilet lesté "+lest+" kg + bâtons.","Pente : 15% (max du tapis).","Corps : "+nb+" × "+min+"′ à RPE 7-8.","Récup : 3′ à plat entre les blocs.","Cadence et posture identiques aux côtes du mardi."];
+        o.color="var(--orange)"; o.plan={durMin:round5(20+nb*(min+3))};
+      }
+      else if(BS.mer==="off"){
+        o.typeKey="repos"; o.label="Hors structure"; o.sub=""; o.why=BS.note; o.color="var(--mut)"; o.plan={};
+      }
+      else {
+        var dur=round5((isBuild?60:55)*wi.m), var_focus=["EF continu fluide","+ 6 lignes droites Z3 (30″)","progressif : dernier tiers Z3"];
+        o.typeKey="fond"; o.label="EF Z2"; o.short="EF "+dur+"' Z2"; o.sub=dur+"′ · Z2 · volume aérobie";
+        o.why="Le footing qui nourrit le moteur diesel.";
+        o.detail=["Durée : "+dur+"′ en Z2 ("+pStr(0.70)+"–"+pStr(0.65)+"/km).","Variante : "+var_focus[(wi.wb-1)%3].toLowerCase()+".","Sans montre si possible.","Flexible : décale-le si journée chargée."];
+        o.color="var(--grn)"; o.plan={durMin:dur};
+      }
     }
     else if(dow==="jeu"){
       var durj=round5(50*wi.m);
-      o.typeKey="fond"; o.label="EF ou séance qualité"; o.short="EF "+durj+"' ou seuil/VMA"; o.sub="~"+durj+"′ Z2 · ou seuil";
-      o.why="Au choix : relance EF facile, ou ta séance qualité seuil/VMA (carte À FAIRE) sur le plat.";
-      o.detail=["Option EF : ~"+durj+"′ conversation, nez qui respire.","Option qualité : carte À FAIRE — seuil (norvégien) ou VMA courte, route/piste. Complète les côtes du mardi.","Jeudi 12-14h = ton créneau."];
-      o.color="var(--grn)"; o.plan={durMin:durj};
+      var mxDp=0; if(b.wk) b.wk.forEach(function(w){ if(w[1]>mxDp) mxDp=w[1]; });
+      var deepTaper = (tgt && mxDp>0) ? (tgt.dp/mxDp)<=0.62 : wi.deload;
+      if(BS.qualite && !deepTaper){
+        var q=QUALI[(wi.wb-1)%QUALI.length];
+        o.typeKey="cotes"; o.label="Qualité · "+q.n; o.short=q.n+" "+q.body; o.sub=q.body+" · "+pStr(q.f[0])+"–"+pStr(q.f[1])+"/km";
+        o.why=q.why;
+        o.detail=["Échauff : 15-20′ EF progressif + 3 accélérations.","Corps : "+q.body+" à "+pStr(q.f[0])+"–"+pStr(q.f[1])+"/km, récup "+q.rec+".","Retour au calme : 10′ EF.","Route plate ou piste. Complète les côtes du mardi (vertical).","Jeudi 12-14h = ton créneau."];
+        o.color="var(--orange-d)"; o.plan={durMin:round5(durj+15)};
+      } else {
+        o.typeKey="fond"; o.label="EF relance"; o.short="EF "+durj+"' Z2"; o.sub="~"+durj+"′ · Z2";
+        o.why=BS.qualite?"Semaine allégée : pas de séance dure cette semaine.":"Réadaptation : pas encore de séance qualité sur ce bloc.";
+        o.detail=["~"+durj+"′ en Z2 ("+pStr(0.70)+"–"+pStr(0.65)+"/km).","Allure de conversation, nez qui respire.","Jeudi 12-14h = ton créneau."];
+        o.color="var(--grn)"; o.plan={durMin:durj};
+      }
     }
     else if(dow==="ven"){
-      var durv=round5(45*wi.m);
-      o.typeKey="fond"; o.label="EF"; o.short="EF "+durv+"' Z2"; o.sub="~"+durv+"′ · Z2";
-      o.why="Footing facile avant le week-end — nourrit le moteur diesel.";
-      o.detail=["~"+durv+"′ EF en Z2, allure de conversation.","Flexible : décale-le si journée chargée."];
-      o.color="var(--grn)"; o.plan={durMin:durv};
+      if(BS.renfoN>0){
+        var fmt = (b.id==="b1") ? "3 × 8 · RIR 2" : (b.id==="b5" ? "3 × 5 · RIR 1-2" : "3 × 5-6 · RIR 2");
+        o.typeKey="renfo"; o.label="Renfo"; o.short="Renfo "+fmt; o.sub=fmt+" · repos 2′30-3′";
+        o.why="Force, pas masse. Le vrai indicateur : est-ce que la charge monte ?";
+        o.detail=[
+          "Format 45′ : 3 mouvements principaux + 1 accessoire + finisher Tabata.",
+          "Principaux : "+fmt+", repos 2′30 à 3′ (non négociable).",
+          "Jamais l'échec — arrête 2 reps avant. Le coût de récup ne vaut pas le gain.",
+          "Progression : +2,5 kg/semaine sur 3 semaines, puis −30%.",
+          (b.id==="b1"?"Août : 3×8 pour asseoir la technique et trouver tes charges.":"Charge de référence dans l'onglet Repères."),
+          BS.renfoN+" séance"+(BS.renfoN>1?"s":"")+" de renfo cette semaine."
+        ];
+        o.color="var(--ink)"; o.plan={};
+      } else {
+        var durv=round5(45*wi.m);
+        o.typeKey="fond"; o.label="EF"; o.short="EF "+durv+"' Z2"; o.sub="~"+durv+"′ · Z2";
+        o.why="Footing facile avant le week-end.";
+        o.detail=["~"+durv+"′ EF en Z2, allure de conversation."];
+        o.color="var(--grn)"; o.plan={durMin:durv};
+      }
     }
     else {
-      o.typeKey="repos"; o.label="Séance libre ou SL"; o.sub="week-end · libre";
-      o.why="Séance libre (EF ou côtes courtes) ou ta sortie longue — à caler quand ta vie le permet (carte À FAIRE).";
-      o.color="var(--blue)"; o.plan={};
+      var isDim=(dowMon(d)===7);
+      if(isDim && tgt && BS.slPct>0 && tgt.dp>0){
+        var slD=Math.round(tgt.dp*BS.slPct/50)*50;
+        var slMin=round5(Math.max(60, slD/1000*75+45));
+        o.typeKey="longue"; o.label="Sortie longue"; o.short="SL "+fmtDur(slMin)+" · "+slD+" m";
+        o.sub="~"+fmtDur(slMin)+" · "+slD+" m D+";
+        o.why="Durabilité : allure tenue, gestion nutrition, jambes qui encaissent.";
+        o.detail=[
+          "Cible : ~"+fmtDur(slMin)+" pour "+slD+" m D+.",
+          "Z2 strict sur le plat ("+pStr(0.70)+"–"+pStr(0.65)+"/km). Marche assumée au-delà de 15% de pente.",
+          (["b2","b3","b5","b6"].indexOf(b.id)>-1?"Finis par 3 blocs de descente contrôlée de 5′, jambes fatiguées.":"Descentes en contrôle, pas de relâchement."),
+          (["b10","b11","b12"].indexOf(b.id)>-1?"Nutrition de course testée intégralement (via Nutri Planner GPX).":"Slot flottant : cale-la quand ta vie le permet.")
+        ];
+        o.color="var(--orange-d)"; o.plan={durMin:slMin,dplus:slD};
+      } else {
+        o.typeKey="repos"; o.label="Séance libre ou repos"; o.sub="week-end · libre";
+        o.why=(BS.renfoN>=3?"2e renfo possible ici, ou repos.":"Séance libre ou repos — comme ta vie le permet.");
+        o.color="var(--blue)"; o.plan={};
+      }
     }
     
     // Renfo placé par phase. Vendredi = ancre (avant repos week-end).

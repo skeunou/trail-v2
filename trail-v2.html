@@ -120,7 +120,7 @@
   .jcount{text-align:center;margin:8px 0 22px}
   .jcount .lab{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);font-weight:700}
   .jcount .v{font-family:'Bebas Neue',sans-serif;font-size:78px;line-height:.85;color:var(--ink)}
-  .jcount .v small{font-size:26px;color:var(--orange)}
+  .jcount .v small{font-size:inherit;color:inherit}
   .jcount .when{font-size:13px;color:var(--ink2);font-weight:600}
 
   .road{position:relative;margin:0 0 8px 0;padding-left:30px}
@@ -344,7 +344,7 @@
     <div class="jcount">
       <div class="lab">UT4M 180 Challenge</div>
       <div class="v bebas">J<small>–</small><span id="jdays">—</span></div>
-      <div class="when" id="jwhen">≈ juillet 2027 · date à ajuster</div>
+      <div class="when" id="jwhen">15 – 18 juillet 2027</div>
     </div>
     <div class="road" id="road"></div>
     <div class="capnote">Plafond volume : <b>4 000–5 000 m D+/mois</b>. Le plan ne dépasse jamais ça — la grimpe se construit par l'économie (VAM) et la durabilité, pas par le volume brut.</div>
@@ -441,7 +441,7 @@ var wl=null; async function reqWake(){ try{ if('wakeLock' in navigator) wl=await
 document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible' && document.getElementById('player').classList.contains('on')) reqWake(); });
 
 /* ================= PLAN ENGINE ================= */
-var UT4M_DATE="2027-07-16"; // placeholder ajustable
+var UT4M_DATE="2027-07-15"; // J1 de l'UT4M 180 (15-18 juillet 2027)
 var VMA=16.5, FCMAX=179; // valeurs de travail (ajustables)
 function paceStr(frac){ var s=Math.round(3600/(VMA*frac)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
 var Z2PACE=paceStr(0.70)+"–"+paceStr(0.65);   // endurance fond

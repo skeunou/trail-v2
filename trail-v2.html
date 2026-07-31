@@ -1454,7 +1454,9 @@ var TRAIL_FORCE=[
   {label:"Accessoire fléchisseurs de hanche",name:"Montée de genou élastique debout",reps:"3 × 8 / côté · récup 45″",cue:"Élastique à la cheville, monte le genou au-dessus de la hanche, buste droit et stable, descente freinée. Renforce le psoas, moteur de la foulée."}
 ];
 /* ===== BANQUE RENFO SEMAINE — 8 séances trail (séries droites). cat A=jambes/force, B=puissance/accessoires ===== */
-var RENFO_WEEK=[
+/* ── ANCIENNE BANQUE (mai-juillet 2026) — conservée, plus utilisée par la rotation.
+   Remplacée par les 3 séances du cahier des charges UT4M (A / B / C). ── */
+var RENFO_WEEK_LEGACY=[
   {cat:"A", name:"Plans de mouvement", blocks:TRAIL_FORCE},
   {cat:"A", name:"Chaîne postérieure & grimpe", blocks:[
     {label:"Hinge lourd",name:"RDL barre",reps:"3 × 8 · récup 90″",cue:"Hanche loin en arrière, ischios sous tension, dos plat. La base de la grimpe."},
@@ -1508,7 +1510,47 @@ var RENFO_WEEK=[
     {label:"Contrôle du genou",name:"Step-down contrôlé (anti-valgus)",reps:"3 × 8 / côté · récup 60″",cue:"Genou parfaitement aligné sur le 2e orteil."},
     {label:"Frontal gainé",name:"Gainage latéral + abduction",reps:"3 × 10 / côté · récup 45″",cue:"Monte la jambe du dessus, contrôle."} ]}
 ];
-var RENFO_CAT_A=[0,1,2,4], RENFO_CAT_B=[3,5,6,7];
+
+/* ── BANQUE ACTIVE — cahier des charges UT4M 180 ──
+   Format 45 min : 3 mouvements principaux + 1 accessoire + finisher Tabata.
+   Le schéma de séries des mouvements principaux suit le bloc (renfoFmt()). */
+function renfoFmt(){
+  var b=blockFor(today);
+  if(b.id==="b1") return "3 × 8";
+  if(b.id==="b5") return "3 × 5";
+  return "3 × 5-6";
+}
+function renfoFmtSide(){ return renfoFmt()+" / jambe"; }
+var RENFO_REST="récup 2′30-3′";
+function buildRenfoWeek(){
+  var M=renfoFmt(), MS=renfoFmtSide();
+  return [
+    {cat:"A", name:"Accent MONTÉE", blocks:[
+      {label:"Principal 1 · poussée unilatérale",name:"Step-up box 51 cm (haltères)",reps:MS+" · "+RENFO_REST,cue:"Montée explosive, descente 3s contrôlée. Aucune impulsion du pied resté au sol — c'est la jambe haute qui travaille."},
+      {label:"Principal 2 · extension de hanche",name:"Hip thrust barre",reps:M+" · "+RENFO_REST,cue:"Pause 1s verrouillée en haut, menton rentré, côtes basses. Le moteur de la grimpe."},
+      {label:"Principal 3 · mollet",name:"Mollets debout jambe tendue",reps:"3 × 8 · récup 90″",cue:"Amplitude complète, 2s de pause en bas. Gastrocnémien."},
+      {label:"Accessoire",name:"Soléaire assis (genou fléchi)",reps:"3 × 12 · récup 60″",cue:"Maillon faible fréquent en montée raide. Genou à 90°, charge sur le genou."},
+      {label:"Finisher",name:"Tabata abdos",reps:"1-2 blocs · 8 × (20″/10″)",cue:"4 min par bloc à RPE 9. 1 seul bloc en bloc force max ou semaine à fort D+."}
+    ]},
+    {cat:"A", name:"Accent EXCENTRIQUE", blocks:[
+      {label:"Principal 1 · descente",name:"Step-down box 51 cm",reps:MS+" · "+RENFO_REST,cue:"Descente en 4 secondes pleines. Remontée avec aide si besoin. C'est ta prépa descente."},
+      {label:"Principal 2 · quadriceps",name:"Squat tempo",reps:M+" · "+RENFO_REST,cue:"4s à la descente, 1s de pause en bas, remontée normale."},
+      {label:"Principal 3 · impact contrôlé",name:"Fentes marchées (haltères)",reps:"3 × 8 / jambe · récup 90″",cue:"Jamais de version sautée. Genou aligné sur la pointe de pied."},
+      {label:"Accessoire",name:"Chaise murale isométrique",reps:"3 × 45″ · récup 60″",cue:"Cuisses parallèles au sol, dos plaqué. Endurance de force en descente."},
+      {label:"Finisher",name:"Tabata abdos",reps:"1-2 blocs · 8 × (20″/10″)",cue:"Rotation : dead bug, shoulder tap, hollow hold, mountain climbers, russian twists, V-ups, ab wheel."}
+    ]},
+    {cat:"B", name:"Accent HAUT & TIRAGE", blocks:[
+      {label:"Principal 1 · tirage vertical",name:"Tractions pronation",reps:M+" · "+RENFO_REST,cue:"Lestées dès que 6 strictes propres. + GTG dans la journée."},
+      {label:"Principal 2 · tirage horizontal",name:"Rowing haltère unilatéral",reps:"3 × 6 / côté · "+RENFO_REST,cue:"Excentrique 2s contrôlé. Coude le long du corps, omoplate qui glisse."},
+      {label:"Principal 3 · poussée",name:"Développé incliné",reps:M+" · "+RENFO_REST,cue:"Banc à 30-45°. Omoplates serrées, trajectoire stable."},
+      {label:"Accessoire",name:"Face pull élastique",reps:"3 × 15 · récup 45″",cue:"Coiffe des rotateurs — prévention directe du travail aux bâtons."},
+      {label:"Finisher",name:"Tabata abdos",reps:"1-2 blocs · 8 × (20″/10″)",cue:"4 min par bloc. Après du lourd, ce n'est pas gratuit pour le système nerveux."}
+    ]}
+  ];
+}
+var RENFO_WEEK=buildRenfoWeek();
+/* 0 = Accent MONTÉE · 1 = Accent EXCENTRIQUE (jambes) · 2 = Accent HAUT & TIRAGE */
+var RENFO_CAT_A=[0,1], RENFO_CAT_B=[2];
 function mondayOf(d){ var x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); var off=(x.getDay()+6)%7; x.setDate(x.getDate()-off); return x; }
 function weekCounter(){ return Math.floor(mondayOf(new Date()).getTime()/(7*864e5)); }
 function mondayKey(){ return iso(mondayOf(new Date())); }
@@ -3214,7 +3256,7 @@ function chgSlug(n){
 /* Unité par exercice : none = pas de charge, band = élastique, lest = poids de corps + lest */
 function chgUnit(n){
   var s=String(n||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  if(/planche|gainage|hollow|dead ?bug|shoulder ?tap|chaise|isometr|mountain|crunch|v-?up|russian|bicycle|superman|bird ?dog|ab ?wheel|nordic/.test(s)) return "none";
+  if(/planche|gainage|hollow|dead ?bug|shoulder ?tap|chaise|isometr|mountain|crunch|v-?up|russian|bicycle|superman|bird ?dog|ab ?wheel|nordic|tabata|abdos|finisher/.test(s)) return "none";
   if(/elastique|band|pallof|face ?pull|rotation externe|y\/t\/w/.test(s)) return "band";
   if(/traction|pull-?up|dips|pompes|push-?up|dead ?hang|muscle-?up/.test(s)) return "lest";
   if(/halter|dumbbell|\bdb\b/.test(s)) return "kgx2";

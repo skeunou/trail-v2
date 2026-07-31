@@ -312,12 +312,8 @@
       </div>
     </div>
     <div id="extrasBox"></div>
-    <!-- Carte "SL de la semaine" retirée (le dimanche est désormais une séance chiffrée du plan).
-         Code conservé, conteneur masqué. Remplacée par le bouton "Déplacer" sur la séance. -->
-    <div id="slWeek" style="display:none"></div>
     <div id="suppHome"></div>
-    <!-- Carte "Renfo de la semaine" retirée (le renfo est désormais placé au vendredi par le plan).
-         Code conservé, conteneur masqué. -->
+    <!-- Carte "À FAIRE" (slots flexibles) : déplacée dans l'onglet Semaine. -->
     <div id="renfoWeek" style="display:none"></div>
     <div id="loadCard"></div>
     <div id="gtgMini"></div>
@@ -329,6 +325,7 @@
     <div class="weeklbl"><span class="eyebrow" id="weekLbl" style="color:var(--ink)">Ta semaine</span><span style="display:flex;align-items:center;gap:8px"><span onclick="weekNav(-1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">‹</span><span class="eyebrow" id="weekRange">—</span><span onclick="weekNav(1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">›</span></span></div>
     <div class="week" id="weekStrip"></div>
     <div id="weekRecap"></div>
+    <div id="slWeek"></div>
     <div id="coachRead"></div>
     <div id="weekViewBody"></div>
     <div class="card stravacard">
@@ -749,7 +746,7 @@ function gen(d){
     else if(dow==="ven"){
       if(BS.renfoN>0){
         var fmt = (b.id==="b1") ? "3 × 8 · RIR 2" : (b.id==="b5" ? "3 × 5 · RIR 1-2" : "3 × 5-6 · RIR 2");
-        o.typeKey="renfo"; o.label="Renfo"; o.short="Renfo "+fmt; o.sub=fmt+" · repos 2′30-3′";
+        o.typeKey="renfo"; o.label="Renfo"; o.short="Renfo "+fmt; o.sub=fmt+" · repos 2′30-3′ · à caler";
         o.why="Force, pas masse. Le vrai indicateur : est-ce que la charge monte ?";
         o.detail=[
           "Format 45′ : 3 mouvements principaux + 1 accessoire + finisher Tabata.",
@@ -757,7 +754,8 @@ function gen(d){
           "Jamais l'échec — arrête 2 reps avant. Le coût de récup ne vaut pas le gain.",
           "Progression : +2,5 kg/semaine sur 3 semaines, puis −30%.",
           (b.id==="b1"?"Août : 3×8 pour asseoir la technique et trouver tes charges.":"Charge de référence dans l'onglet Repères."),
-          BS.renfoN+" séance"+(BS.renfoN>1?"s":"")+" de renfo cette semaine."
+          BS.renfoN+" séance"+(BS.renfoN>1?"s":"")+" de renfo cette semaine.",
+          "Placement par défaut : le vrai suivi est la carte À FAIRE de l'onglet Semaine."
         ];
         o.color="var(--ink)"; o.plan={};
       } else {
@@ -774,13 +772,14 @@ function gen(d){
         var slD=Math.round(tgt.dp*BS.slPct/50)*50;
         var slMin=round5(Math.max(60, slD/1000*75+45));
         o.typeKey="longue"; o.label="Sortie longue"; o.short="SL "+fmtDur(slMin)+" · "+slD+" m";
-        o.sub="~"+fmtDur(slMin)+" · "+slD+" m D+";
+        o.sub="~"+fmtDur(slMin)+" · "+slD+" m D+ · à caler";
         o.why="Durabilité : allure tenue, gestion nutrition, jambes qui encaissent.";
         o.detail=[
           "Cible : ~"+fmtDur(slMin)+" pour "+slD+" m D+.",
           "Z2 strict sur le plat ("+pStr(0.70)+"–"+pStr(0.65)+"/km). Marche assumée au-delà de 15% de pente.",
           (["b2","b3","b5","b6"].indexOf(b.id)>-1?"Finis par 3 blocs de descente contrôlée de 5′, jambes fatiguées.":"Descentes en contrôle, pas de relâchement."),
-          (["b10","b11","b12"].indexOf(b.id)>-1?"Nutrition de course testée intégralement (via Nutri Planner GPX).":"Slot flottant : cale-la quand ta vie le permet.")
+          (["b10","b11","b12"].indexOf(b.id)>-1?"Nutrition de course testée intégralement (via Nutri Planner GPX).":""),
+          "Placement par défaut : le vrai suivi est la carte À FAIRE de l'onglet Semaine. Cale-la quand ta vie le permet."
         ];
         o.color="var(--orange-d)"; o.plan={durMin:slMin,dplus:slD};
       } else {
@@ -1514,7 +1513,16 @@ function mondayOf(d){ var x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); 
 function weekCounter(){ return Math.floor(mondayOf(new Date()).getTime()/(7*864e5)); }
 function mondayKey(){ return iso(mondayOf(new Date())); }
 function renfoPair(){ var wc=weekCounter(), na=RENFO_CAT_A.length, nb=RENFO_CAT_B.length; return { a:RENFO_CAT_A[((wc%na)+na)%na], b:RENFO_CAT_B[(((wc+Math.floor(wc/nb))%nb)+nb)%nb] }; }
-function slotIdx(slot){ var p=renfoPair(); return slot===1?p.a:p.b; }
+function slotIdx(slot){
+  var p=renfoPair();
+  if(slot===1) return p.a;
+  if(slot===2) return p.b;
+  /* 3e slot (bloc à 3 renfos) : on prend la séance A suivante dans la rotation */
+  var wc=weekCounter(), na=RENFO_CAT_A.length;
+  return RENFO_CAT_A[(((wc+1)%na)+na)%na];
+}
+/* Nombre de slots renfo de la semaine — piloté par le bloc en cours */
+function renfoSlotCount(){ var bs=blockSess(today); var n=(bs&&bs.renfoN!=null)?bs.renfoN:2; return Math.max(0, Math.min(3, n)); }
 function slotDone(slot){ var wk=mondayKey(); return loadLog().some(function(e){return e.typeKey==="renfo-supp"&&e.wk===wk&&e.wslot===slot;}); }
 var _wkSlot=0,_wkIdx=-1,pWeekly=false,pRenfoBlocks=[];
 /* ===== VMA hebdo (slot flottant, rotation 3 formats — plat/piste) ===== */
@@ -1549,20 +1557,28 @@ function renderAFaire(){
   var box=document.getElementById("slWeek"); if(!box)return;
   vmaSel=null;
   var rf=document.getElementById("renfoWeek"); if(rf)rf.innerHTML="";
-  var p=renfoPair(), ra=RENFO_WEEK[p.a], rb=RENFO_WEEK[p.b];
+  var nSlots=renfoSlotCount();
+  if(blockSess(today).off && nSlots===0){ box.innerHTML=""; return; }
   var slT=slWeekTarget(), slE=slDoneEntry();
   var slSub = slE ? ((slE.km?slE.km+' km · ':'')+fmtMin(slE.durMin||0)) : (slT.absorption?"récup — pas de longue":("~"+fmtDur(slT.dur)+" · "+slT.dplus+" m D+"));
   var vE=vmaDoneEntry(), vf=vmaFmt();
   var vSub = vE ? ((vE.km?vE.km+' km · ':'')+fmtMin(vE.durMin||0)) : vf.n;
+  var btns = afaireBtn({tag:"Sortie longue",label:"Sortie longue",sub:slSub,done:!!slE,onclick:"openSL()"})+
+             afaireBtn({tag:"Qualité",label:"Qualité",sub:vSub,done:!!vE,onclick:"openVMA()"});
+  for(var sN=1; sN<=nSlots; sN++){
+    var rr=RENFO_WEEK[slotIdx(sN)];
+    btns += afaireBtn({
+      tag:"Renfo "+sN+"/"+nSlots, label:rr.name,
+      sub:rr.blocks.length+" blocs · "+(rr.cat==="A"?"force":"puissance / access."),
+      done:slotDone(sN),
+      onclick:(slotDone(sN)?"reviewWeeklyRenfo":"startWeeklyRenfo")+"("+sN+")"
+    });
+  }
+  var bs=blockSess(today);
   box.innerHTML='<div class="card" style="padding:13px;margin-top:10px">'+
     '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px">À FAIRE</div><div style="font-size:10.5px;color:var(--mut)">cette semaine · où tu veux</div></div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
-      afaireBtn({tag:"Sortie longue",label:"Sortie longue",sub:slSub,done:!!slE,onclick:"openSL()"})+
-      afaireBtn({tag:"VMA",label:"Qualité",sub:vSub,done:!!vE,onclick:"openVMA()"})+
-      afaireBtn({tag:"Renfo 1/2",label:ra.name,sub:ra.blocks.length+" blocs · "+(ra.cat==="A"?"force":"puissance / access."),done:slotDone(1),onclick:(slotDone(1)?"reviewWeeklyRenfo":"startWeeklyRenfo")+"(1)"})+
-      afaireBtn({tag:"Renfo 2/2",label:rb.name,sub:rb.blocks.length+" blocs · "+(rb.cat==="A"?"force":"puissance / access."),done:slotDone(2),onclick:(slotDone(2)?"reviewWeeklyRenfo":"startWeeklyRenfo")+"(2)"})+
-    '</div>'+
-    '<div style="font-size:10.5px;color:var(--mut);margin-top:9px">Longue · VMA · 2 renfos — à poser quand ta vie le permet. Nouvelle paire de renfos chaque lundi.</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+btns+'</div>'+
+    '<div style="font-size:10.5px;color:var(--mut);margin-top:9px">Longue · qualité · '+nSlots+' renfo'+(nSlots>1?'s':'')+' — à poser quand ta vie le permet. '+blockFor(today).name+' : '+nSlots+' séance'+(nSlots>1?'s':'')+' de renfo par semaine.</div>'+
     '<div id="afaireDetail"></div></div>';
 }
 function openVMA(){
@@ -2738,6 +2754,7 @@ function renderWeekView(){
   }
   document.getElementById("weekViewBody").innerHTML=out;
   renderWeekRecap();
+  renderAFaire();
   renderCoachRead();
 }
 function renderCoachRead(){

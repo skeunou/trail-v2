@@ -347,7 +347,7 @@
       <div class="when" id="jwhen">15 – 18 juillet 2027</div>
     </div>
     <div class="road" id="road"></div>
-    <div class="capnote">Plafond volume : <b>4 000–5 000 m D+/mois</b>. Le plan ne dépasse jamais ça — la grimpe se construit par l'économie (VAM) et la durabilité, pas par le volume brut.</div>
+    <div class="capnote" id="capNote"></div>
   </section>
 
   <!-- HISTORIQUE -->
@@ -2232,7 +2232,7 @@ function coachLoadFacts(a){
     if(hv) L.push("SEANCE LOURDE RECENTE : « "+(hv.x.name||"activite")+" » ("+(hv.x.km||"?")+" km / "+(hv.x.dplus||0)+" m D+) il y a seulement "+hv.dj+" jour(s). CONSEQUENCE OBLIGATOIRE : envisage la fatigue residuelle musculaire de cette seance AVANT toute explication psychologique (motivation, mental) d'une FC haute, d'une derive ou d'une allure degradee, et cite-la explicitement.");
   }
   var ls=(typeof loadStats==="function")?loadStats():null;
-  if(ls&&ls.acwr!=null&&ls.daysCov>=14) L.push("Charge actuelle ACWR "+ls.acwr.toFixed(2)+" ("+acwrZone(ls.acwr).l+") · D+ du mois "+ls.monthD+" m (plafond realiste ~5000 m).");
+  if(ls&&ls.acwr!=null&&ls.daysCov>=14) L.push("Charge actuelle ACWR "+ls.acwr.toFixed(2)+" ("+acwrZone(ls.acwr).l+") · D+ du mois "+ls.monthD+" m (plafond du bloc en cours : "+monthCap(today).ceil+" m).");
   return L.join("\n");
 }
 function coachFactsText(a,typeKey){
@@ -2449,6 +2449,11 @@ function renderWeekRecap(){
     '<div style="font-size:13.5px;font-weight:600;line-height:1.4">'+parts.join(' &nbsp;·&nbsp; ')+
     ' <span style="color:var(--mut);font-weight:500">— '+durStr(Math.round(r.totMin))+' d\'effort en '+r.n+' activité'+(r.n>1?'s':'')+'</span></div>'+tgHTML+'</div>';
 }
+/* Plafond D+ mensuel : 5000 m par défaut, levé sur les blocs marqués overCap (B12 spécifique UT4M) */
+function monthCap(d){
+  var b=blockFor(d||today);
+  return b && b.overCap ? {ceil:8000, amber:6500, lifted:true, block:b} : {ceil:5000, amber:4000, lifted:false, block:b};
+}
 /* ===== Charge (ACWR, load pondéré FC) + D+ du mois vs plafond ===== */
 function loadStats(){
   if(!lastActs.length) return null;
@@ -2487,11 +2492,11 @@ function renderLoadCard(){
   } else {
     h+='<div style="font-size:12.5px;color:var(--mut)">⚖️ Charge (ACWR) — pas encore assez d\'historique Strava (reviens dans quelques jours)</div>';
   }
-  var ceil=5000, amber=4000, pct=Math.min(100,Math.round(d.monthD/ceil*100));
+  var mc=monthCap(today), ceil=mc.ceil, amber=mc.amber, pct=Math.min(100,Math.round(d.monthD/ceil*100));
   var dc=d.monthD>ceil?"var(--red)":(d.monthD>=amber?"var(--orange)":"var(--grn)");
   h+='<div style="margin-top:10px">'+
     '<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span style="color:var(--mut)">⛰️ D+ du mois</span>'+
-    '<b style="color:'+dc+'">'+d.monthD.toLocaleString("fr-FR")+' m <span style="color:var(--mut);font-weight:400">/ '+ceil.toLocaleString("fr-FR")+' m</span></b></div>'+
+    '<b style="color:'+dc+'">'+d.monthD.toLocaleString("fr-FR")+' m <span style="color:var(--mut);font-weight:400">/ '+ceil.toLocaleString("fr-FR")+' m'+(mc.lifted?' ⬆':'')+'</span></b></div>'+
     '<div style="height:7px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+dc+'"></div></div></div>';
   h+='</div>';
   box.innerHTML=h;
@@ -3306,7 +3311,15 @@ function saveSuppRenfo(){
 }
 
 /* ================= HORIZON ================= */
+function renderCapNote(){
+  var el=document.getElementById("capNote"); if(!el) return;
+  var mc=monthCap(today);
+  el.innerHTML = mc.lifted
+    ? 'Plafond volume : <b>levé sur ce bloc</b> ('+mc.ceil.toLocaleString("fr-FR")+' m D+/mois). Le bloc <b>'+mc.block.name+'</b> est le seul de l\'année où l\'on assume de dépasser — les week-ends chocs préparent l\'enchaînement multi-jours. Retour à 5 000 m dès l\'affûtage.'
+    : 'Plafond volume : <b>4 000–5 000 m D+/mois</b>. Le plan ne dépasse jamais ça — la grimpe se construit par l\'économie (VAM) et la durabilité, pas par le volume brut. <span style="color:var(--mut)">Seule exception prévue : le bloc Spécifique UT4M (mai-juin 2027).</span>';
+}
 function renderHorizon(){
+  renderCapNote();
   var t=new Date();t.setHours(0,0,0,0);var ut=parse(UT4M_DATE);
   document.getElementById("jdays").textContent=Math.max(0,Math.round((ut-t)/86400000));
   var curB=blockFor(today);

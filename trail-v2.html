@@ -1577,6 +1577,40 @@ var MAIN_VAR={
   ]
 };
 
+/* VARIABLES — 3e mouvement, change à CHAQUE séance (jamais suivi en charge).
+   C'est ici que vit la variété type CrossFit : recouvrement des patterns, ordre jamais identique. */
+var VAR_POOL={
+  montee:[
+    {n:"Wall ball",r:"3 × 15 · récup 75″",c:"Triple extension répétée = geste de la montée raide. Balle lancée haut, réception amortie."},
+    {n:"Mollets debout jambe tendue",r:"3 × 8 · récup 90″",c:"Amplitude complète, 2s de pause en bas. Gastrocnémien."},
+    {n:"Box step-over lesté",r:"3 × 10 / côté · récup 75″",c:"Passe la box sans à-coup, rythme régulier."},
+    {n:"Kettlebell swing russe",r:"3 × 15 · récup 60″",c:"Explosivité de hanche, bras relâchés. La hanche fait tout."},
+    {n:"Fente marchée lestée",r:"3 × 10 / jambe · récup 75″",c:"Rythme continu, buste droit."},
+    {n:"Montée sur pointes unipodale",r:"3 × 15 / côté · récup 45″",c:"Endurance du mollet, révèle les asymétries."},
+    {n:"Thruster haltères léger",r:"3 × 12 · récup 75″",c:"Squat + poussée enchaînés. Coût global élevé — pas la veille d'une sortie dure."},
+    {n:"Marche fermier (haltères)",r:"3 × 40 m · récup 60″",c:"Gainage sous charge, épaules basses."}
+  ],
+  excentrique:[
+    {n:"Fentes marchées (haltères)",r:"3 × 8 / jambe · récup 90″",c:"Jamais de version sautée. Genou aligné sur la pointe."},
+    {n:"Heel-drop soléaire (genou fléchi)",r:"3 × 12 / côté · récup 45″",c:"Descente lente du talon sous la marche."},
+    {n:"Fente arrière lestée",r:"3 × 8 / côté · récup 75″",c:"Encaisse la descente, pas de rebond en bas."},
+    {n:"Descente de box contrôlée",r:"3 × 8 / côté · récup 60″",c:"Le pied effleure le sol sans se poser."},
+    {n:"Nordic curl (ou leg curl TRX)",r:"3 × 6 · récup 75″",c:"Freine la descente au maximum."},
+    {n:"Squat gobelet tempo",r:"3 × 8 · récup 90″",c:"4s descente, charge devant, buste vertical."},
+    {n:"Wall ball",r:"3 × 15 · récup 75″",c:"La réception de la balle est une absorption excentrique répétée."},
+    {n:"Sissy squat assisté",r:"3 × 10 · récup 60″",c:"Quadriceps en amplitude longue, très lent."}
+  ],
+  haut:[
+    {n:"Développé incliné",r:"3 × 8 · récup 90″",c:"Banc 30-45°, omoplates serrées."},
+    {n:"Dips",r:"3 × 8 · récup 90″",c:"Buste légèrement penché, descente à 90° au coude."},
+    {n:"Développé militaire debout",r:"3 × 8 · récup 90″",c:"Gainage complet, côtes basses, pas de cambrure."},
+    {n:"Pompes lestées",r:"3 × 12 · récup 60″",c:"Corps gainé d'un bloc, coudes à 45°."},
+    {n:"Tirage élastique bâtons",r:"3 × 15 · récup 45″",c:"Reproduit la poussée sur bâtons, dos et triceps."},
+    {n:"Rowing TRX",r:"3 × 12 · récup 60″",c:"Pieds avancés pour durcir. Poitrine vers les poignées."},
+    {n:"Wall ball",r:"3 × 15 · récup 75″",c:"Poussée verticale répétée — complémentaire du tirage."},
+    {n:"Kettlebell clean & press",r:"3 × 8 / côté · récup 75″",c:"Chaîne complète, gainage anti-rotation."}
+  ]
+};
 /* Accessoires — rotation hebdomadaire */
 var ACC_POOL={
   montee:[
@@ -1615,29 +1649,28 @@ function tabataBlock(n){
 }
 function buildRenfoWeek(){
   var M=renfoFmt(), MS=renfoFmtSide(), wc=weekCounter(), br=blockRank();
-  function main(pool,reps){ var v=pick(MAIN_VAR[pool],br); return {name:v.n, reps:reps, cue:v.c}; }
-  function acc(pool){ var a=pick(ACC_POOL[pool],wc); return {label:"Accessoire",name:a.n,reps:a.r,cue:a.c}; }
-  var m1=main("montee1",MS+" · "+RENFO_REST), m2=main("montee2",M+" · "+RENFO_REST), m3=main("montee3","3 × 8 · récup 90″");
-  var e1=main("exc1",MS+" · "+RENFO_REST),    e2=main("exc2",M+" · "+RENFO_REST),    e3=main("exc3","3 × 8 / jambe · récup 90″");
-  var h1=main("haut1",M+" · "+RENFO_REST),    h2=main("haut2","3 × 6 / côté · "+RENFO_REST), h3=main("haut3",M+" · "+RENFO_REST);
+  /* 2 ANCRES par séance : fixes pendant tout le bloc, charge suivie dans le carnet.
+     Ce sont elles qui portent la progression. Elles changent de variante à chaque bloc. */
+  function anchor(pool,reps){ var v=pick(MAIN_VAR[pool],br); return {name:v.n, reps:reps, cue:v.c}; }
+  /* VARIABLE : change à chaque séance. Décalée par le compteur de semaine ET par la séance,
+     pour que l'ordre ne soit jamais deux fois le même. */
+  function vary(pool,seed){ var a=pick(VAR_POOL[pool],wc*3+seed); return {label:"Variable",name:a.n,reps:a.r,cue:a.c}; }
+  function acc(pool,seed){ var a=pick(ACC_POOL[pool],wc*2+seed); return {label:"Accessoire",name:a.n,reps:a.r,cue:a.c}; }
   return [
     {cat:"A", name:"Accent MONTÉE", blocks:[
-      {label:"Principal 1 · poussée unilatérale",name:m1.name,reps:m1.reps,cue:m1.cue},
-      {label:"Principal 2 · extension de hanche",name:m2.name,reps:m2.reps,cue:m2.cue},
-      {label:"Principal 3 · mollet",name:m3.name,reps:m3.reps,cue:m3.cue},
-      acc("montee"), tabataBlock(wc)
+      Object.assign({label:"⚓ Ancre 1 · poussée unilatérale"}, anchor("montee1",MS+" · "+RENFO_REST)),
+      Object.assign({label:"⚓ Ancre 2 · extension de hanche"}, anchor("montee2",M+" · "+RENFO_REST)),
+      vary("montee",0), acc("montee",0), tabataBlock(wc)
     ]},
     {cat:"A", name:"Accent EXCENTRIQUE", blocks:[
-      {label:"Principal 1 · descente",name:e1.name,reps:e1.reps,cue:e1.cue},
-      {label:"Principal 2 · quadriceps",name:e2.name,reps:e2.reps,cue:e2.cue},
-      {label:"Principal 3 · impact contrôlé",name:e3.name,reps:e3.reps,cue:e3.cue},
-      acc("excentrique"), tabataBlock(wc+1)
+      Object.assign({label:"⚓ Ancre 1 · descente"}, anchor("exc1",MS+" · "+RENFO_REST)),
+      Object.assign({label:"⚓ Ancre 2 · quadriceps"}, anchor("exc2",M+" · "+RENFO_REST)),
+      vary("excentrique",1), acc("excentrique",1), tabataBlock(wc+1)
     ]},
     {cat:"B", name:"Accent HAUT & TIRAGE", blocks:[
-      {label:"Principal 1 · tirage vertical",name:h1.name,reps:h1.reps,cue:h1.cue},
-      {label:"Principal 2 · tirage horizontal",name:h2.name,reps:h2.reps,cue:h2.cue},
-      {label:"Principal 3 · poussée",name:h3.name,reps:h3.reps,cue:h3.cue},
-      acc("haut"), tabataBlock(wc+2)
+      Object.assign({label:"⚓ Ancre 1 · tirage vertical"}, anchor("haut1",M+" · "+RENFO_REST)),
+      Object.assign({label:"⚓ Ancre 2 · tirage horizontal"}, anchor("haut2","3 × 6 / côté · "+RENFO_REST)),
+      vary("haut",2), acc("haut",2), tabataBlock(wc+2)
     ]}
   ];
 }
@@ -3352,6 +3385,7 @@ function chgUnit(n){
   if(/planche|gainage|hollow|dead ?bug|shoulder ?tap|chaise|isometr|mountain|crunch|v-?up|russian|bicycle|superman|bird ?dog|ab ?wheel|nordic|tabata|abdos|finisher/.test(s)) return "none";
   if(/elastique|band|pallof|face ?pull|rotation externe|y\/t\/w/.test(s)) return "band";
   if(/traction|pull-?up|dips|pompes|push-?up|dead ?hang|muscle-?up|rowing trx|nordic/.test(s)) return "lest";
+  if(/wall ?ball|kettlebell|\bkb\b|medecine|sissy/.test(s)) return "kg";
   if(/halter|dumbbell|\bdb\b/.test(s)) return "kgx2";
   return "kg";
 }

@@ -831,14 +831,15 @@ function gen(d){
   var t=o.typeKey;
   if(t==="fond"||t==="longue"){ o.specs=[["Durée",o.plan.durMin?durStr(o.plan.durMin):(o.sub.split(" · ")[0])],["Zone","Z2"],["FC",t==="longue"?("<"+FCZ2HI):FCZ2]]; }
   else if(t==="cotes"){ o.specs=[["Format",o.plan.format||"Côtes"],["Séries",(o.plan.reps||"?")+"×"],["FC",">"+FCZ4]]; }
-  else if(t==="renfo"){ o.specs=[["Format","EMOM+AMRAP"],["Durée","~30′"]]; }
+  else if(t==="renfo"){ o.specs=[["Format",(typeof renfoFmt==="function"?renfoFmt():"3 × 5-6")],["Repos","2′30-3′"],["Durée","45′"]]; }
   else if(t==="mobilite"){ o.specs=[["Durée","~15′"],["Focus",MOBI_FOCUS[(o.plan&&o.plan.mobiIdx)||0]]]; }
   else if(t==="trailforce"){ o.specs=[["Format","Séries droites"],["Durée","~35′"],["Blocs","7"]]; }
   else { o.specs=[]; }
   // Titre façon Strava : "S1 — EF 30' Z2" (runs) · sinon le label simple
   o.displayTitle = (o.sid && o.short) ? (o.sid+" — "+o.short) : o.label;
   o.stravaName  = (o.sid && o.short) ? (o.sid+" - "+o.short) : "";
-  o.linkid = isRun(o.typeKey) ? ("plan:"+iso(d)) : ""; // id de liaison stable (independant du mode manuel/auto)
+  // Liaison Strava : courses ET renfo (HIIT). Un renfo fait doit pouvoir valider la séance du plan.
+  o.linkid = (isRun(o.typeKey)||o.typeKey==="renfo"||o.typeKey==="trailforce") ? ("plan:"+iso(d)) : "";
   if(wi.deload) o.detail.push("⚠️ SEMAINE ALLÈGEMENT — tu dois te sentir soulagé, pas déçu.");
   return o;
 }
@@ -1763,11 +1764,14 @@ function renderRenfoWeek(){ renderAFaire(); }
 function renderSLWeek(){ renderAFaire(); }
 function afaireBtn(o){
   var accent=o.done?"var(--grn)":"var(--acid)";
-  return '<button style="display:flex;flex-direction:column;justify-content:flex-start;background:var(--paper);border:1px solid var(--line);border-left:4px solid '+accent+';border-radius:12px;padding:12px 13px;text-align:left;cursor:pointer;font-family:inherit" onclick="'+o.onclick+'">'+
-    (o.tag?'<div style="font-size:9px;font-weight:800;letter-spacing:.6px;color:var(--mut);text-transform:uppercase;margin-bottom:5px">'+o.tag+'</div>':'')+
-    (o.done?'<div style="font-size:10.5px;font-weight:800;color:var(--grn);letter-spacing:.5px;margin-bottom:4px">✓ FAIT</div>':'')+
-    '<div style="font-size:14px;font-weight:700;line-height:1.2;color:var(--ink)">'+o.label+'</div>'+
-    '<div style="font-size:11px;color:var(--mut);margin-top:5px">'+o.sub+'</div></button>';
+  return '<button style="display:flex;align-items:center;gap:9px;background:var(--paper);border:1px solid var(--line);border-left:3px solid '+accent+';border-radius:11px;padding:9px 11px;text-align:left;cursor:pointer;font-family:inherit;width:100%" onclick="'+o.onclick+'">'+
+    '<div style="flex:1;min-width:0">'+
+      (o.tag?'<div style="font-size:8.5px;font-weight:800;letter-spacing:.6px;color:var(--mut);text-transform:uppercase">'+o.tag+'</div>':'')+
+      '<div style="font-size:12.5px;font-weight:700;line-height:1.25;color:var(--ink);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+o.label+'</div>'+
+      '<div style="font-size:10px;color:var(--mut);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+o.sub+'</div>'+
+    '</div>'+
+    '<div style="font-size:14px;color:'+(o.done?"var(--grn)":"var(--mut)")+';font-weight:800;flex:0 0 auto">'+(o.done?"✓":"›")+'</div>'+
+  '</button>';
 }
 function renderAFaire(){
   var box=document.getElementById("slWeek"); if(!box)return;
@@ -1793,7 +1797,7 @@ function renderAFaire(){
   var bs=blockSess(today);
   box.innerHTML='<div class="card" style="padding:13px;margin-top:10px">'+
     '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px">À FAIRE</div><div style="font-size:10.5px;color:var(--mut)">cette semaine · où tu veux</div></div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+btns+'</div>'+
+    '<div style="display:flex;flex-direction:column;gap:6px">'+btns+'</div>'+
     '<div style="font-size:10.5px;color:var(--mut);margin-top:9px">Longue · qualité · '+nSlots+' renfo'+(nSlots>1?'s':'')+' — à poser quand ta vie le permet. '+blockFor(today).name+' : '+nSlots+' séance'+(nSlots>1?'s':'')+' de renfo par semaine.</div>'+
     '<div id="afaireDetail"></div></div>';
 }
@@ -2690,23 +2694,29 @@ function coachSplits(a){
     '<div style="font-weight:700;color:var(--blue);font-size:12.5px;margin-bottom:7px">↘ Découpage par km</div>'+ph+
     '<table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.5px"><td style="padding:2px 6px">Km</td><td style="padding:2px 6px;text-align:right">Allure</td><td style="padding:2px 6px;text-align:right">FC</td><td style="padding:2px 6px;text-align:right">D±</td></tr>'+rows+'</table></div>';
 }
-function runActsForLink(){ return lastActs.filter(function(a){ return actMatchesSport(a,"course")||actMatchesSport(a,"trail"); }); }
+/* Activités proposées à la liaison, filtrées selon le type de séance.
+   Renfo -> préfixe "HIIT -" · Course/côtes/longue -> "R -" et "T -". */
+function runActsForLink(typeKey){
+  if(typeKey==="renfo"||typeKey==="trailforce")
+    return lastActs.filter(function(a){ return actMatchesSport(a,"hiit"); });
+  return lastActs.filter(function(a){ return actMatchesSport(a,"course")||actMatchesSport(a,"trail"); });
+}
 function renderPlanLink(s){
   var el=document.getElementById("shPlanLink"); if(!el)return;
-  var isRun=(s.typeKey==="fond"||s.typeKey==="longue"||s.typeKey==="cotes");
-  if(!isRun||!s.plan.linkid){ el.innerHTML=""; return; }
+  var linkable=(s.typeKey==="fond"||s.typeKey==="longue"||s.typeKey==="cotes"||s.typeKey==="renfo"||s.typeKey==="trailforce");
+  if(!linkable||!s.plan.linkid){ el.innerHTML=""; return; }
   if(!stravaToken){ el.innerHTML='<div style="color:var(--mut);font-size:12px;margin-top:6px">Connecte Strava pour l\'analyse coach de cette séance.</div>'; return; }
   var lk=linkedData(s.plan.linkid);
   if(lk){
     el.innerHTML='<button class="btn btn-ghost" style="width:100%;font-size:11.5px;padding:6px;margin-top:6px;color:var(--mut)" onclick="unlinkPlan(\''+s.plan.linkid+'\',\''+s.dateKey+'\')">↗ Lié à « '+(lk.name||"Strava")+' » · délier</button>';
   } else {
-    el.innerHTML='<button class="btn btn-ghost" style="width:100%;font-size:12.5px;padding:8px;margin-top:6px" onclick="showPlanLinkList(\''+s.dateKey+'\')">🔗 Lier à ma séance Strava (analyse coach)</button><div id="shPlanLinkList"></div>';
+    el.innerHTML='<button class="btn btn-ghost" style="width:100%;font-size:12.5px;padding:8px;margin-top:6px" onclick="showPlanLinkList(\''+s.dateKey+'\')">🔗 Lier une activité Strava</button><div id="shPlanLinkList"></div>';
   }
 }
 function showPlanLinkList(k){
   var el=document.getElementById("shPlanLinkList"); if(!el)return;
-  var acts=runActsForLink().slice(0,6), s=sessionFor(parse(k));
-  if(!acts.length){ el.innerHTML='<div style="color:var(--mut);font-size:12px;padding:6px 0">Aucune course Strava récente. Recharge Strava (↻).</div>'; return; }
+  var s=sessionFor(parse(k)), acts=runActsForLink(s.typeKey).slice(0,6);
+  if(!acts.length){ el.innerHTML='<div style="color:var(--mut);font-size:12px;padding:6px 0">Aucune activité récente du bon type sur Strava'+(s.typeKey==="renfo"?' (préfixe « HIIT - »)':'')+'. Recharge Strava (↻).</div>'; return; }
   el.innerHTML=acts.map(function(a){
     var d=a.date?a.date.split("-").reverse().slice(0,2).join("/"):"";
     return '<div class="card" style="padding:9px 12px;margin-top:6px;cursor:pointer" onclick="linkPlanStrava(\''+k+'\',\''+s.plan.linkid+'\',\''+a.id+'\')"><div style="font-weight:700;font-size:13px">'+(a.name||"Course")+'</div><div style="color:var(--mut);font-size:11px">'+d+(a.km?' · '+a.km+' km':'')+' · '+fmtMin(a.movingMin)+(a.hrAvg?' · FC '+a.hrAvg:'')+'</div></div>';

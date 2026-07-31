@@ -3803,16 +3803,21 @@ function matinSave(patch){
 function matinStats(){
   var o=matinAll(), keys=Object.keys(o).sort(), k0=iso(new Date());
   function within(k,n){ return (parse(k0)-parse(k))/86400000 <= n; }
-  var s30=[], v30=[], v7=[];
+  var s30=[], v30=[], v7=[], b30=[];
   keys.forEach(function(k){
     var e=o[k]; if(k===k0) return;
-    if(within(k,30)){ if(typeof e.sleep==="number") s30.push(e.sleep); if(typeof e.vfc==="number") v30.push(e.vfc); }
-    if(within(k,7))  { if(typeof e.vfc==="number") v7.push(e.vfc); }
+    if(within(k,30)){
+      if(typeof e.sleep==="number") s30.push(e.sleep);
+      if(typeof e.vfc==="number")   v30.push(e.vfc);
+      if(typeof e.bb==="number")    b30.push(e.bb);
+    }
+    if(within(k,7)){ if(typeof e.vfc==="number") v7.push(e.vfc); }
   });
   function avg(a){ return a.length? a.reduce(function(x,y){return x+y;},0)/a.length : null; }
   function sd(a,m){ if(a.length<3) return null; return Math.sqrt(a.reduce(function(s,x){return s+(x-m)*(x-m);},0)/a.length); }
   var vBase=avg(v30), vSd=vBase!=null?sd(v30,vBase):null;
-  return {sleepBase:avg(s30), sleepN:s30.length, vfcBase:vBase, vfcSd:vSd, vfcN:v30.length, vfc7:avg(v7)};
+  return {sleepBase:avg(s30), sleepN:s30.length, vfcBase:vBase, vfcSd:vSd, vfcN:v30.length, vfc7:avg(v7),
+          bbBase:avg(b30), bbN:b30.length};
 }
 function matinNeeded(){
   var now=new Date();
@@ -3822,17 +3827,23 @@ function matinNeeded(){
 function matinOpen(){
   var k=iso(new Date()), e=matinFor(k)||{}, st=matinStats();
   var hintS = st.sleepBase!=null ? ("Ta moyenne 30 j : "+st.sleepBase.toFixed(1)+" h") : "Baseline en construction.";
+  var hintB = st.bbBase!=null && st.bbN>=7
+            ? ("Ta moyenne 30 j : "+Math.round(st.bbBase)+" — un réveil sous "+Math.round(st.bbBase-15)+" signale une nuit qui n'a pas rechargé.")
+            : "Baseline en construction ("+st.bbN+"/30 jours).";
   var hintV = st.vfcN>=10 ? ("Ta baseline 30 j : "+Math.round(st.vfcBase)+" ms")
             : ("Baseline en construction ("+st.vfcN+"/30 jours) — la VFC ne servira pas avant 3-4 semaines. C'est normal.");
   document.getElementById("mBody").innerHTML=
     '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:26px;letter-spacing:1px">CE MATIN</div>'+
-    '<div style="font-size:12px;color:var(--mut);margin-top:2px">3 champs, 20 secondes. Ça pilote la suggestion du jour.</div>'+
+    '<div style="font-size:12px;color:var(--mut);margin-top:2px">4 champs, 20 secondes. Ça pilote la suggestion du jour.</div>'+
     '<div class="mQ">Sommeil (heures)</div>'+
     '<input class="mIn" id="mSleep" type="number" step="0.25" inputmode="decimal" placeholder="ex. 6,5" value="'+(e.sleep!=null?e.sleep:"")+'">'+
     '<div class="mHint">'+hintS+'</div>'+
     '<div class="mQ">VFC nocturne (ms)</div>'+
     '<input class="mIn" id="mVfc" type="number" step="1" inputmode="decimal" placeholder="ex. 42" value="'+(e.vfc!=null?e.vfc:"")+'">'+
     '<div class="mHint">Garmin Connect → détails du sommeil. La <b>valeur en ms</b>, pas le statut. '+hintV+'</div>'+
+    '<div class="mQ">Body Battery au réveil</div>'+
+    '<input class="mIn" id="mBb" type="number" step="1" min="0" max="100" inputmode="decimal" placeholder="ex. 72" value="'+(e.bb!=null?e.bb:"")+'">'+
+    '<div class="mHint">'+hintB+'</div>'+
     '<div class="mQ">Par rapport à un lever normal à 4h, ce matin c\'est…</div>'+
     '<div class="mFeel" id="mFeel">'+FEELS.map(function(f){
       return '<button class="'+(e.feel===f.k?"on":"")+'" onclick="matinFeel(\''+f.k+'\')">'+f.l+'</button>';
@@ -3859,6 +3870,8 @@ function matinValidate(){
   var patch={skipped:false};
   if(s&&s.value.trim()!=="") patch.sleep=Number(String(s.value).replace(",","."));
   if(v&&v.value.trim()!=="") patch.vfc=Number(String(v.value).replace(",","."));
+  var bb=document.getElementById("mBb");
+  if(bb&&bb.value.trim()!=="") patch.bb=Number(String(bb.value).replace(",","."));
   if(_mFeel) patch.feel=_mFeel;
   matinSave(patch);
   document.getElementById("mSheet").classList.remove("on");
@@ -3881,6 +3894,13 @@ function adaptCompute(){
   if(typeof e.vfc==="number" && st.vfcBase!=null && st.vfcSd && st.vfcN>=14){
     if(e.vfc < st.vfcBase-st.vfcSd){ flags.push("vfc"); reasons.push("VFC à "+Math.round(e.vfc)+" ms, sous ta baseline de "+Math.round(st.vfcBase)+" ms"); }
   }
+  /* Body Battery : indicateur de recharge nocturne. Garmin l'enregistre tous les jours,
+     c'est donc le signal le plus fiable des quatre — il ne manque jamais. */
+  if(typeof e.bb==="number"){
+    if(st.bbBase!=null && st.bbN>=7){
+      if(e.bb <= st.bbBase-15){ flags.push("bodybattery"); reasons.push("Body Battery à "+Math.round(e.bb)+" contre "+Math.round(st.bbBase)+" en moyenne"); }
+    } else if(e.bb<50){ flags.push("bodybattery"); reasons.push("Body Battery au réveil à "+Math.round(e.bb)); }
+  }
   if(e.feel==="moins"){ flags.push("ressenti"); reasons.push("ressenti sous ton normal"); }
   if(e.feel==="bien_moins"){ flags.push("ressenti"); flags.push("ressenti_fort"); reasons.push("ressenti nettement dégradé"); }
 
@@ -3893,7 +3913,7 @@ function adaptCompute(){
   else if(n===2 || acwrHigh) level=1;
   else if(n===1 && acwrWarn) level=1;
 
-  return {level:level, reasons:reasons, filled:!!(e.sleep!=null||e.vfc!=null||e.feel), skipped:!!e.skipped, entry:e, stats:st, ls:ls};
+  return {level:level, reasons:reasons, filled:!!(e.sleep!=null||e.vfc!=null||e.bb!=null||e.feel), skipped:!!e.skipped, entry:e, stats:st, ls:ls};
 }
 function adaptText(a, sess){
   var t=sess?sess.typeKey:"", lbl=sess?sess.plan.label:"la séance";
@@ -3918,6 +3938,7 @@ function renderAdapt(){
     var bits=[];
     if(e.sleep!=null) bits.push('<span style="color:var(--mut)">Sommeil</span> <b>'+e.sleep+' h</b>');
     if(e.vfc!=null)   bits.push('<span style="color:var(--mut)">VFC</span> <b>'+Math.round(e.vfc)+' ms</b>');
+    if(e.bb!=null)    bits.push('<span style="color:var(--mut)">BB</span> <b>'+Math.round(e.bb)+'</b>');
     if(e.feel){ var f=FEELS.filter(function(x){return x.k===e.feel;})[0]; if(f) bits.push('<span style="color:var(--mut)">'+f.l+'</span>'); }
     band='<div class="mBand"><div>'+bits.join(' &nbsp;·&nbsp; ')+'</div><button onclick="matinEdit()" style="border:none;background:none;color:var(--blue);font-size:15px;cursor:pointer;padding:2px 4px">✎</button></div>';
   } else if(a.skipped){

@@ -302,7 +302,6 @@
     </div>
     <div class="weeklbl"><span class="eyebrow" id="weekLbl" style="color:var(--ink)">Ta semaine</span><span style="display:flex;align-items:center;gap:8px"><span onclick="weekNav(-1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">‹</span><span class="eyebrow" id="weekRange">—</span><span onclick="weekNav(1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">›</span></span></div>
     <div class="week" id="weekStrip"></div>
-    <div id="weekRecap"></div>
     <div class="weeklbl" style="margin-top:22px"><span class="eyebrow" style="color:var(--ink)">Aujourd'hui</span></div>
     <div class="card hero" id="heroCard" style="position:relative">
       <div class="type" id="heroType">—</div>
@@ -315,10 +314,23 @@
       </div>
     </div>
     <div id="extrasBox"></div>
-    <div id="slWeek"></div>
+    <!-- Carte "SL de la semaine" retirée (le dimanche est désormais une séance chiffrée du plan).
+         Code conservé, conteneur masqué. Remplacée par le bouton "Déplacer" sur la séance. -->
+    <div id="slWeek" style="display:none"></div>
     <div id="suppHome"></div>
-    <div id="renfoWeek"></div>
+    <!-- Carte "Renfo de la semaine" retirée (le renfo est désormais placé au vendredi par le plan).
+         Code conservé, conteneur masqué. -->
+    <div id="renfoWeek" style="display:none"></div>
     <div id="loadCard"></div>
+    <div id="gtgMini"></div>
+  </section>
+
+  <!-- SEMAINE -->
+  <section class="view" id="v-week">
+    <div class="topline"><div><div class="eyebrow">Vue d'ensemble</div><div class="bigtitle bebas">LA SEMAINE</div></div></div>
+    <div id="coachRead"></div>
+    <div id="weekRecap"></div>
+    <div id="weekViewBody"></div>
     <div class="card stravacard">
       <div class="strava" onclick="goStrava()">
         <div class="ic">≈</div>
@@ -328,13 +340,7 @@
       <div id="stravaActs"></div>
       <div id="tokExport"></div>
     </div>
-  </section>
 
-  <!-- SEMAINE -->
-  <section class="view" id="v-week">
-    <div class="topline"><div><div class="eyebrow">Vue d'ensemble</div><div class="bigtitle bebas">LA SEMAINE</div></div></div>
-    <div id="coachRead"></div>
-    <div id="weekViewBody"></div>
     <div class="capnote" style="margin-top:2px">Repères : VMA 16,5 km/h · FCmax 179 bpm. Allures = références plat ; sur trail (D+), pilote à la FC / sensation. Dis-moi pour ajuster.</div>
   </section>
 
@@ -2509,11 +2515,13 @@ function renderToday(){
   else { a='<button class="btn btn-go" '+bs+' onclick="openSheet(\''+s.dateKey+'\',true)">VALIDER</button>'; }
   document.getElementById("heroActions").innerHTML=a;
   renderWeek();
-  renderWeekRecap();
   renderLoadCard();
+  renderGtgMini();
   renderExtras();
-  renderRenfoWeek();
   renderSuppHome();
+  /* renderRenfoWeek() / renderSLWeek() : cartes retirées de l'accueil, conteneurs masqués.
+     Appels conservés pour ne rien casser si les cartes sont réactivées. */
+  renderRenfoWeek();
   renderSLWeek();
 }
 var weekOffset=0;
@@ -2633,8 +2641,30 @@ function renderLoadCard(){
     '<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span style="color:var(--mut)">⛰️ D+ du mois</span>'+
     '<b style="color:'+dc+'">'+d.monthD.toLocaleString("fr-FR")+' m <span style="color:var(--mut);font-weight:400">/ '+ceil.toLocaleString("fr-FR")+' m'+(mc.lifted?' ⬆':'')+'</span></b></div>'+
     '<div style="height:7px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+dc+'"></div></div></div>';
+  // Jauge hebdo (lundi → dimanche) vs cible du bloc
+  var wr=weekRecapData(), tg=weekTarget(today);
+  if(tg && tg.dp>0){
+    var wpct=Math.min(100,Math.round(wr.runD/tg.dp*100));
+    var wc = wr.runD>tg.dp*1.15 ? "var(--orange)" : (wr.runD>=tg.dp*0.85 ? "var(--grn)" : "var(--blue)");
+    h+='<div style="margin-top:10px">'+
+      '<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span style="color:var(--mut)">📅 D+ de la semaine</span>'+
+      '<b style="color:'+wc+'">'+Math.round(wr.runD).toLocaleString("fr-FR")+' m <span style="color:var(--mut);font-weight:400">/ '+tg.dp.toLocaleString("fr-FR")+' m</span></b></div>'+
+      '<div style="height:7px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+wpct+'%;background:'+wc+'"></div></div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--mut);margin-top:4px">'+
+        '<span>'+Math.round(wr.runKm)+' / '+tg.km+' km</span><span>'+tg.block.name+' · S'+tg.wb+'/'+tg.tot+'</span></div></div>';
+  }
   h+='</div>';
   box.innerHTML=h;
+}
+/* Compteur GTG tractions compact sur l'accueil */
+function renderGtgMini(){
+  var box=document.getElementById("gtgMini"); if(!box) return;
+  var o=pullGet(), k=pullDay();
+  var done=(o.gtg&&o.gtg[k])||0, per=pullRepsPerPass(o.max||2);
+  box.innerHTML='<div class="card" style="padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px" onclick="nav(\'pull\')">'+
+    '<div style="font-size:12.5px"><span style="color:var(--mut)">💪 GTG tractions</span> <b style="font-size:15px">'+done+'</b>'+
+    '<span style="color:var(--mut);font-size:11px"> passage'+(done>1?'s':'')+' aujourd\'hui · '+per+' rep'+(per>1?'s':'')+'/passage</span></div>'+
+    '<div style="font-size:11px;color:var(--blue);font-weight:700;white-space:nowrap">ouvrir →</div></div>';
 }
 function realDaySummary(key){
   // ce qui a été RÉELLEMENT fait ce jour (toutes les activités Strava), pour les jours validés
@@ -2678,6 +2708,7 @@ function renderWeekView(){
     out+='</div>';
   }
   document.getElementById("weekViewBody").innerHTML=out;
+  renderWeekRecap();
   renderCoachRead();
 }
 function renderCoachRead(){

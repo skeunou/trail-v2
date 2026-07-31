@@ -1522,29 +1522,122 @@ function renfoFmt(){
 }
 function renfoFmtSide(){ return renfoFmt()+" / jambe"; }
 var RENFO_REST="récup 2′30-3′";
+/* ── VARIÉTÉ ──
+   Principe : les mouvements principaux restent stables PENDANT un bloc (sinon pas de
+   progression de charge mesurable), mais changent de variante à chaque bloc.
+   L'accessoire et le Tabata, eux, tournent chaque semaine. */
+function blockRank(){ var b=blockFor(today); for(var i=0;i<BLOCKS.length;i++){ if(BLOCKS[i].id===b.id) return i; } return 0; }
+function pick(arr,n){ return arr[((n%arr.length)+arr.length)%arr.length]; }
+
+/* Variantes des mouvements principaux — 1 rotation par bloc */
+var MAIN_VAR={
+  montee1:[
+    {n:"Step-up box 51 cm (haltères)",c:"Montée explosive, descente 3s. Aucune impulsion du pied resté au sol."},
+    {n:"Fente bulgare (haltères)",c:"Pied arrière surélevé, buste légèrement penché. Descente contrôlée 3s."},
+    {n:"Step-up box 61 cm (haltères)",c:"Plus haut = plus proche de la marche raide en trail. Contrôle avant charge."}
+  ],
+  montee2:[
+    {n:"Hip thrust barre",c:"Pause 1s verrouillée en haut, menton rentré, côtes basses."},
+    {n:"Hip thrust unilatéral",c:"Une jambe. Bassin strictement horizontal, pas de rotation."},
+    {n:"Soulevé de terre roumain barre",c:"Hanche loin en arrière, ischios sous tension, dos plat."}
+  ],
+  montee3:[
+    {n:"Mollets debout jambe tendue",c:"Amplitude complète, 2s de pause en bas. Gastrocnémien."},
+    {n:"Mollets debout unilatéral lesté",c:"Une jambe, haltère à la main. Révèle les asymétries."}
+  ],
+  exc1:[
+    {n:"Step-down box 51 cm",c:"Descente en 4 secondes pleines. Remontée avec aide si besoin."},
+    {n:"Split squat excentrique",c:"4s à la descente, remontée normale. Durabilité pour les longues descentes."},
+    {n:"Step-down box 61 cm",c:"Amplitude augmentée. Uniquement si le contrôle à 51 cm est propre."}
+  ],
+  exc2:[
+    {n:"Squat tempo",c:"4s à la descente, 1s de pause en bas, remontée normale."},
+    {n:"Squat gobelet tempo",c:"Charge devant, buste plus vertical. 4s descente."},
+    {n:"Squat barre haute",c:"Amplitude complète, talons au sol, genoux qui suivent les pointes."}
+  ],
+  exc3:[
+    {n:"Fentes marchées (haltères)",c:"Jamais de version sautée. Genou aligné sur la pointe de pied."},
+    {n:"Fente arrière lestée",c:"Encaisse la descente, pas de rebond en bas."},
+    {n:"Heel-drop soléaire (genou fléchi)",c:"Descente lente du talon sous la marche, genou fléchi."}
+  ],
+  haut1:[
+    {n:"Tractions pronation",c:"Lestées dès que 6 strictes propres. + GTG dans la journée."},
+    {n:"Tractions supination",c:"Prise supination, plus de biceps. Même exigence de contrôle."},
+    {n:"Tractions prise neutre",c:"Prise marteau, épaule plus confortable."}
+  ],
+  haut2:[
+    {n:"Rowing haltère unilatéral",c:"Excentrique 2s. Coude le long du corps, omoplate qui glisse."},
+    {n:"Rowing barre buste penché",c:"Dos plat, buste à 45°. Tire vers le nombril."},
+    {n:"Rowing TRX",c:"Corps gainé, pieds avancés pour durcir. Poitrine vers les poignées."}
+  ],
+  haut3:[
+    {n:"Développé incliné",c:"Banc à 30-45°. Omoplates serrées, trajectoire stable."},
+    {n:"Développé militaire debout",c:"Gainage complet, côtes basses, pas de cambrure."},
+    {n:"Dips",c:"Buste légèrement penché, descente jusqu'à 90° au coude."}
+  ]
+};
+
+/* Accessoires — rotation hebdomadaire */
+var ACC_POOL={
+  montee:[
+    {n:"Soléaire assis (genou fléchi)",r:"3 × 12 · récup 60″",c:"Maillon faible fréquent en montée raide. Genou à 90°."},
+    {n:"Pont fessier unilatéral",r:"3 × 12 / côté · récup 45″",c:"Poussée talon, bassin stable."},
+    {n:"Abduction hanche élastique",r:"3 × 15 / côté · récup 45″",c:"Moyen fessier — stabilité du bassin en montée."},
+    {n:"Marche fermier (haltères)",r:"3 × 40 m · récup 60″",c:"Gainage global sous charge. Épaules basses."},
+    {n:"Montée sur pointes unipodale",r:"3 × 15 / côté · récup 45″",c:"Endurance du mollet, révèle les asymétries."}
+  ],
+  excentrique:[
+    {n:"Chaise murale isométrique",r:"3 × 45″ · récup 60″",c:"Cuisses parallèles, dos plaqué."},
+    {n:"Nordic curl (ou leg curl TRX)",r:"3 × 6 · récup 75″",c:"Freine la descente au maximum, remontée assistée."},
+    {n:"Pallof press",r:"3 × 12 / côté · récup 45″",c:"Anti-rotation. Résiste, ne tourne pas."},
+    {n:"Extension mollet excentrique",r:"3 × 10 / côté · récup 45″",c:"Monte à deux jambes, descends sur une, très lentement."},
+    {n:"Planche latérale dynamique",r:"3 × 12 / côté · récup 45″",c:"Bassin qui monte et descend, corps aligné."}
+  ],
+  haut:[
+    {n:"Face pull élastique",r:"3 × 15 · récup 45″",c:"Coiffe des rotateurs — prévention directe du travail aux bâtons."},
+    {n:"Élévations latérales élastique",r:"3 × 15 · récup 45″",c:"Deltoïde moyen, mouvement lent et contrôlé."},
+    {n:"Rotation externe élastique",r:"3 × 15 / côté · récup 45″",c:"Coude collé au corps, avant-bras qui s'ouvre."},
+    {n:"Curl marteau (haltères)",r:"3 × 12 · récup 45″",c:"Coudes fixes, pas d'élan du buste."},
+    {n:"Extension triceps élastique",r:"3 × 15 · récup 45″",c:"Coudes hauts et immobiles."}
+  ]
+};
+
+/* Tabata — 4 exercices tirés d'un pool de 9, rotation hebdomadaire */
+var TABATA_POOL=["dead bug","shoulder tap","hollow hold","mountain climbers","russian twists","bicycle","V-ups","ab wheel","crunchs"];
+function tabataSet(n){
+  var out=[], L=TABATA_POOL.length;
+  for(var i=0;i<4;i++) out.push(TABATA_POOL[(((n*4+i)%L)+L)%L]);
+  return out;
+}
+function tabataBlock(n){
+  return {label:"Finisher",name:"Tabata abdos",reps:"1-2 blocs · 8 × (20″/10″)",
+    cue:"Cette semaine : "+tabataSet(n).join(" · ")+". 4 min par bloc à RPE 9 — 1 seul bloc en bloc force max ou semaine à fort D+."};
+}
 function buildRenfoWeek(){
-  var M=renfoFmt(), MS=renfoFmtSide();
+  var M=renfoFmt(), MS=renfoFmtSide(), wc=weekCounter(), br=blockRank();
+  function main(pool,reps){ var v=pick(MAIN_VAR[pool],br); return {name:v.n, reps:reps, cue:v.c}; }
+  function acc(pool){ var a=pick(ACC_POOL[pool],wc); return {label:"Accessoire",name:a.n,reps:a.r,cue:a.c}; }
+  var m1=main("montee1",MS+" · "+RENFO_REST), m2=main("montee2",M+" · "+RENFO_REST), m3=main("montee3","3 × 8 · récup 90″");
+  var e1=main("exc1",MS+" · "+RENFO_REST),    e2=main("exc2",M+" · "+RENFO_REST),    e3=main("exc3","3 × 8 / jambe · récup 90″");
+  var h1=main("haut1",M+" · "+RENFO_REST),    h2=main("haut2","3 × 6 / côté · "+RENFO_REST), h3=main("haut3",M+" · "+RENFO_REST);
   return [
     {cat:"A", name:"Accent MONTÉE", blocks:[
-      {label:"Principal 1 · poussée unilatérale",name:"Step-up box 51 cm (haltères)",reps:MS+" · "+RENFO_REST,cue:"Montée explosive, descente 3s contrôlée. Aucune impulsion du pied resté au sol — c'est la jambe haute qui travaille."},
-      {label:"Principal 2 · extension de hanche",name:"Hip thrust barre",reps:M+" · "+RENFO_REST,cue:"Pause 1s verrouillée en haut, menton rentré, côtes basses. Le moteur de la grimpe."},
-      {label:"Principal 3 · mollet",name:"Mollets debout jambe tendue",reps:"3 × 8 · récup 90″",cue:"Amplitude complète, 2s de pause en bas. Gastrocnémien."},
-      {label:"Accessoire",name:"Soléaire assis (genou fléchi)",reps:"3 × 12 · récup 60″",cue:"Maillon faible fréquent en montée raide. Genou à 90°, charge sur le genou."},
-      {label:"Finisher",name:"Tabata abdos",reps:"1-2 blocs · 8 × (20″/10″)",cue:"4 min par bloc à RPE 9. 1 seul bloc en bloc force max ou semaine à fort D+."}
+      {label:"Principal 1 · poussée unilatérale",name:m1.name,reps:m1.reps,cue:m1.cue},
+      {label:"Principal 2 · extension de hanche",name:m2.name,reps:m2.reps,cue:m2.cue},
+      {label:"Principal 3 · mollet",name:m3.name,reps:m3.reps,cue:m3.cue},
+      acc("montee"), tabataBlock(wc)
     ]},
     {cat:"A", name:"Accent EXCENTRIQUE", blocks:[
-      {label:"Principal 1 · descente",name:"Step-down box 51 cm",reps:MS+" · "+RENFO_REST,cue:"Descente en 4 secondes pleines. Remontée avec aide si besoin. C'est ta prépa descente."},
-      {label:"Principal 2 · quadriceps",name:"Squat tempo",reps:M+" · "+RENFO_REST,cue:"4s à la descente, 1s de pause en bas, remontée normale."},
-      {label:"Principal 3 · impact contrôlé",name:"Fentes marchées (haltères)",reps:"3 × 8 / jambe · récup 90″",cue:"Jamais de version sautée. Genou aligné sur la pointe de pied."},
-      {label:"Accessoire",name:"Chaise murale isométrique",reps:"3 × 45″ · récup 60″",cue:"Cuisses parallèles au sol, dos plaqué. Endurance de force en descente."},
-      {label:"Finisher",name:"Tabata abdos",reps:"1-2 blocs · 8 × (20″/10″)",cue:"Rotation : dead bug, shoulder tap, hollow hold, mountain climbers, russian twists, V-ups, ab wheel."}
+      {label:"Principal 1 · descente",name:e1.name,reps:e1.reps,cue:e1.cue},
+      {label:"Principal 2 · quadriceps",name:e2.name,reps:e2.reps,cue:e2.cue},
+      {label:"Principal 3 · impact contrôlé",name:e3.name,reps:e3.reps,cue:e3.cue},
+      acc("excentrique"), tabataBlock(wc+1)
     ]},
     {cat:"B", name:"Accent HAUT & TIRAGE", blocks:[
-      {label:"Principal 1 · tirage vertical",name:"Tractions pronation",reps:M+" · "+RENFO_REST,cue:"Lestées dès que 6 strictes propres. + GTG dans la journée."},
-      {label:"Principal 2 · tirage horizontal",name:"Rowing haltère unilatéral",reps:"3 × 6 / côté · "+RENFO_REST,cue:"Excentrique 2s contrôlé. Coude le long du corps, omoplate qui glisse."},
-      {label:"Principal 3 · poussée",name:"Développé incliné",reps:M+" · "+RENFO_REST,cue:"Banc à 30-45°. Omoplates serrées, trajectoire stable."},
-      {label:"Accessoire",name:"Face pull élastique",reps:"3 × 15 · récup 45″",cue:"Coiffe des rotateurs — prévention directe du travail aux bâtons."},
-      {label:"Finisher",name:"Tabata abdos",reps:"1-2 blocs · 8 × (20″/10″)",cue:"4 min par bloc. Après du lourd, ce n'est pas gratuit pour le système nerveux."}
+      {label:"Principal 1 · tirage vertical",name:h1.name,reps:h1.reps,cue:h1.cue},
+      {label:"Principal 2 · tirage horizontal",name:h2.name,reps:h2.reps,cue:h2.cue},
+      {label:"Principal 3 · poussée",name:h3.name,reps:h3.reps,cue:h3.cue},
+      acc("haut"), tabataBlock(wc+2)
     ]}
   ];
 }
@@ -3258,7 +3351,7 @@ function chgUnit(n){
   var s=String(n||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   if(/planche|gainage|hollow|dead ?bug|shoulder ?tap|chaise|isometr|mountain|crunch|v-?up|russian|bicycle|superman|bird ?dog|ab ?wheel|nordic|tabata|abdos|finisher/.test(s)) return "none";
   if(/elastique|band|pallof|face ?pull|rotation externe|y\/t\/w/.test(s)) return "band";
-  if(/traction|pull-?up|dips|pompes|push-?up|dead ?hang|muscle-?up/.test(s)) return "lest";
+  if(/traction|pull-?up|dips|pompes|push-?up|dead ?hang|muscle-?up|rowing trx|nordic/.test(s)) return "lest";
   if(/halter|dumbbell|\bdb\b/.test(s)) return "kgx2";
   return "kg";
 }

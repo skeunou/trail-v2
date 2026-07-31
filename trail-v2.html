@@ -3632,7 +3632,7 @@ initCloud();
 var lvView="today", lvRestoring=false;
 if(window.LVNAV){
   LVNAV.init({
-    app:"ppl",
+    app:"ppl", sections:".sec, details", overlays:".sheet",
     snapshot:function(){ return {v:lvView}; },
     restore:function(s){
       if(!s||!s.v) return;

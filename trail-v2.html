@@ -20,6 +20,21 @@
     --shadow:0 6px 22px rgba(20,30,20,.08);
     --nav:64px;
   }
+  /* ===== CARNET DE CHARGES (renfo:charges:v1) ===== */
+  .chgBox{margin:12px 0 4px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);text-align:left}
+  .chgLast{font-size:11.5px;color:var(--mut);margin-bottom:8px;line-height:1.45}
+  .chgLast b{color:var(--ink);font-weight:700}
+  .chgIn{display:flex;align-items:center;gap:8px}
+  .chgIn input{flex:1;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.5px;text-align:center}
+  .chgIn input:focus{outline:none;border-color:var(--acid-d)}
+  .chgU{font-size:11px;color:var(--mut);min-width:52px}
+  .chgFeel{display:flex;gap:5px;margin-top:9px}
+  .chgFeel button{flex:1;padding:7px 2px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--mut);font-size:10.5px;font-weight:600;font-family:inherit}
+  .chgFeel button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chgHistBtn{margin-top:9px;width:100%;padding:6px;border:none;background:none;color:var(--mut);font-size:11px;font-family:inherit}
+  .chgHist{margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+  .chgHist div{display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);padding:3px 0}
+  .chgHist span{color:var(--mut)}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
   body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
@@ -1660,7 +1675,7 @@ function cloudSave(){
   syncTimer=setTimeout(cloudSaveNow,1200); // debounce : 1 écriture par rafale
 }
 function cloudSaveNow(){
-  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet()};
+  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet(),charges:chgAll()};
   fetch(SYNC_URL+"?action=save&user="+SYNC_USER,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
     .then(function(r){return r.json();})
     .then(function(d){ setSyncBadge(d&&d.ok?"ok":"err"); })
@@ -1687,6 +1702,17 @@ function mergeCloud(d){
   (d.log||[]).forEach(function(e){ var k=lkey(e), ex=byKey[k]; if(!ex||((e._u||0)>(ex._u||0))) byKey[k]=e; });
   _writeLog(Object.keys(byKey).map(function(k){return byKey[k];}));
   // extras : union par xid, on garde le plus récent
+  // charges renfo : union par exercice + par date, on garde la plus récente (_u)
+  if(d.charges){
+    var locC=chgAll(), clC=d.charges;
+    Object.keys(clC).forEach(function(k){
+      var la=locC[k]||[], ca=clC[k]||[], byD={};
+      la.forEach(function(e){byD[e.d]=e;});
+      ca.forEach(function(e){ var ex=byD[e.d]; if(!ex||((e._u||0)>(ex._u||0))) byD[e.d]=e; });
+      locC[k]=Object.keys(byD).sort().map(function(x){return byD[x];});
+    });
+    try{ localStorage.setItem(CHG_KEY, JSON.stringify(locC)); }catch(e){}
+  }
   var byX={}; extrasGet().forEach(function(e){byX[e.xid]=e;});
   (d.extras||[]).forEach(function(e){ var ex=byX[e.xid]; if(!ex||((e._u||0)>(ex._u||0))) byX[e.xid]=e; });
   _writeExtras(Object.keys(byX).map(function(k){return byX[k];}));
@@ -2867,6 +2893,104 @@ function rfStartRecup(){
     if(t<=0){ clearInterval(pTimer); dbeep(); if(box){box.classList.remove("run");box.classList.add("ready");} e.textContent="PRÊT"; }
   },1000);
 }
+/* ================= CARNET DE CHARGES ================= */
+var CHG_KEY="renfo:charges:v1";
+function chgAll(){ try{ return JSON.parse(localStorage.getItem(CHG_KEY)||"{}")||{}; }catch(e){ return {}; } }
+function chgWrite(o){ try{ localStorage.setItem(CHG_KEY, JSON.stringify(o)); }catch(e){} cloudSave(); }
+function chgSlug(n){
+  return String(n||"").toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/\(.*?\)/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+}
+/* Unité par exercice : none = pas de charge, band = élastique, lest = poids de corps + lest */
+function chgUnit(n){
+  var s=String(n||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  if(/planche|gainage|hollow|dead ?bug|shoulder ?tap|chaise|isometr|mountain|crunch|v-?up|russian|bicycle|superman|bird ?dog|ab ?wheel|nordic/.test(s)) return "none";
+  if(/elastique|band|pallof|face ?pull|rotation externe|y\/t\/w/.test(s)) return "band";
+  if(/traction|pull-?up|dips|pompes|push-?up|dead ?hang|muscle-?up/.test(s)) return "lest";
+  if(/halter|dumbbell|\bdb\b/.test(s)) return "kgx2";
+  return "kg";
+}
+var CHG_ULAB={kg:"kg", kgx2:"kg × 2", lest:"kg de lest", band:"résistance"};
+var CHG_PH={kg:"ex. 60", kgx2:"ex. 14", lest:"0 = poids du corps", band:"Light / Medium / Hard"};
+function chgHist(name){ var a=chgAll()[chgSlug(name)]; return Array.isArray(a)?a:[]; }
+function chgLast(name){ var h=chgHist(name); return h.length?h[h.length-1]:null; }
+/* Écrit (ou met à jour) l'entrée du jour pour cet exercice */
+function chgSaveToday(name, patch){
+  var o=chgAll(), k=chgSlug(name), d=iso(new Date()), a=o[k]||[];
+  var last=a.length?a[a.length-1]:null, e;
+  if(last && last.d===d){ e=last; } else { e={d:d, u:chgUnit(name), n:name}; a.push(e); }
+  Object.keys(patch).forEach(function(x){ e[x]=patch[x]; });
+  e._u=Date.now(); o[k]=a; chgWrite(o);
+}
+function chgFmt(e){
+  if(!e||e.c===undefined||e.c===""||e.c===null) return "";
+  var u=e.u||"kg";
+  if(u==="band") return String(e.c);
+  if(u==="kgx2") return e.c+" kg × 2";
+  if(u==="lest") return (Number(e.c)>0? "+"+e.c+" kg" : "poids du corps");
+  return e.c+" kg";
+}
+function chgDateFR(d){ try{ var p=String(d).split("-"); return p[2]+"/"+p[1]; }catch(e){ return d; } }
+/* Bloc affiché en tête d'exercice */
+function chgRowHTML(name, repsHead){
+  var u=chgUnit(name); if(u==="none") return "";
+  var h=chgHist(name), d=iso(new Date());
+  var cur=(h.length && h[h.length-1].d===d) ? h[h.length-1] : null;
+  var prev=null;
+  for(var i=h.length-1;i>=0;i--){ if(h[i].d!==d && h[i].c!==undefined && h[i].c!==""){ prev=h[i]; break; } }
+  var lastLine = prev
+    ? 'Dernière fois : <b>'+chgFmt(prev)+'</b>'+(prev.r?' · '+prev.r:'')+(prev.f?' · '+prev.f:'')+' <span style="opacity:.7">('+chgDateFR(prev.d)+')</span>'
+    : 'Première fois sur cet exercice — note ta charge, elle servira de repère.';
+  var val = cur && cur.c!==undefined ? String(cur.c) : (prev? String(prev.c) : "");
+  var feels=["facile","correct","dur","trop dur"];
+  var esc=String(name).replace(/'/g,"\\'");
+  return '<div class="chgBox">'+
+    '<div class="chgLast">'+lastLine+'</div>'+
+    '<div class="chgIn">'+
+      '<input id="chgVal" type="'+(u==="band"?"text":"number")+'" inputmode="'+(u==="band"?"text":"decimal")+'" step="0.5" placeholder="'+CHG_PH[u]+'" value="'+val+'" onchange="chgOnVal(\''+esc+'\')" onblur="chgOnVal(\''+esc+'\')">'+
+      '<span class="chgU">'+CHG_ULAB[u]+'</span>'+
+    '</div>'+
+    '<div class="chgFeel" id="chgFeel">'+feels.map(function(f){
+      return '<button class="'+(cur&&cur.f===f?'on':'')+'" onclick="chgOnFeel(\''+esc+'\',\''+f+'\')">'+f+'</button>';
+    }).join('')+'</div>'+
+    (h.length?'<button class="chgHistBtn" onclick="chgToggleHist()">▾ Historique ('+h.length+')</button><div class="chgHist" id="chgHistBox" style="display:none">'+
+      h.slice(-8).reverse().map(function(e){
+        return '<div><span>'+chgDateFR(e.d)+'</span><b>'+(chgFmt(e)||'—')+'</b><span>'+(e.f||'')+'</span></div>';
+      }).join('')+'</div>':'')+
+  '</div>';
+}
+function chgOnVal(name){
+  var el=document.getElementById("chgVal"); if(!el) return;
+  var v=el.value.trim(); if(v==="") return;
+  var seg=pSegs[pIdx]||{};
+  chgSaveToday(name,{c:(chgUnit(name)==="band"? v : Number(v)), u:chgUnit(name), r:(seg.repsHead||"")});
+}
+function chgOnFeel(name,f){
+  chgOnVal(name);
+  chgSaveToday(name,{f:f});
+  var box=document.getElementById("chgFeel"); if(!box) return;
+  Array.prototype.forEach.call(box.children,function(b){ b.className = (b.textContent===f?"on":""); });
+}
+function chgToggleHist(){
+  var b=document.getElementById("chgHistBox"); if(!b) return;
+  b.style.display = b.style.display==="none" ? "block" : "none";
+}
+/* Bilan hebdo : évolution des charges sur 7 jours (utilisé par le récap du dimanche) */
+function chgWeekReport(){
+  var o=chgAll(), out=[], now=new Date(); now.setHours(0,0,0,0);
+  Object.keys(o).forEach(function(k){
+    var a=o[k]; if(!Array.isArray(a)||!a.length) return;
+    var recent=a.filter(function(e){ return (now-parse(e.d))/86400000 <= 7 && e.c!==undefined && e.c!==""; });
+    if(!recent.length) return;
+    var cur=recent[recent.length-1], prev=null;
+    for(var i=a.length-1;i>=0;i--){ if(a[i].d!==cur.d && a[i].c!==undefined && a[i].c!==""){ prev=a[i]; break; } }
+    var delta=null;
+    if(prev && typeof cur.c==="number" && typeof prev.c==="number") delta=cur.c-prev.c;
+    out.push({name:cur.n||k, charge:chgFmt(cur), feel:cur.f||"", delta:delta, date:cur.d});
+  });
+  return out;
+}
 function renderRenfoWork(seg){
   clearInterval(pTimer);
   document.getElementById("pSeg").textContent=(seg.label||"Exercice")+" "+(pIdx+1)+"/"+pSegs.length;
@@ -2884,6 +3008,7 @@ function renderRenfoWork(seg){
     figHTML+
     '<div class="pname bebas">'+seg.name+'</div>'+
     (seg.repsHead?'<div class="preps">'+seg.repsHead+'</div>':'')+
+    chgRowHTML(seg.name, seg.repsHead)+
     '<div class="rrow">'+
       '<button class="rserie'+(pState.rfDone>=pState.rfN?' done':'')+'" id="rfSerie" onclick="rfValidate()"><span class="rlab">Série ✓</span><span class="rcnt bebas" id="rfCnt">'+pState.rfDone+' / '+pState.rfN+'</span></button>'+
       '<div class="rrecup" id="rfRecup"><span class="rlab">Récup</span><span class="rtime bebas" id="rfTime">'+fmtClock(pState.rfRecup)+'</span></div>'+

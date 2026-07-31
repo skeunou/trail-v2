@@ -386,6 +386,14 @@
   </section>
 </div>
 
+<div id="jsErr" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#e5484d;color:#fff;padding:10px 14px;font-family:'DM Sans',system-ui,sans-serif;font-size:12px;line-height:1.4;box-shadow:0 4px 14px rgba(0,0,0,.25)">
+  <div style="display:flex;gap:10px;align-items:flex-start">
+    <div style="flex:1;min-width:0"><b>Erreur détectée</b><div id="jsErrMsg" style="font-size:11px;opacity:.95;margin-top:3px;word-break:break-word"></div></div>
+    <button onclick="jsErrCopy()" style="border:1px solid rgba(255,255,255,.5);background:none;color:#fff;border-radius:7px;padding:5px 9px;font-size:11px;font-family:inherit;font-weight:700">copier</button>
+    <button onclick="document.getElementById('jsErr').style.display='none'" style="border:none;background:none;color:#fff;font-size:17px;line-height:1;padding:0 3px">×</button>
+  </div>
+</div>
+
 <!-- POPUP MATINAL -->
 <div class="sheet" id="mSheet" onclick="if(event.target===this)matinSkip()">
   <div class="panel"><div class="grab"></div><div id="mBody"></div></div>
@@ -452,6 +460,29 @@
   <button id="nav-pull" onclick="nav('pull')"><span class="ni">💪</span><span class="nl">Tractions</span></button>
 </nav>
 
+<script>
+/* ===== FILET D'ERREURS =====
+   Affiche la première erreur JS en haut de l'écran. Sans ça, une exception au
+   chargement laisse une page vide sans aucune explication (cas vécu le 31/07/2026). */
+var _jsErrShown=false, _jsErrTxt="";
+function jsErrShow(msg){
+  if(_jsErrShown) return; _jsErrShown=true; _jsErrTxt=msg;
+  try{
+    var b=document.getElementById("jsErr"), m=document.getElementById("jsErrMsg");
+    if(b&&m){ m.textContent=msg; b.style.display="block"; }
+  }catch(e){}
+}
+function jsErrCopy(){
+  try{ navigator.clipboard.writeText(_jsErrTxt); }catch(e){}
+  var b=event&&event.target; if(b) b.textContent="copié ✓";
+}
+window.addEventListener("error", function(e){
+  jsErrShow((e.message||"erreur")+(e.lineno?(" — ligne "+e.lineno):""));
+});
+window.addEventListener("unhandledrejection", function(e){
+  var r=e.reason; jsErrShow("Promesse rejetée : "+((r&&r.message)||r||"?"));
+});
+</script>
 <script>
 /* ================= AUDIO + WAKELOCK ================= */
 var actx=null;
@@ -662,16 +693,7 @@ function gen(d){
   /* ── ANCIENNE BRANCHE post-100K (juin 2026) — DÉSACTIVÉE, conservée pour référence.
      Les blocs de récup (Pérou, Réathlétisation) passent désormais par la branche
      paramétrée ci-dessous, pilotée par BLOCKSESS. Ne pas réactiver sans revoir BLOCKSESS. */
-  var LEGACY_RECUP=false;
-  if(LEGACY_RECUP && ph==="recup"){
-    // Réathlé post-100K : semaine PLATE (pas dégressive), ancre lundi club, longue = slot flottant (carte accueil).
-    if(dow==="lun"){ o.typeKey="fond"; o.label="EF Club facile"; o.short="EF Club 50'"; o.sub="~50′ · Z2 · club"; o.why="Ancre de la semaine : footing club facile (lundi midi)."; o.detail=["~50′ EF avec le club, allure de conversation.","Nez qui respire, zéro forcing.","Rendez-vous fixe #1."]; o.color="var(--grn)"; o.plan={durMin:50}; }
-    else if(dow==="mar"){ o.typeKey="cotes"; o.label="Côte club · reprise"; o.short="Côtes 5×2′ Z3"; o.sub="5×2′ Z3 · reprise"; o.why="Côtes club (mardi soir) — reprise progressive de la VAM."; o.detail=["Échauff : 15′ EF progressif.","Corps : 5× 2′ en montée modérée Z3 (pas à fond, on reprend le geste).","Retour : 10′ EF facile.","Mardi soir = toujours club, ton pilier."]; o.color="var(--orange)"; o.plan={reps:5,format:"Reprise"}; }
-    else if(dow==="mer"){ o.typeKey="fond"; o.label="EF moyen"; o.short="EF 50' Z2"; o.sub="~50′ · Z2 · flexible"; o.why="Volume aérobie facile."; o.detail=["~50′ EF facile, solo ou pote.","Flexible : décale-le si journée chargée."]; o.color="var(--grn)"; o.plan={durMin:50}; }
-    else if(dow==="jeu"){ o.typeKey="fond"; o.label="EF relance"; o.short="EF 40' souple"; o.sub="~40′ · Z2 · flexible"; o.why="Footing souple — optionnel selon la semaine."; o.detail=["~40′ très facile.","À faire en grosse semaine, à sauter en petite."]; o.color="var(--grn)"; o.plan={durMin:40}; }
-    else if(dow==="ven"){ o.typeKey="fond"; o.label="EF"; o.short="EF 45' Z2"; o.sub="~45′ · Z2"; o.why="Footing facile — recharge sans forcer."; o.detail=["~45′ EF, allure de conversation, nez qui respire.","Flexible : décale-le si journée chargée."]; o.color="var(--grn)"; o.plan={durMin:45}; }
-    else { o.typeKey="repos"; o.label="Séance libre ou SL"; o.sub="week-end · libre"; o.why="Séance libre (EF ou côtes courtes) ou ta sortie longue — comme ta vie le permet (carte À FAIRE)."; o.color="var(--blue)"; o.plan={}; }
-  }
+  /* Ancienne branche `recup` (juin 2026) déplacée dans archive-gen-juin2026.js — voir ce fichier. */
   else if(ph==="base"||ph==="force"||ph==="build"||ph==="velo"||ph==="recup"){
     var isBuild=ph==="build", isForce=ph==="force";
 

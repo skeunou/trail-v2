@@ -1712,7 +1712,16 @@ function buildRenfoWeek(){
     ].concat(fin(2))}
   ];
 }
-var RENFO_WEEK=buildRenfoWeek();
+/* ⚠️ Construction PARESSEUSE obligatoire : `today` est déclaré plus bas dans le fichier.
+   Appeler buildRenfoWeek() ici casse tout le script au chargement. */
+var RENFO_WEEK=[];                 // conservé pour compatibilité, rempli par RW()
+var _rwCache=null, _rwKey="";
+function RW(){
+  var k;
+  try{ k = iso(mondayOf(today))+"|"+blockFor(today).id; }catch(e){ k="na"; }
+  if(_rwKey!==k || !_rwCache){ _rwCache=buildRenfoWeek(); _rwKey=k; RENFO_WEEK=_rwCache; }
+  return _rwCache;
+}
 /* 0 = Accent MONTÉE · 1 = Accent EXCENTRIQUE (jambes) · 2 = Accent HAUT & TIRAGE */
 var RENFO_CAT_A=[0,1], RENFO_CAT_B=[2];
 function mondayOf(d){ var x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); var off=(x.getDay()+6)%7; x.setDate(x.getDate()-off); return x; }
@@ -1725,6 +1734,7 @@ function slotIdx(slot){
   if(slot===2) return p.b;
   /* 3e slot (bloc à 3 renfos) : on prend la séance A suivante dans la rotation */
   var wc=weekCounter(), na=RENFO_CAT_A.length;
+  if(!na) return 0;
   return RENFO_CAT_A[(((wc+1)%na)+na)%na];
 }
 /* Nombre de slots renfo de la semaine — piloté par le bloc en cours */
@@ -1772,7 +1782,7 @@ function renderAFaire(){
   var btns = afaireBtn({tag:"Sortie longue",label:"Sortie longue",sub:slSub,done:!!slE,onclick:"openSL()"})+
              afaireBtn({tag:"Qualité",label:"Qualité",sub:vSub,done:!!vE,onclick:"openVMA()"});
   for(var sN=1; sN<=nSlots; sN++){
-    var rr=RENFO_WEEK[slotIdx(sN)];
+    var rr=RW()[slotIdx(sN)];
     btns += afaireBtn({
       tag:"Renfo "+sN+"/"+nSlots, label:rr.name,
       sub:rr.blocks.length+" blocs · "+(rr.cat==="A"?"force":"puissance / access."),
@@ -1863,7 +1873,7 @@ function startWeeklyRenfo(slot){
     return '<button type="button" id="ck-'+zk+'" onclick="toggleFlag(\''+zk+'\')" style="border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer">'+ZONE_LBL[zk]+'</button>';
   }).join("");
   box.innerHTML='<div style="border-top:1px solid var(--line);margin-top:11px;padding-top:11px">'+
-    '<div style="font-weight:700;font-size:13px;margin-bottom:4px">'+RENFO_WEEK[_wkIdx].name+'</div>'+
+    '<div style="font-weight:700;font-size:13px;margin-bottom:4px">'+RW()[_wkIdx].name+'</div>'+
     '<div style="font-size:12px;color:var(--mut);margin-bottom:9px">Quelque chose à signaler aujourd\'hui ?</div>'+
     '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">'+chips+'</div>'+
     '<textarea id="ckTxt" placeholder="Optionnel : ex. raideur épaule, genou sensible…" style="width:100%;box-sizing:border-box;min-height:50px;font-size:13px;padding:9px;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit"></textarea>'+
@@ -1911,7 +1921,7 @@ function launchWeeklyRenfo(idx,slot,signal){
   unlockAudio(); reqWake(); beep(660,.12);
   pKey=iso(new Date()); pIsSupp=true; pSuppKind="renfo"; pWeekly=true; _wkSlot=slot; _wkIdx=idx;
   pState={}; pSeriesDone={}; pSignal=signal||{zones:[],text:""};
-  var s=RENFO_WEEK[idx];
+  var s=RW()[idx];
   var org=rnd(s.cat==="A"?["sets","sets","superset","cluster5"]:["sets","superset","circuit"]);
   pSuppName=s.name+" · "+orgLabel(org);
   var warmSeg=warmSegRenfo();

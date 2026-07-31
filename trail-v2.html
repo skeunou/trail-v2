@@ -300,7 +300,7 @@
         <div class="blockbadge" id="blockBadge">—</div>
       </div>
     </div>
-    <div class="weeklbl"><span class="eyebrow" style="color:var(--ink)">Aujourd'hui</span></div>
+    <div class="weeklbl"><span class="eyebrow" id="dayLbl" style="color:var(--ink)">Aujourd'hui</span><span style="display:flex;align-items:center;gap:8px"><span onclick="dayNav(-1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">‹</span><span class="eyebrow" id="dayRange" onclick="dayNav(0)" style="cursor:pointer">—</span><span onclick="dayNav(1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">›</span></span></div>
     <div class="card hero" id="heroCard" style="position:relative">
       <div class="type" id="heroType">—</div>
       <div class="sessionid bebas" id="heroId" style="font-size:14px;color:var(--acc);letter-spacing:1px">—</div>
@@ -2497,9 +2497,16 @@ setInterval(function(){
   var nowKey=iso(now);
   if(nowKey!==lastDateKey){ location.reload(); }
 },30000); // Check toutes les 30 sec
+var dayOffset=0;
+/* Jour affiché sur l'accueil (today + dayOffset). Les jauges restent sur le jour réel. */
+function vDay(){ var d=new Date(today); d.setDate(today.getDate()+dayOffset); return d; }
+function dayNav(n){ dayOffset = (n===0) ? 0 : dayOffset+n; renderToday(); }
 function renderToday(){
-  var s=sessionFor(today);
-  document.getElementById("todayDate").textContent=JOURS[dowMon(today)-1]+" "+today.getDate()+" "+MOIS[today.getMonth()];
+  var vd=vDay(), s=sessionFor(vd);
+  var dl=document.getElementById("dayLbl"), dr=document.getElementById("dayRange");
+  if(dl) dl.textContent = dayOffset===0 ? "Aujourd'hui" : (dayOffset===1?"Demain":(dayOffset===-1?"Hier":"Séance"));
+  if(dr) dr.textContent = dayOffset===0 ? "" : (JOURS[dowMon(vd)-1]+" "+vd.getDate()+" "+MOIS[vd.getMonth()]+"  ⟲");
+  document.getElementById("todayDate").textContent=JOURS[dowMon(vd)-1]+" "+vd.getDate()+" "+MOIS[vd.getMonth()];
   document.getElementById("blockBadge").textContent=s.block.name;
   var hero=document.getElementById("heroCard"); hero.style.borderLeftColor=s.info.color;
   document.getElementById("heroType").style.display="none";
@@ -2517,8 +2524,8 @@ function renderToday(){
   renderWeek();
   renderLoadCard();
   renderGtgMini();
-  renderExtras();
-  renderSuppHome();
+  renderExtras(vd);
+  renderSuppHome(vd);
   /* renderRenfoWeek() / renderSLWeek() : cartes retirées de l'accueil, conteneurs masqués.
      Appels conservés pour ne rien casser si les cartes sont réactivées. */
   renderRenfoWeek();
@@ -2696,6 +2703,14 @@ function realDaySummary(key){
     return {name:ic+" "+(prim.name||"Activité"), sub:parts.join(" · ")};
   });
 }
+/* Marque de la colonne de droite dans la vue Semaine :
+   ✓ = fait · ✗ rouge = jour passé sans rien de logué (hors repos) · vide = à venir */
+function wkMark(done,dk,s){
+  if(done) return '✓';
+  if(dk >= iso(today)) return '';            // aujourd'hui ou futur : rien
+  if(s && s.typeKey==="repos") return '';    // un jour de repos vide est normal
+  return '<span style="color:var(--red)">✗</span>';
+}
 function renderWeekView(){
   var out="";
   for(var w=0;w<1;w++){
@@ -2718,7 +2733,7 @@ function renderWeekView(){
       out+='<div class="wkrow'+(dk===iso(today)?' wktoday':'')+'" onclick="openSheet(\''+dk+'\')">'
         +'<div class="wkdn bebas">'+JOURS[i]+' '+d.getDate()+'</div>'
         +'<div class="wkmid">'+mid+'</div>'
-        +'<div class="wkchk">'+(done?'✓':'')+'</div></div>';}
+        +'<div class="wkchk">'+wkMark(done,dk,s)+'</div></div>';}
     out+='</div>';
   }
   document.getElementById("weekViewBody").innerHTML=out;
@@ -2851,9 +2866,9 @@ function startPlayer(k){
   renderSeg();
 }
 function suppBtn(k){ return '<button class="btn btn-ghost" style="width:100%;margin-top:6px;padding:9px;font-size:13px" onclick="chooseSupp(\''+k+'\')">+ WOD / renfo supplémentaire</button>'; }
-function renderSuppHome(){
+function renderSuppHome(vd){
   var z=document.getElementById("suppHome"); if(!z)return;
-  var k=iso(today);
+  var k=iso(vd||vDay());
   z.innerHTML='<div id="suppZone">'+suppBtn(k)+'</div>';
 }
 function resetSupp(k){ var z=document.getElementById("suppZone"); if(z)z.innerHTML=suppBtn(k); }
@@ -3744,13 +3759,14 @@ function renderStravaCard(){
     if(tx) tx.innerHTML=""; /* bouton token retiré — réactiver via tokExportHTML() si besoin */ }
   else { stravaMsg("Strava à connecter"); document.getElementById("stravaGo").textContent='Connecter →'; var el=document.getElementById("stravaActs"); if(el)el.innerHTML=""; if(tx)tx.innerHTML=""; }
 }
-function nav(v){lvView=v;if(!lvRestoring&&window.LVNAV)LVNAV.push();["today","week","horizon","log","pull"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("on",x===v);document.getElementById("nav-"+x).classList.toggle("on",x===v);});if(v==="week")renderWeekView();if(v==="horizon")renderHorizon();if(v==="log")renderLog();if(v==="pull")renderPull();window.scrollTo(0,0);}
+function nav(v){
+  if(v==="today") dayOffset=0;lvView=v;if(!lvRestoring&&window.LVNAV)LVNAV.push();["today","week","horizon","log","pull"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("on",x===v);document.getElementById("nav-"+x).classList.toggle("on",x===v);});if(v==="week")renderWeekView();if(v==="horizon")renderHorizon();if(v==="log")renderLog();if(v==="pull")renderPull();window.scrollTo(0,0);}
 
 /* ===== UI ACTIVITÉS EXTRA (suivi hors plan) ===== */
 var addSport="course", addMode="strava", addShowAll=false, addDay=null;
-function renderExtras(){
+function renderExtras(vd){
   var box=document.getElementById("extrasBox"); if(!box)return;
-  var k=iso(today), supps=suppEntriesFor(k), list=extrasForDay(k);
+  var k=iso(vd||vDay()), supps=suppEntriesFor(k), list=extrasForDay(k);
   var h='';
   if(supps.length||list.length){
     h+='<div class="eyebrow" style="margin:16px 0 8px">Activités hors plan</div>';

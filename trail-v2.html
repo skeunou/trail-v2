@@ -1636,42 +1636,64 @@ var ACC_POOL={
   ]
 };
 
-/* Tabata — 4 exercices tirés d'un pool de 9, rotation hebdomadaire */
+/* ── ANCIEN FINISHER TABATA — conservé, plus programmé par défaut.
+   Laurent l'ajoute lui-même s'il en ressent le besoin. ── */
 var TABATA_POOL=["dead bug","shoulder tap","hollow hold","mountain climbers","russian twists","bicycle","V-ups","ab wheel","crunchs"];
-function tabataSet(n){
-  var out=[], L=TABATA_POOL.length;
-  for(var i=0;i<4;i++) out.push(TABATA_POOL[(((n*4+i)%L)+L)%L]);
-  return out;
-}
+function tabataSet(n){ var out=[],L=TABATA_POOL.length; for(var i=0;i<4;i++) out.push(TABATA_POOL[(((n*4+i)%L)+L)%L]); return out; }
 function tabataBlock(n){
   return {label:"Finisher",name:"Tabata abdos",reps:"1-2 blocs · 8 × (20″/10″)",
-    cue:"Cette semaine : "+tabataSet(n).join(" · ")+". 4 min par bloc à RPE 9 — 1 seul bloc en bloc force max ou semaine à fort D+."};
+    cue:"Cette semaine : "+tabataSet(n).join(" · ")+". 4 min par bloc à RPE 9."};
+}
+
+/* ── FINISHER MÉTABOLIQUE — 1× par semaine maximum.
+   Coût de récupération élevé : supprimé à moins de 48h du mardi côtes ou d'une sortie longue,
+   et sur les semaines à fort D+. C'est la règle, pas une suggestion. ── */
+var METCON_POOL=[
+  {n:"Thruster haltères",r:"5 rounds · 10 reps · récup 60″",c:"Squat + poussée enchaînés. Charge modérée, rythme continu. L'exercice le plus complet du lot."},
+  {n:"Dumbbell snatch",r:"5 rounds · 8 / côté · récup 60″",c:"Extension explosive unilatérale, de la hanche jusqu'au bras tendu. Coordination + puissance."},
+  {n:"Burpees",r:"5 rounds · 12 reps · récup 60″",c:"Se relever vite et gérer l'essoufflement. Simple, complet, brutal."},
+  {n:"Devil's press",r:"4 rounds · 8 reps · récup 75″",c:"Burpee + snatch haltères. Le plus coûteux du pool — pas deux semaines de suite."},
+  {n:"Kettlebell swing russe",r:"5 rounds · 20 reps · récup 45″",c:"Explosivité de hanche pure, bras relâchés. Le moins coûteux."},
+  {n:"Wall ball",r:"5 rounds · 15 reps · récup 60″",c:"Triple extension répétée. Nécessite la structure montée — sinon remplace-le."},
+  {n:"KB clean & press",r:"4 rounds · 8 / côté · récup 60″",c:"Chaîne complète, gainage anti-rotation."},
+  {n:"Box step-over lesté",r:"5 rounds · 12 / côté · récup 60″",c:"Le plus spécifique trail du pool. Rythme régulier, pas d'à-coup."}
+];
+/* Le finisher n'est placé que sur UNE séance de la semaine, et jamais en semaine chargée. */
+function metconAllowed(){
+  var tg=weekTarget(today), b=blockFor(today), bs=blockSess(today);
+  if(bs.off) return false;                                   // Pérou / course
+  if(b.phase==="affutage") return false;                     // affûtage : on ne crame rien
+  if(tg && tg.dp>=1500) return false;                        // semaine à fort D+
+  return true;
+}
+function metconBlock(n){
+  var m=pick(METCON_POOL,n);
+  return {label:"Finisher métabolique",name:m.n,reps:m.r,cue:m.c+" ⚠️ Jamais dans les 48h avant le mardi côtes ou une sortie longue."};
 }
 function buildRenfoWeek(){
   var M=renfoFmt(), MS=renfoFmtSide(), wc=weekCounter(), br=blockRank();
-  /* 2 ANCRES par séance : fixes pendant tout le bloc, charge suivie dans le carnet.
-     Ce sont elles qui portent la progression. Elles changent de variante à chaque bloc. */
   function anchor(pool,reps){ var v=pick(MAIN_VAR[pool],br); return {name:v.n, reps:reps, cue:v.c}; }
-  /* VARIABLE : change à chaque séance. Décalée par le compteur de semaine ET par la séance,
-     pour que l'ordre ne soit jamais deux fois le même. */
   function vary(pool,seed){ var a=pick(VAR_POOL[pool],wc*3+seed); return {label:"Variable",name:a.n,reps:a.r,cue:a.c}; }
   function acc(pool,seed){ var a=pick(ACC_POOL[pool],wc*2+seed); return {label:"Accessoire",name:a.n,reps:a.r,cue:a.c}; }
+  /* Une seule séance de la semaine porte le finisher : on tourne laquelle. */
+  var okM=metconAllowed(), which = okM ? (((wc%3)+3)%3) : -1;
+  function fin(idx){ return which===idx ? [metconBlock(wc)] : []; }
   return [
     {cat:"A", name:"Accent MONTÉE", blocks:[
       Object.assign({label:"⚓ Ancre 1 · poussée unilatérale"}, anchor("montee1",MS+" · "+RENFO_REST)),
       Object.assign({label:"⚓ Ancre 2 · extension de hanche"}, anchor("montee2",M+" · "+RENFO_REST)),
-      vary("montee",0), acc("montee",0), tabataBlock(wc)
-    ]},
+      vary("montee",0), acc("montee",0)
+    ].concat(fin(0))},
     {cat:"A", name:"Accent EXCENTRIQUE", blocks:[
       Object.assign({label:"⚓ Ancre 1 · descente"}, anchor("exc1",MS+" · "+RENFO_REST)),
       Object.assign({label:"⚓ Ancre 2 · quadriceps"}, anchor("exc2",M+" · "+RENFO_REST)),
-      vary("excentrique",1), acc("excentrique",1), tabataBlock(wc+1)
-    ]},
+      vary("excentrique",1), acc("excentrique",1)
+    ].concat(fin(1))},
     {cat:"B", name:"Accent HAUT & TIRAGE", blocks:[
       Object.assign({label:"⚓ Ancre 1 · tirage vertical"}, anchor("haut1",M+" · "+RENFO_REST)),
       Object.assign({label:"⚓ Ancre 2 · tirage horizontal"}, anchor("haut2","3 × 6 / côté · "+RENFO_REST)),
-      vary("haut",2), acc("haut",2), tabataBlock(wc+2)
-    ]}
+      vary("haut",2), acc("haut",2)
+    ].concat(fin(2))}
   ];
 }
 var RENFO_WEEK=buildRenfoWeek();
@@ -3438,6 +3460,28 @@ function chgRowHTML(name, repsHead){
       }).join('')+'</div>':'')+
   '</div>';
 }
+/* ── REMPLACER UN EXERCICE ──
+   Matériel indispo (structure wall ball non montée, pluie, barre prise…) : on pioche
+   une alternative du même pool. Le choix est mémorisé pour la séance en cours. */
+var _swapMap={};
+function poolOf(name){
+  var pools=[VAR_POOL.montee,VAR_POOL.excentrique,VAR_POOL.haut,ACC_POOL.montee,ACC_POOL.excentrique,ACC_POOL.haut];
+  for(var i=0;i<pools.length;i++){ for(var j=0;j<pools[i].length;j++){ if(pools[i][j].n===name) return pools[i]; } }
+  for(var k=0;k<METCON_POOL.length;k++){ if(METCON_POOL[k].n===name) return METCON_POOL; }
+  return null;
+}
+function swapExo(){
+  var seg=pSegs[pIdx]; if(!seg) return;
+  var pool=poolOf(seg._orig||seg.name);
+  if(!pool){ alert("Pas d'alternative pour cet exercice — c'est une ancre, elle porte ta progression."); return; }
+  var cur=seg.name, idx=0;
+  for(var i=0;i<pool.length;i++){ if(pool[i].n===cur){ idx=i; break; } }
+  var nx=pool[(idx+1)%pool.length];
+  seg._orig=seg._orig||cur; seg.name=nx.n; seg.reps=nx.r||seg.reps; seg.cue=nx.c||seg.cue;
+  if(seg.repsHead!==undefined && nx.r) seg.repsHead=nx.r;
+  _swapMap[seg._orig]=nx.n;
+  renderRenfoWork(seg);
+}
 function chgOnVal(name){
   var el=document.getElementById("chgVal"); if(!el) return;
   var v=el.value.trim(); if(v==="") return;
@@ -3487,6 +3531,8 @@ function renderRenfoWork(seg){
     '<div class="pname bebas">'+seg.name+'</div>'+
     (seg.repsHead?'<div class="preps">'+seg.repsHead+'</div>':'')+
     chgRowHTML(seg.name, seg.repsHead)+
+    (String(seg.label||"").indexOf("Ancre")>-1 ? "" :
+      '<button onclick="swapExo()" style="width:100%;margin:8px 0 2px;padding:8px;border:1px dashed var(--line);border-radius:10px;background:none;color:var(--mut);font-size:11.5px;font-family:inherit">⇄ Remplacer cet exercice</button>')+
     '<div class="rrow">'+
       '<button class="rserie'+(pState.rfDone>=pState.rfN?' done':'')+'" id="rfSerie" onclick="rfValidate()"><span class="rlab">Série ✓</span><span class="rcnt bebas" id="rfCnt">'+pState.rfDone+' / '+pState.rfN+'</span></button>'+
       '<div class="rrecup" id="rfRecup"><span class="rlab">Récup</span><span class="rtime bebas" id="rfTime">'+fmtClock(pState.rfRecup)+'</span></div>'+

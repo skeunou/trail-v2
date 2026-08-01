@@ -3027,7 +3027,10 @@ function loadStats(){
     if(dk<oldest)oldest=dk;
     if(dk>=d28) chronic+=ld(a);
     if(dk>=d7)  acute+=ld(a);
-    if(dk.slice(0,7)===ym) monthD+=a.dplus||0;
+    // Le plafond mensuel porte sur le D+ de COURSE : le vélo est exclu (mais reste
+    // dans l'ACWR ci-dessus, où il compte bien comme charge).
+    var isRide = actMatchesSport(a,"velo_route") || actMatchesSport(a,"velo_ht");
+    if(dk.slice(0,7)===ym && !isRide) monthD+=a.dplus||0;
   });
   var chronicWk=chronic/4, acwr=chronicWk>0?acute/chronicWk:null;
   var daysCov=oldest!=="9999-99-99"?Math.round((parse(iso(today))-parse(oldest))/86400000):0;

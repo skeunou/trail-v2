@@ -29,6 +29,8 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-
 .top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}
 .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--mut)}
 .date{font-family:'Bebas Neue',sans-serif;font-size:23px;letter-spacing:.6px;line-height:1;margin-top:2px}
+.nextS{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--ink2);background:var(--acid);border-radius:999px;padding:5px 10px;white-space:nowrap}
+.nextS b{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.5px;color:#1a1d12}
 .badge{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink2);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 10px;white-space:nowrap}
 .dnav{display:flex;align-items:center;gap:2px;margin-top:6px}
 .dnav button{border:none;background:none;color:var(--blue);font-size:19px;line-height:1;padding:2px 7px;cursor:pointer}
@@ -98,7 +100,16 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-
 /* ---- charge ---- */
 .load{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-top:14px;box-shadow:var(--shadow)}
 .loadHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.acwr{font-size:10.5px;font-weight:700;color:var(--ink2);background:var(--bg);border-radius:999px;padding:4px 9px}
+.verdict{font-size:10.5px;font-weight:700;border-radius:999px;padding:4px 10px;white-space:nowrap}
+.verdict.grn{color:var(--grn);background:#eaf6ee}
+.verdict.blue{color:var(--blue);background:#e9f2fa}
+.verdict.orange{color:var(--orange-d);background:#fdeee6}
+.verdict.red{color:var(--red);background:#fceaea}
+.note{font-size:11px;line-height:1.45;margin-top:6px;padding-left:9px;border-left:2px solid var(--line)}
+.note.grn{color:var(--grn);border-left-color:#bfe3cb}
+.note.blue{color:var(--blue);border-left-color:#bcd9ef}
+.note.orange{color:var(--orange-d);border-left-color:#f6c9a8;font-weight:600}
+.note.red{color:var(--red);border-left-color:#f3bcbc;font-weight:600}
 .gauge{margin-top:11px}
 .gauge:first-of-type{margin-top:0}
 .grow{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;margin-bottom:5px}
@@ -146,7 +157,10 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-
       <div class="date" id="dDate">MAR 4 AOÛT</div>
       <div class="dnav"><button>‹</button><button>›</button></div>
     </div>
-    <div class="badge" id="dBlock">Vélo &amp; Force · S1/4</div>
+    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end">
+      <div class="nextS" id="nextS">Next <b>S21</b></div>
+      <div class="badge" id="dBlock">Vélo &amp; Force · S1/4</div>
+    </div>
   </div>
 
   <!-- état du matin -->
@@ -211,22 +225,34 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-
     <button>+ Renfo / WOD</button>
   </div>
 
-  <!-- avancement : une seule carte, du plus large au plus fin -->
+  <!-- avancement : une seule carte, verdict en clair sur chaque ligne -->
   <div class="load">
     <div class="loadHead">
       <span class="eyebrow">Où j'en suis</span>
-      <span class="acwr" id="acwrPill">ACWR 1,26</span>
+      <span class="verdict grn" id="acwrPill">● Zone optimale</span>
     </div>
+
+    <div class="gauge">
+      <div class="grow"><span>Charge d'entraînement</span><b>ACWR 1,26</b></div>
+      <div class="bar"><i style="width:63%;background:var(--grn)"></i></div>
+      <div class="sublab"><span>Comparaison des 7 derniers jours aux 28 précédents</span></div>
+      <div class="note grn">Charge cohérente. Tu peux suivre le plan tel quel.</div>
+    </div>
+
     <div class="gauge">
       <div class="grow"><span>Ce mois-ci</span><b>2 340 <i>/ 5 000 m D+</i></b></div>
       <div class="bar"><i style="width:47%;background:var(--grn)"></i></div>
       <div class="sublab"><span>Plafond mensuel</span><span>47 %</span></div>
+      <div class="note grn">Dans le plafond. Il te reste 2 660 m avant la fin du mois.</div>
     </div>
+
     <div class="gauge">
       <div class="grow"><span>Cette semaine</span><b>516 <i>/ 700 m D+</i></b></div>
       <div class="bar"><i style="width:74%;background:var(--blue)"></i></div>
       <div class="sublab"><span>18 / 25 km</span><span>Vélo &amp; Force · S1/4</span></div>
+      <div class="note blue">Il te manque 184 m — la sortie longue de dimanche les couvre.</div>
     </div>
+
     <div class="gauge">
       <div class="grow"><span>Renfo posés</span><b>2 <i>/ 3 séances</i></b></div>
       <div class="bar"><i style="width:66%;background:var(--orange)"></i></div>
@@ -277,6 +303,13 @@ var STATES={
     set('#hero','block'); set('#doneWrap','none');
     document.getElementById('dDate').textContent='JEU 6 AOÛT';
     mRow(true,true);
+    var p=document.getElementById('acwrPill');
+    p.className='verdict orange'; p.textContent='⚠ Charge en hausse';
+    var g=document.querySelectorAll('.load .gauge')[0];
+    g.querySelector('b').textContent='ACWR 1,44';
+    g.querySelector('.bar i').style.cssText='width:82%;background:var(--orange)';
+    g.querySelector('.note').className='note orange';
+    g.querySelector('.note').textContent='⚠ Tu montes vite. Trois séances intenses en cinq jours — allège la prochaine.';
     document.getElementById('adapt').outerHTML=
       '<div class="adapt" id="adapt"><div class="t">Suggestion d\'adaptation</div>'+
       '<div class="m">Allège : passe les côtes de 7 à 5 reps, garde l\'intensité.</div>'+

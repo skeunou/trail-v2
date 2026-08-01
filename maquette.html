@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>P.P.L — maquette accueil</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ebede9; --paper:#ffffff; --ink:#15171a; --ink2:#3a3f44;
+  --mut:#7a8088; --line:#dadfd6;
+  --acid:#e8ff47; --acid-d:#8a9c13;
+  --orange:#ff6b35; --orange-d:#d8470e; --red:#e5484d;
+  --grn:#1f9d55; --blue:#2f86c9; --purp:#7c5cff;
+  --shadow:0 4px 16px rgba(20,30,20,.07);
+  --nav:64px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:calc(var(--nav) + 30px)}
+.bebas{font-family:'Bebas Neue',sans-serif;letter-spacing:.5px}
+.app{max-width:480px;margin:0 auto;padding:16px 14px 0}
+
+/* ---- switcher de démo (hors app) ---- */
+.demo{position:sticky;top:0;z-index:50;background:#15171a;padding:9px 12px;display:flex;gap:6px;overflow-x:auto}
+.demo button{flex:0 0 auto;border:1px solid #3a3f44;background:none;color:#c9cdc6;border-radius:8px;padding:6px 11px;font:600 11.5px 'DM Sans',sans-serif}
+.demo button.on{background:var(--acid);color:#1a1d12;border-color:var(--acid)}
+
+/* ---- en-tête ---- */
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--mut)}
+.date{font-family:'Bebas Neue',sans-serif;font-size:23px;letter-spacing:.6px;line-height:1;margin-top:2px}
+.badge{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink2);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 10px;white-space:nowrap}
+.dnav{display:flex;align-items:center;gap:2px;margin-top:6px}
+.dnav button{border:none;background:none;color:var(--blue);font-size:19px;line-height:1;padding:2px 7px;cursor:pointer}
+
+/* ---- carte séance : LE bloc principal ---- */
+.hero{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:10px}
+.hero .band{height:4px}
+.hero .in{padding:15px 16px 14px}
+.kicker{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:5px}
+.h1{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:.92;letter-spacing:.5px}
+.h1 small{display:block;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;letter-spacing:0;color:var(--ink2);line-height:1.35;margin-top:6px}
+.why{font-size:12.5px;color:var(--mut);line-height:1.45;margin-top:9px}
+
+/* chiffres clés : la ligne qu'on lit en courant */
+.stats{display:flex;gap:0;margin:13px -16px 0;border-top:1px solid var(--line)}
+.stat{flex:1;padding:10px 6px 9px;text-align:center;border-right:1px solid var(--line)}
+.stat:last-child{border-right:none}
+.stat b{display:block;font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;letter-spacing:.5px}
+.stat span{display:block;font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mut);margin-top:3px}
+
+/* action primaire pleine largeur */
+.cta{display:block;width:100%;border:none;border-radius:12px;padding:14px;font:800 14px 'DM Sans',sans-serif;letter-spacing:.4px;cursor:pointer;margin-top:13px}
+.cta-go{background:var(--ink);color:#fff}
+.cta-acid{background:var(--acid);color:#1a1d12}
+.cta-done{background:var(--paper);color:var(--grn);border:1.5px solid var(--grn)}
+
+/* détail repliable */
+.fold{width:100%;border:none;background:none;color:var(--mut);font:600 11.5px 'DM Sans',sans-serif;padding:11px 0 2px;text-align:left;cursor:pointer}
+.foldc{display:none;padding-top:6px}
+.foldc.on{display:block}
+.foldc li{font-size:12.5px;line-height:1.55;color:var(--ink2);margin:0 0 6px 15px}
+
+/* ---- ligne d'état du matin : pastilles, pas une carte ---- */
+.morning{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:10px;padding:0 2px}
+.pill{display:inline-flex;align-items:baseline;gap:4px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:11px;color:var(--mut)}
+.pill b{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.5px;color:var(--ink)}
+.pill.ok{border-color:#bfe3cb}
+.pill.warn{border-color:#f6c9a8}
+.pill.warn b{color:var(--orange-d)}
+.morning .edit{margin-left:auto;border:none;background:none;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;padding:4px}
+.morning .ask{flex:1;border:1px dashed var(--line);background:none;border-radius:999px;padding:7px 12px;font:600 11.5px 'DM Sans',sans-serif;color:var(--mut);text-align:left;cursor:pointer}
+
+/* ---- adaptation : discrète si conforme, carte si ça compte ---- */
+.adaptOk{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--grn);padding:0 4px;margin-bottom:12px}
+.adaptOk i{width:6px;height:6px;border-radius:50%;background:var(--grn);flex:0 0 auto}
+.adaptOk span{color:var(--mut)}
+.adapt{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--orange);border-radius:12px;padding:12px 14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.adapt.red{border-left-color:var(--red)}
+.adapt .t{font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--mut)}
+.adapt .m{font-size:13.5px;font-weight:700;line-height:1.4;margin-top:4px;color:var(--orange-d)}
+.adapt.red .m{color:var(--red)}
+.adapt .r{font-size:11.5px;color:var(--mut);line-height:1.45;margin-top:5px}
+
+/* ---- séances posées ---- */
+.sec{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);margin:16px 0 7px 2px}
+.item{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--orange);border-radius:12px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px}
+.item .c{flex:1;min-width:0}
+.item .n{font-size:13px;font-weight:700;line-height:1.3}
+.item .s{font-size:11.5px;color:var(--mut);margin-top:2px}
+.item .strava{font-size:11px;color:#fc4c02;font-weight:700;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .x{border:none;background:none;color:var(--line);font-size:15px;cursor:pointer;padding:0 0 0 4px}
+
+/* ---- actions secondaires : un seul style ---- */
+.sub{display:flex;gap:7px;margin-top:9px}
+.sub button{flex:1;border:1px solid var(--line);background:none;border-radius:11px;padding:10px 6px;font:600 12px 'DM Sans',sans-serif;color:var(--ink2);cursor:pointer}
+
+/* ---- charge ---- */
+.load{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-top:14px;box-shadow:var(--shadow)}
+.gauge{margin-top:11px}
+.gauge:first-of-type{margin-top:0}
+.grow{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;margin-bottom:5px}
+.grow span{color:var(--mut)}
+.grow b{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.5px}
+.grow b i{font-style:normal;color:var(--mut);font-size:12px}
+.bar{height:6px;background:var(--bg);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px}
+.sublab{display:flex;justify-content:space-between;font-size:10px;color:var(--mut);margin-top:4px}
+
+/* ---- GTG ---- */
+.gtg{display:flex;gap:8px;margin-top:10px}
+.gtg button{flex:1;border:none;border-radius:14px;padding:13px 8px;cursor:pointer;font-family:inherit;box-shadow:var(--shadow)}
+.gtg .add{background:var(--acid)}
+.gtg .cnt{background:var(--paper);border:1px solid var(--line);box-shadow:none}
+.gtg b{display:block;font-family:'Bebas Neue',sans-serif;font-size:29px;line-height:.9;color:#1a1d12}
+.gtg .cnt b{color:var(--ink)}
+.gtg span{display:block;font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-top:3px;color:#1a1d12}
+.gtg .cnt span{color:var(--mut)}
+
+/* ---- nav ---- */
+.nav{position:fixed;left:0;right:0;bottom:0;height:var(--nav);background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;max-width:480px;margin:0 auto}
+.nav button{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 9.5px 'DM Sans',sans-serif;color:var(--mut);cursor:pointer}
+.nav button.on{color:var(--ink)}
+.nav i{font-style:normal;font-size:15px;opacity:.75}
+.nav button.on i{opacity:1}
+@media (prefers-reduced-motion:no-preference){.foldc.on{animation:f .18s ease}}
+@keyframes f{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<div class="demo">
+  <button class="on" onclick="show('a',this)">1 · Séance à faire</button>
+  <button onclick="show('b',this)">2 · Créneau libre rempli</button>
+  <button onclick="show('c',this)">3 · Allègement</button>
+  <button onclick="show('d',this)">4 · Matin non saisi</button>
+</div>
+
+<div class="app">
+
+  <div class="top">
+    <div>
+      <div class="eyebrow">Aujourd'hui</div>
+      <div class="date" id="dDate">MAR 4 AOÛT</div>
+      <div class="dnav"><button>‹</button><button>›</button></div>
+    </div>
+    <div class="badge" id="dBlock">Vélo &amp; Force · S1/4</div>
+  </div>
+
+  <!-- état du matin -->
+  <div class="morning" id="mRow">
+    <div class="pill ok">Sommeil <b>6,5 h</b></div>
+    <div class="pill ok">VFC <b>43</b></div>
+    <div class="pill ok">BB <b>63</b></div>
+    <button class="edit">modifier</button>
+  </div>
+
+  <!-- séance -->
+  <div class="hero" id="hero">
+    <div class="band" style="background:var(--orange)"></div>
+    <div class="in">
+      <div class="kicker" style="color:var(--orange-d)">Le pilier de la semaine</div>
+      <div class="h1">CÔTES CLUB<small>7 × 1′30-2′ en montée 8-12 %, RPE 8</small></div>
+      <div class="why">Économie de grimpe. C'est cette séance qui fait monter ta VAM.</div>
+      <div class="stats">
+        <div class="stat"><b>7×</b><span>Séries</span></div>
+        <div class="stat"><b>8-12%</b><span>Pente</span></div>
+        <div class="stat"><b>&gt;156</b><span>FC</span></div>
+      </div>
+      <button class="cta cta-go">Ouvrir la séance</button>
+      <button class="fold" onclick="fold('f1',this)">▾ Voir le détail</button>
+      <div class="foldc" id="f1">
+        <ul>
+          <li>Échauffement : 15′ EF + 3 accélérations de 20″.</li>
+          <li>Corps : 7 × 1′30 à 2′ en montée 8-12 %, RPE 8.</li>
+          <li>Récup : descente trottinée, ratio 1:1,5.</li>
+          <li>Retour au calme : 10′ EF.</li>
+          <li>Cadence 170-180. Sous 165 en fin de rep = surrégime, ralentis.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- adaptation -->
+  <div class="adaptOk" id="adapt"><i></i>Charge conforme <span>· ACWR 1,26 · 516/700 m D+</span></div>
+
+  <!-- séances posées -->
+  <div id="doneWrap" style="display:none">
+    <div class="sec" id="doneTitle">Séance du jour</div>
+    <div class="item">
+      <div class="c">
+        <div class="n">Renfo · Accent EXCENTRIQUE</div>
+        <div class="s">45′ · FC 85 · 2/3 de la semaine</div>
+        <div class="strava">↗ HIIT - RENFO</div>
+      </div>
+      <button class="x">✕</button>
+    </div>
+    <div class="item">
+      <div class="c">
+        <div class="n">Renfo · Accent MONTÉE</div>
+        <div class="s">3 × 8 · RIR 2 · 1/3 de la semaine</div>
+      </div>
+      <button class="x">✕</button>
+    </div>
+  </div>
+
+  <div class="sub">
+    <button>+ Activité</button>
+    <button>+ Renfo / WOD</button>
+  </div>
+
+  <!-- charge -->
+  <div class="load">
+    <div class="gauge">
+      <div class="grow"><span>⛰ D+ du mois</span><b>2 340 <i>/ 5 000 m</i></b></div>
+      <div class="bar"><i style="width:47%;background:var(--grn)"></i></div>
+    </div>
+    <div class="gauge">
+      <div class="grow"><span>📅 D+ de la semaine</span><b>516 <i>/ 700 m</i></b></div>
+      <div class="bar"><i style="width:74%;background:var(--blue)"></i></div>
+      <div class="sublab"><span>18 / 25 km</span><span>ACWR 1,26</span></div>
+    </div>
+  </div>
+
+  <!-- GTG -->
+  <div class="gtg">
+    <button class="add"><b>+1</b><span>Traction GTG</span></button>
+    <button class="cnt"><b>3 ×</b><span>Passages · 💪</span></button>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button class="on"><i>◎</i>Aujourd'hui</button>
+  <button><i>▦</i>Semaine</button>
+  <button><i>▲</i>Prog 26-27</button>
+  <button><i>▤</i>Repères</button>
+  <button><i>💪</i>Tractions</button>
+</div>
+
+<script>
+function fold(id,btn){
+  var el=document.getElementById(id), on=el.classList.toggle('on');
+  btn.textContent=(on?'▴ Masquer le détail':'▾ Voir le détail');
+}
+var STATES={
+  a:function(){
+    set('#hero','block'); set('#doneWrap','none');
+    document.getElementById('dDate').textContent='MAR 4 AOÛT';
+    document.getElementById('dBlock').textContent='Vélo & Force · S1/4';
+    mRow(true,false);
+    document.getElementById('adapt').outerHTML=
+      '<div class="adaptOk" id="adapt"><i></i>Charge conforme <span>· ACWR 1,26 · 516/700 m D+</span></div>';
+  },
+  b:function(){
+    set('#hero','none'); set('#doneWrap','block');
+    document.getElementById('dDate').textContent='VEN 7 AOÛT';
+    document.getElementById('dBlock').textContent='Vélo & Force · S1/4';
+    document.getElementById('doneTitle').textContent='Séances du jour';
+    mRow(true,false);
+    document.getElementById('adapt').outerHTML=
+      '<div class="adaptOk" id="adapt"><i></i>Charge conforme <span>· 2 renfos posés sur 3</span></div>';
+  },
+  c:function(){
+    set('#hero','block'); set('#doneWrap','none');
+    document.getElementById('dDate').textContent='JEU 6 AOÛT';
+    mRow(true,true);
+    document.getElementById('adapt').outerHTML=
+      '<div class="adapt" id="adapt"><div class="t">Suggestion d\'adaptation</div>'+
+      '<div class="m">Allège : passe les côtes de 7 à 5 reps, garde l\'intensité.</div>'+
+      '<div class="r">Nuit à 5,2 h contre 7,0 h en moyenne · Body Battery à 48 contre 71</div></div>';
+  },
+  d:function(){
+    set('#hero','block'); set('#doneWrap','none');
+    document.getElementById('dDate').textContent='MAR 4 AOÛT';
+    document.getElementById('mRow').innerHTML=
+      '<button class="ask">Comment tu te sens ce matin ? — 20 secondes</button>';
+    document.getElementById('adapt').outerHTML=
+      '<div class="adaptOk" id="adapt"><i style="background:var(--mut)"></i><span>Saisis ton état du matin pour une suggestion adaptée</span></div>';
+  }
+};
+function set(sel,d){document.querySelector(sel).style.display=d;}
+function mRow(filled,warn){
+  document.getElementById('mRow').innerHTML = filled
+    ? '<div class="pill '+(warn?'warn':'ok')+'">Sommeil <b>'+(warn?'5,2 h':'6,5 h')+'</b></div>'+
+      '<div class="pill ok">VFC <b>43</b></div>'+
+      '<div class="pill '+(warn?'warn':'ok')+'">BB <b>'+(warn?'48':'63')+'</b></div>'+
+      '<button class="edit">modifier</button>'
+    : '<button class="ask">Comment tu te sens ce matin ? — 20 secondes</button>';
+}
+function show(k,btn){
+  document.querySelectorAll('.demo button').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on'); STATES[k]();
+}
+</script>
+</body>
+</html>

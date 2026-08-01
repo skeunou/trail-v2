@@ -461,6 +461,11 @@
       <div class="blockbadge" id="syncBadge" style="background:var(--bg);border:1px solid var(--line)">Local</div>
     </div>
     <div id="refBody"></div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:5px">
+      <button class="fold" id="newsFold" style="width:auto" onclick="toggleFold('newsBody',this,'les nouveautés de l\'app')">▾ les nouveautés de l'app</button>
+      <span id="newsDot" style="display:none;width:7px;height:7px;border-radius:50%;background:var(--orange);flex:0 0 auto"></span>
+    </div>
+    <div id="newsBody" style="display:none"></div>
     <!-- Historique brut : replié (conservé, non supprimé) -->
     <button class="refFold" id="logFold" onclick="toggleLogList()">▾ Historique des séances</button>
     <div class="card" id="logCard" style="display:none;margin-top:10px"><div class="empty" id="logEmpty">Aucune séance validée pour l'instant.<br>Valide ta première depuis l'accueil.</div><div id="logList"></div></div>
@@ -1908,6 +1913,7 @@ function toggleFold(id, btn, label){
   el.style.display = on ? "block" : "none";
   if(btn && label) btn.textContent=(on?"▴ Masquer":"▾ ")+" "+label;
   if(on && id==="coachRead") renderCoachRead();
+  if(on && id==="newsBody") renderNews();
 }
 function toggleStravaCard(){
   var c=document.getElementById("stravaCard"); if(!c) return;
@@ -2229,7 +2235,7 @@ function cloudSave(){
   syncTimer=setTimeout(cloudSaveNow,1200); // debounce : 1 écriture par rafale
 }
 function cloudSaveNow(){
-  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet(),charges:chgAll(),refs:refGet(),matin:matinAll()};
+  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet(),charges:chgAll(),refs:refGet(),matin:matinAll(),pull:pullGet()};
   fetch(SYNC_URL+"?action=save&user="+SYNC_USER,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
     .then(function(r){return r.json();})
     .then(function(d){ setSyncBadge(d&&d.ok?"ok":"err"); })
@@ -2256,6 +2262,8 @@ function mergeCloud(d){
   (d.log||[]).forEach(function(e){ var k=lkey(e), ex=byKey[k]; if(!ex||((e._u||0)>(ex._u||0))) byKey[k]=e; });
   _writeLog(Object.keys(byKey).map(function(k){return byKey[k];}));
   // extras : union par xid, on garde le plus récent
+  // tractions : le cloud prime si plus récent
+  if(d.pull){ try{ var lp=pullGet(); if((d.pull._u||0)>(lp._u||0)) localStorage.setItem(PULL_KEY,JSON.stringify(d.pull)); }catch(e){} }
   // état du matin : union par date, le plus récent gagne
   if(d.matin){ var lm=matinAll(); Object.keys(d.matin).forEach(function(k){
       var ex=lm[k]; if(!ex||((d.matin[k]._u||0)>(ex._u||0))) lm[k]=d.matin[k]; });
@@ -4034,18 +4042,109 @@ function renderHorizon(){
   renderCapNote();
   var t=new Date();t.setHours(0,0,0,0);var ut=parse(UT4M_DATE);
   document.getElementById("jdays").textContent=Math.max(0,Math.round((ut-t)/86400000));
-  var curB=blockFor(today);
-  var stops=[
-    {n:"Aujourd'hui",d:curB.name,cls:"cur"},
-    {n:'45K Plateau d\'Hauteville <span class="tag">COURSE</span>',d:"26 sept. 2026 · Mac Sport · 45 km",cls:"race"},
-    {n:'Trail de l\'Aqueduc ~10K <span class="tag">COURSE</span>',d:"11 oct. 2026 · Sainte-Foy / Chaponost · ~300 m D+",cls:"race"},
-    {n:'20K de Caluire <span class="tag">COURSE</span>',d:"18 oct. 2026 · nouveau format (ex-10K)",cls:"race"},
-    {n:'Chianti Ultra 46K <span class="tag">COURSE</span>',d:"Mars 2027 · affûtage",cls:"race"},
-    {n:'Trail de Paladru 84K <span class="tag">COURSE</span>',d:"Avril 2027 · le gros test",cls:"race"},
-    {n:'Maxi-Race <span class="tag">COURSE</span>',d:"Mai 2027 · spécificité longue",cls:"race"},
-    {n:'UT4M 180 <span class="tag">OBJECTIF</span>',d:"Juillet 2027 · ~44 km/j · 11 700 m D+",cls:"race"}
-  ];
-  document.getElementById("road").innerHTML=stops.map(function(s){return '<div class="stop '+s.cls+'"><span class="dot"></span><div class="n">'+s.n+'</div><div class="d">'+s.d+'</div></div>';}).join("");
+
+  var curB=blockFor(today), road=document.getElementById("road");
+  if(!road) return;
+
+  /* --- Progression sur les 50 semaines --- */
+  var first=parse(BLOCKS[0].start), last=parse(BLOCKS[BLOCKS.length-1].end);
+  var totW=Math.max(1,Math.round((last-first)/(7*86400000)));
+  var doneW=Math.max(0,Math.min(totW,Math.round((mondayOf(today)-first)/(7*86400000))));
+  var pctW=Math.round(doneW/totW*100);
+
+  /* --- D+ planifié vs réalisé depuis le début du plan --- */
+  var planD=0, curIdx=0;
+  BLOCKS.forEach(function(b,bi){
+    if(b.id==="ut4m") return;
+    if(b.id===curB.id) curIdx=bi;
+    var ms=mondayOf(parse(b.start));
+    (b.wk||[]).forEach(function(w,wi){
+      var d=new Date(ms.getFullYear(),ms.getMonth(),ms.getDate()+wi*7);
+      if(d<=today) planD+=w[1];
+    });
+  });
+  var realD=0;
+  if(typeof lastActs!=="undefined" && Array.isArray(lastActs)){
+    lastActs.forEach(function(a){
+      if(!a.date || a.date<BLOCKS[0].start) return;
+      var nm=(a.name||"");
+      if(/^(h\.?\s*t|vdr)\s*-/i.test(nm)) return;   // vélo exclu du D+ course
+      realD+=(a.dplus||0);
+    });
+  }
+  var ecart=realD-planD;
+  var eCls = Math.abs(ecart)<=planD*0.12 ? "grn" : (ecart<0 ? "blue" : "orange");
+  var eTxt = !planD ? "Le plan démarre le 3 août."
+    : (Math.abs(ecart)<=planD*0.12 ? "Tu suis le plan."
+      : (ecart<0 ? "Tu es "+Math.abs(ecart).toLocaleString("fr-FR")+" m sous le cumul prévu."
+                 : "Tu es "+ecart.toLocaleString("fr-FR")+" m au-dessus du cumul prévu."));
+
+  var h2='<div class="card" style="padding:13px 15px;margin-bottom:12px">'+
+    '<div class="loadHead"><span class="eyebrow">Avancement du plan</span>'+
+    '<span class="verdict '+eCls+'">Semaine '+(doneW+1)+' / '+totW+'</span></div>'+
+    '<div class="bar" style="height:8px"><i style="width:'+pctW+'%;background:var(--acid-d)"></i></div>'+
+    '<div class="sublab" style="margin-top:5px"><span>'+curB.name+'</span><span>'+pctW+' % du chemin</span></div>'+
+    (planD?'<div class="gauge" style="margin-top:13px">'+
+      '<div class="grow"><span>D+ cumulé</span><b>'+realD.toLocaleString("fr-FR")+' <i>/ '+planD.toLocaleString("fr-FR")+' m prévus</i></b></div>'+
+      '<div class="bar"><i style="width:'+Math.min(100,Math.round(realD/planD*100))+'%;background:var(--'+(eCls==="grn"?"grn":eCls==="blue"?"blue":"orange")+')"></i></div>'+
+      '<div class="lnote '+eCls+'">'+eTxt+'</div></div>':'')+
+  '</div>';
+
+  /* --- Bloc en cours, détaillé --- */
+  var tg=weekTarget(today), bs=blockSess(today);
+  h2+='<div class="card" style="padding:13px 15px;margin-bottom:12px;border-left:3px solid var(--acid-d)">'+
+    '<div class="eyebrow" style="margin-bottom:3px">Bloc en cours</div>'+
+    '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:24px;letter-spacing:.6px">'+curB.name.toUpperCase()+'</div>'+
+    '<div style="font-size:11.5px;color:var(--mut);margin-top:2px">'+frShort(curB.start)+' → '+frShort(curB.end)+'</div>'+
+    '<div style="font-size:12.5px;color:var(--ink2);line-height:1.5;margin-top:8px">'+(curB.intent||"")+'</div>'+
+    (tg?'<div style="display:flex;gap:14px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)">'+
+      '<div><div style="font-size:9.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px">Cette semaine</div>'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:19px">'+tg.km+' km · '+tg.dp+' m</div></div>'+
+      '<div><div style="font-size:9.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px">Côtes</div>'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:19px">'+(bs.cotes[1]?bs.cotes[0]+'-'+bs.cotes[1]+' reps':'—')+'</div></div>'+
+      '<div><div style="font-size:9.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px">Renfo</div>'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:19px">'+bs.renfoN+'/sem</div></div>'+
+    '</div>':'')+
+  '</div>';
+
+  /* --- Échéances : les 2 prochaines en clair, le reste au clic --- */
+  var k=iso(today), next=RACES.filter(function(r){return r.d>=k;}), past=RACES.filter(function(r){return r.d<k;});
+  function raceRow(r,dim){
+    var dj=Math.round((parse(r.d)-today)/86400000);
+    return '<div class="stop race"'+(dim?' style="opacity:.5"':'')+'><span class="dot"></span>'+
+      '<div class="n">'+r.n+(r.role==="OBJECTIF"?' <span class="tag">OBJECTIF</span>':'')+'</div>'+
+      '<div class="d">'+frShort(r.d)+(r.dp?' · '+r.dp.toLocaleString("fr-FR")+' m D+':'')+
+      (dj>0?' · <b>J-'+dj+'</b>':'')+'</div>'+
+      '<div class="d" style="opacity:.75">'+(r.role||"")+'</div></div>';
+  }
+  h2+='<div class="eyebrow" style="margin:16px 0 8px 2px">Prochaines échéances</div>'+
+    '<div class="road">'+next.slice(0,2).map(function(r){return raceRow(r,false);}).join("")+'</div>';
+  if(next.length>2){
+    h2+='<button class="fold" onclick="toggleFold(\'moreRaces\',this,\'les '+(next.length-2)+' autres échéances\')">▾ les '+(next.length-2)+' autres échéances</button>'+
+      '<div id="moreRaces" style="display:none"><div class="road">'+next.slice(2).map(function(r){return raceRow(r,true);}).join("")+'</div></div>';
+  }
+  if(past.length){
+    h2+='<button class="fold" onclick="toggleFold(\'pastRaces\',this,\'les courses passées\')">▾ les courses passées</button>'+
+      '<div id="pastRaces" style="display:none"><div class="road">'+past.reverse().map(function(r){return raceRow(r,true);}).join("")+'</div></div>';
+  }
+
+  /* --- Les 14 blocs, repliés --- */
+  h2+='<button class="fold" onclick="toggleFold(\'allBlocks\',this,\'le macrocycle complet\')">▾ le macrocycle complet</button>'+
+    '<div id="allBlocks" style="display:none"><div class="days" style="margin-top:6px">'+
+    BLOCKS.map(function(b,bi){
+      var st = bi<curIdx ? '<div class="st ok">✓</div>' : (b.id===curB.id ? '<div class="st now">▸</div>' : '<div class="st wait">·</div>');
+      var dp=(b.wk||[]).reduce(function(s,w){return s+w[1];},0);
+      return '<div class="day'+(b.id===curB.id?' today':' pale')+'">'+
+        '<div class="d">'+(b.id==="ut4m"?"🏁":"B"+(bi+1))+'</div>'+st+
+        '<div class="c"><div class="n">'+b.name+'</div>'+
+        '<div class="s">'+frShort(b.start)+' → '+frShort(b.end)+(dp?' · '+dp.toLocaleString("fr-FR")+' m D+':'')+'</div></div></div>';
+    }).join("")+'</div></div>';
+
+  road.outerHTML='<div id="road">'+h2+'</div>';
+}
+function frShort(isoStr){
+  var p=String(isoStr).split("-");
+  return Number(p[2])+" "+["janv","févr","mars","avr","mai","juin","juil","août","sept","oct","nov","déc"][Number(p[1])-1]+" "+p[0].slice(2);
 }
 
 /* ================= HISTORIQUE ================= */
@@ -4229,6 +4328,38 @@ function renderAdapt(){
       (a.reasons.length?'<div style="font-size:11.5px;color:var(--mut);margin-top:5px;line-height:1.45">'+a.reasons.join(" · ")+'</div>':'')+
     '</div>';
 }
+/* ================= NOUVEAUTÉS =================
+   Journal des changements de l'app. À compléter en tête à chaque déploiement notable.
+   Une pastille apparaît sur l'onglet Repères tant que la dernière entrée n'a pas été vue. */
+var NEWS_KEY="news:seen:v1";
+var NEWS=[
+  {d:"2026-08-01", t:"Planches d'exercices en séquence", c:"9 nouveaux mouvements illustrés (burpees, devil's press, thruster, wall ball…) en 2 ou 3 phases plutôt qu'une pose figée."},
+  {d:"2026-08-01", t:"Onglets Semaine et Prog refondus", c:"Semaine : « reste à faire » en tête, une seule jauge, liste des 7 jours. Prog : avancement sur les 50 semaines, D+ cumulé réel vs prévu, macrocycle repliable."},
+  {d:"2026-08-01", t:"Courbe de progression des charges", c:"Chaque exercice suivi affiche sa mini-courbe et le gain total depuis la première séance, dans Repères."},
+  {d:"2026-08-01", t:"Correction : échauffement du haut du corps", c:"Une séance « haut & tirage » recevait un échauffement bas du corps. L'accent est maintenant déduit du contenu de la séance."},
+  {d:"2026-08-01", t:"État du matin", c:"Popup une fois par jour : sommeil, VFC, Body Battery, ressenti. Alimente la suggestion d'adaptation. Les pastilles s'affichent dans le bandeau."},
+  {d:"2026-08-01", t:"Carnet de charges", c:"Saisie de la charge à chaque exercice, rappel de la dernière fois, historique et ressenti."},
+  {d:"2026-08-01", t:"Plan UT4M 180 sur 50 semaines", c:"14 blocs datés d'août 2026 à juillet 2027, cibles hebdo par bloc, calendrier des 7 courses, plafond D+ mensuel adapté au bloc."}
+];
+function newsSeen(){ try{ return localStorage.getItem(NEWS_KEY)||""; }catch(e){ return ""; } }
+function newsUnread(){ return NEWS.length && NEWS[0].d!==newsSeen(); }
+function newsMarkSeen(){ try{ localStorage.setItem(NEWS_KEY, NEWS[0].d); }catch(e){} newsBadge(); }
+function newsBadge(){
+  var b=document.getElementById("newsDot"); if(!b) return;
+  b.style.display = newsUnread() ? "inline-block" : "none";
+}
+function renderNews(){
+  var el=document.getElementById("newsBody"); if(!el) return;
+  el.innerHTML='<div class="card" style="padding:4px 15px 12px">'+
+    NEWS.map(function(n){
+      return '<div style="padding:11px 0;border-top:1px solid var(--line)">'+
+        '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">'+
+          '<div style="font-size:12.5px;font-weight:700">'+n.t+'</div>'+
+          '<div style="font-size:10px;color:var(--mut);white-space:nowrap">'+frShort(n.d)+'</div></div>'+
+        '<div style="font-size:11.5px;color:var(--mut);line-height:1.5;margin-top:3px">'+n.c+'</div></div>';
+    }).join("")+'</div>';
+  newsMarkSeen();
+}
 /* ================= RÉFÉRENCES (moteur, zones, prévisionnel, charges) ================= */
 var REF_KEY="refs:v1";
 function refGet(){
@@ -4272,6 +4403,7 @@ function refCell(k,val,unit,date,field,label,editUnit){
     '<button onclick="refEdit(\''+field+'\',\''+label+'\',\''+(editUnit||'')+'\')">modifier</button></div>';
 }
 function renderRefs(){
+  newsBadge();
   var el=document.getElementById("refBody"); if(!el) return;
   var r=refGet(), vma=r.vma||16.5, fcm=r.fcmax||179;
 
@@ -4308,19 +4440,47 @@ function renderRefs(){
   h+='<div class="refSec"><div class="refH"><div class="t">CHARGES DE RÉFÉRENCE</div><div class="x">'+rows.length+' exercice'+(rows.length>1?'s':'')+'</div></div>'+
     '<div class="card" style="padding:14px">'+
     (rows.length
-      ? '<table class="refT"><tr><th>Exercice</th><th style="text-align:right">Charge</th><th style="text-align:right">Tendance</th></tr>'+
-        rows.map(function(x){
+      ? rows.map(function(x){
           var cls=x.delta>0?"up":(x.delta<0?"dn":"eq");
           var lab=x.delta===null?"—":(x.delta>0?"↑ +"+x.delta:(x.delta<0?"↓ "+x.delta:"→"));
-          return '<tr><td>'+x.name+'<div style="font-size:10px;color:var(--mut)">'+refDateFR(x.date).replace("mesuré le ","")+(x.feel?' · '+x.feel:'')+'</div></td>'+
-                 '<td class="n">'+x.charge+'</td><td class="m"><span class="trend '+cls+'">'+lab+'</span></td></tr>';
-        }).join('')+'</table>'
+          var spark=chgSpark(x.hist);
+          var gain=(x.span!==null&&x.span!==0)?(x.span>0?"+"+x.span:String(x.span))+" kg depuis le début":(x.n>1?"stable sur "+x.n+" séances":"1re séance");
+          return '<div style="display:flex;align-items:center;gap:11px;padding:10px 0;border-top:1px solid var(--line)">'+
+            '<div style="flex:1;min-width:0">'+
+              '<div style="font-size:12.5px;font-weight:600;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.name+'</div>'+
+              '<div style="font-size:10px;color:var(--mut);margin-top:2px">'+refDateFR(x.date).replace("mesuré le ","")+(x.feel?' · '+x.feel:'')+' · '+gain+'</div>'+
+            '</div>'+
+            (spark?'<div style="flex:0 0 auto;opacity:.9">'+spark+'</div>':'')+
+            '<div style="flex:0 0 auto;text-align:right;min-width:62px">'+
+              '<div class="refT" style="font-family:\'Bebas Neue\',sans-serif;font-size:17px;letter-spacing:.5px">'+x.charge+'</div>'+
+              '<div class="trend '+cls+'" style="font-size:10.5px">'+lab+'</div>'+
+            '</div></div>';
+        }).join('')
       : '<div class="empty" style="padding:24px 10px">Aucune charge enregistrée.<br>Elles se remplissent au fil des séances de renfo.</div>')+
     '</div></div>';
 
   el.innerHTML=h;
 }
 /* Toutes les charges connues, la plus récente par exercice + tendance vs séance précédente */
+/* Mini-courbe SVG de l'historique de charge d'un exercice. */
+function chgSpark(hist, w, hgt){
+  var pts=hist.filter(function(e){return typeof e.c==="number";});
+  if(pts.length<2) return "";
+  w=w||110; hgt=hgt||26;
+  var vals=pts.map(function(e){return e.c;});
+  var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals), span=(mx-mn)||1;
+  var step=w/(pts.length-1);
+  var d=pts.map(function(e,i){
+    var x=i*step, y=hgt-2-((e.c-mn)/span)*(hgt-6);
+    return (i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1);
+  }).join(" ");
+  var lastX=(pts.length-1)*step, lastY=hgt-2-((vals[vals.length-1]-mn)/span)*(hgt-6);
+  var up=vals[vals.length-1]>=vals[0];
+  var col=up?"var(--grn)":"var(--orange)";
+  return '<svg width="'+w+'" height="'+hgt+'" viewBox="0 0 '+w+' '+hgt+'" style="display:block">'+
+    '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>'+
+    '<circle cx="'+lastX.toFixed(1)+'" cy="'+lastY.toFixed(1)+'" r="2.4" fill="'+col+'"/></svg>';
+}
 function refChargeRows(){
   var o=chgAll(), out=[];
   Object.keys(o).forEach(function(k){
@@ -4328,7 +4488,8 @@ function refChargeRows(){
     if(!a.length) return;
     var cur=a[a.length-1], prev=a.length>1?a[a.length-2]:null, delta=null;
     if(prev && typeof cur.c==="number" && typeof prev.c==="number") delta=Math.round((cur.c-prev.c)*10)/10;
-    out.push({name:cur.n||k, charge:chgFmt(cur), feel:cur.f||"", delta:delta, date:cur.d});
+    out.push({name:cur.n||k, charge:chgFmt(cur), feel:cur.f||"", delta:delta, date:cur.d,
+              hist:a, n:a.length, first:a[0], span:(a.length>1 && typeof cur.c==="number" && typeof a[0].c==="number")?(cur.c-a[0].c):null});
   });
   out.sort(function(x,y){ return y.date<x.date?-1:1; });
   return out;
@@ -4753,7 +4914,7 @@ function addManual(){
 var PULL_KEY="pullups:v1";
 function pullGet(){try{var o=JSON.parse(localStorage.getItem(PULL_KEY)||"null");if(o&&typeof o==="object")return o;}catch(e){}
   return {max:2,maxDate:pullDay(),maxHist:[{d:pullDay(),m:2}],target:6,gtg:{},sessions:[]};}
-function pullSet(o){try{localStorage.setItem(PULL_KEY,JSON.stringify(o));}catch(e){}}
+function pullSet(o){o._u=Date.now();try{localStorage.setItem(PULL_KEY,JSON.stringify(o));}catch(e){}cloudSave();}
 function pullDay(dt){var d=dt||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function pullDaysAgo(iso){var p=iso.split("-");var d=new Date(+p[0],+p[1]-1,+p[2]);return Math.floor((new Date(pullDay())-pullDay0(d))/86400000);}
 function pullDay0(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate());}

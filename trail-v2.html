@@ -3446,7 +3446,7 @@ function exSlug(name){
 var EXIMG_REUSE={
   /* --- alias ajoutés le 01/08/2026 : noms de la banque UT4M vers les planches existantes --- */
   "abduction-hanche-elastique":"abduction-hanche-debout-elastique",
-  "box-step-over-leste":"step-up-explosif-sur-box",
+  /* "box-step-over-leste" : alias retiré, la planche dédiée existe depuis le 01/08/2026 */
   "curl-marteau-halteres":"curl-marteau",
   "descente-de-box-controlee":"step-down-freine-du-banc",
   "developpe-militaire-debout":"developpe-militaire",
@@ -3476,6 +3476,9 @@ var EXIMG_REUSE={
   "elevations-laterales-elastique":"elevations-laterales",
   "equilibre-unipodal-sur-disque":"equilibre-unipodal-sur-disque-de-glisse",
   "kettlebell-swing-russe":"kb-swing-americain",
+  "kettlebell-clean-press":"kb-clean-press",
+  "thruster-halteres-leger":"thruster-halteres",
+  "devils-press":"devil-s-press",
   "kb-swing-russe":"kb-swing-americain",
 
   "ab-wheel-ou-trx-fallout":"ab-wheel",
@@ -3556,6 +3559,11 @@ var EXIMG_REUSE={
   "tractions-lestees-si-possible":"tractions-pronation"
 };
 var EXIMG_SET={}; EXBANK.forEach(function(e){ EXIMG_SET[e.s]=1; });
+/* Planches ajoutées le 01/08/2026 (mouvements CrossFit du finisher métabolique).
+   Elles ne sont pas dans EXBANK : on les déclare ici pour que exImgURL() les trouve. */
+["burpees","devil-s-press","dumbbell-snatch","thruster-halteres","wall-ball",
+ "kb-clean-press","box-step-over-leste","sissy-squat-assiste","chaise-murale-isometrique"
+].forEach(function(s){ EXIMG_SET[s]=1; });
 // Retire prefixes de reps/durees ("12 ", "30 s ", "3x ") et suffixes de cote ("/jambe")
 function exCleanName(name){
   var s=(name||"").trim();

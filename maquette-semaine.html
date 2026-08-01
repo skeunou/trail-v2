@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>P.P.L — maquette Semaine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ebede9; --paper:#ffffff; --ink:#15171a; --ink2:#3a3f44;
+  --mut:#7a8088; --line:#dadfd6;
+  --acid:#e8ff47; --acid-d:#8a9c13;
+  --orange:#ff6b35; --orange-d:#d8470e; --red:#e5484d;
+  --grn:#1f9d55; --blue:#2f86c9; --purp:#7c5cff;
+  --shadow:0 4px 16px rgba(20,30,20,.07); --nav:64px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:calc(var(--nav) + 30px)}
+.bebas{font-family:'Bebas Neue',sans-serif;letter-spacing:.5px}
+.app{max-width:480px;margin:0 auto;padding:0 14px}
+.demo{position:sticky;top:0;z-index:50;background:#15171a;padding:9px 12px;display:flex;gap:6px;overflow-x:auto}
+.demo button{flex:0 0 auto;border:1px solid #3a3f44;background:none;color:#c9cdc6;border-radius:8px;padding:6px 11px;font:600 11.5px 'DM Sans',sans-serif}
+.demo button.on{background:var(--acid);color:#1a1d12;border-color:var(--acid)}
+
+/* bandeau */
+.topline{background:#c2c7b7;border-bottom:1px solid #b1b7a5;margin:0 -14px 14px;padding:14px 16px 11px}
+.trow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#5f6555}
+.bigtitle{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.8px;line-height:1;margin-top:1px}
+.wknav{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.5);border-radius:999px;padding:3px 4px}
+.wknav button{border:none;background:none;color:var(--ink);font-size:17px;line-height:1;padding:2px 8px;cursor:pointer}
+.wknav span{font-size:11px;font-weight:700;color:var(--ink);white-space:nowrap;padding:0 2px}
+
+/* reste à faire */
+.todo{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
+.todo .hd{display:flex;align-items:center;justify-content:space-between;padding:12px 15px 10px}
+.todo .hd .t{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:.8px}
+.todo .hd .n{font-size:10.5px;font-weight:700;color:var(--mut)}
+.slot{display:flex;align-items:center;gap:10px;padding:11px 15px;border-top:1px solid var(--line);cursor:pointer}
+.slot .tag{font-size:9px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#fff;background:var(--orange);border-radius:5px;padding:3px 6px;flex:0 0 auto}
+.slot .tag.sl{background:var(--blue)}
+.slot .c{flex:1;min-width:0}
+.slot .n{font-size:13px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot .s{font-size:11px;color:var(--mut);margin-top:1px}
+.slot .go{font-size:15px;color:var(--mut);font-weight:800;flex:0 0 auto}
+.allok{padding:16px 15px;border-top:1px solid var(--line);font-size:12.5px;color:var(--grn);display:flex;align-items:center;gap:8px}
+
+/* progression */
+.prog{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 15px;margin-bottom:14px;box-shadow:var(--shadow)}
+.prow{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;margin-bottom:6px}
+.prow>span{color:var(--mut)}
+.prow b{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.5px}
+.prow b i{font-style:normal;color:var(--mut);font-size:12.5px}
+.bar{height:6px;background:var(--bg);border-radius:4px;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:4px}
+.psub{display:flex;justify-content:space-between;font-size:10px;color:var(--mut);margin-top:5px}
+
+/* jours */
+.sec{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);margin:0 0 7px 2px}
+.days{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:12px}
+.day{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.day:last-child{border-bottom:none}
+.day.today{background:#f7f9f2}
+.day .d{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.5px;color:var(--mut);width:52px;flex:0 0 auto}
+.day.today .d{color:var(--ink)}
+.day .st{width:16px;flex:0 0 auto;text-align:center;font-size:13px;font-weight:800}
+.day .st.ok{color:var(--grn)}
+.day .st.no{color:var(--red)}
+.day .st.now{color:var(--orange)}
+.day .st.wait{color:var(--line)}
+.day .c{flex:1;min-width:0}
+.day .n{font-size:12.5px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.day.pale .n{color:var(--mut);font-weight:500}
+.day .s{font-size:10.5px;color:var(--mut);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* actions */
+.act{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:12px;font:600 12.5px 'DM Sans',sans-serif;color:var(--ink2);cursor:pointer;margin-bottom:7px;display:flex;align-items:center;justify-content:center;gap:7px}
+.act .sv{color:#fc4c02;font-weight:800}
+.fold{width:100%;border:none;background:none;color:var(--mut);font:600 11.5px 'DM Sans',sans-serif;padding:9px 0;cursor:pointer;text-align:center}
+.foldc{display:none}
+.foldc.on{display:block}
+.read{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--acid-d);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.read .r{display:flex;justify-content:space-between;font-size:12px;padding:3px 0}
+.read .r span{color:var(--mut)}
+.read .r b{font-weight:700}
+.read .tip{font-size:11.5px;color:var(--ink2);line-height:1.45;margin-top:7px;padding-top:7px;border-top:1px solid var(--line)}
+
+.nav{position:fixed;left:0;right:0;bottom:0;height:var(--nav);background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;max-width:480px;margin:0 auto}
+.nav button{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 9.5px 'DM Sans',sans-serif;color:var(--mut);cursor:pointer}
+.nav button.on{color:var(--ink)}
+.nav i{font-style:normal;font-size:15px;opacity:.75}
+</style>
+</head>
+<body>
+
+<div class="demo">
+  <button class="on" onclick="show('a',this)">1 · En cours</button>
+  <button onclick="show('b',this)">2 · Tout fait</button>
+  <button onclick="show('c',this)">3 · Semaine passée</button>
+</div>
+
+<div class="app">
+
+  <div class="topline">
+    <div class="trow">
+      <div>
+        <div class="eyebrow">Vue d'ensemble</div>
+        <div class="bigtitle">LA SEMAINE</div>
+      </div>
+      <div class="wknav"><button>‹</button><span id="wkRange">27 juil – 2 août</span><button>›</button></div>
+    </div>
+  </div>
+
+  <!-- 1. ce qu'il reste : la question qu'on se pose en ouvrant l'onglet -->
+  <div class="todo" id="todo">
+    <div class="hd"><div class="t">RESTE À FAIRE</div><div class="n" id="todoN">2 sur 4</div></div>
+    <div id="todoList">
+      <div class="slot">
+        <span class="tag">Renfo 2/3</span>
+        <div class="c"><div class="n">Accent EXCENTRIQUE</div><div class="s">3 × 8 · RIR 2 · 45′</div></div>
+        <div class="go">›</div>
+      </div>
+      <div class="slot">
+        <span class="tag sl">Longue</span>
+        <div class="c"><div class="n">Sortie longue</div><div class="s">~1h15 · 400 m D+</div></div>
+        <div class="go">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. progression : une seule jauge, la cible de la semaine -->
+  <div class="prog">
+    <div class="prow"><span>Progression D+</span><b id="pgD">516 <i>/ 700 m</i></b></div>
+    <div class="bar"><i id="pgBar" style="width:74%;background:var(--blue)"></i></div>
+    <div class="psub"><span id="pgKm">18 / 25 km · 3 activités</span><span>Vélo &amp; Force · S1/4</span></div>
+  </div>
+
+  <!-- 3. les 7 jours -->
+  <div class="sec">Les jours</div>
+  <div class="days" id="days">
+    <div class="day"><div class="d">LUN 27</div><div class="st ok">✓</div><div class="c"><div class="n">BlablaRun avec le SMON</div><div class="s">10,8 km · 56′ · 125 m D+</div></div></div>
+    <div class="day"><div class="d">MAR 28</div><div class="st ok">✓</div><div class="c"><div class="n">Côtes club</div><div class="s">11,7 km · 1h09 · 391 m D+</div></div></div>
+    <div class="day"><div class="d">MER 29</div><div class="st ok">✓</div><div class="c"><div class="n">Renfo · Accent MONTÉE</div><div class="s">41′ · lié à Strava</div></div></div>
+    <div class="day pale"><div class="d">JEU 30</div><div class="st no">✗</div><div class="c"><div class="n">EF Z2</div><div class="s">35′ — non faite</div></div></div>
+    <div class="day pale"><div class="d">VEN 31</div><div class="st wait">·</div><div class="c"><div class="n">Créneau libre</div><div class="s">renfo à caler</div></div></div>
+    <div class="day today"><div class="d">SAM 1</div><div class="st now">▸</div><div class="c"><div class="n">Créneau libre</div><div class="s">aujourd'hui · 2e renfo possible</div></div></div>
+    <div class="day pale"><div class="d">DIM 2</div><div class="st wait">·</div><div class="c"><div class="n">Sortie longue</div><div class="s">~1h15 · 400 m D+</div></div></div>
+  </div>
+
+  <!-- 4. actions -->
+  <button class="act"><span class="sv">↗</span> Lier une activité Strava</button>
+
+  <button class="fold" onclick="fold('rd',this)">▾ Lecture de la semaine</button>
+  <div class="foldc" id="rd">
+    <div class="read">
+      <div class="r"><span>EF en zone</span><b style="color:var(--grn)">2/2 en Z2</b></div>
+      <div class="r"><span>Côtes</span><b>1 faite</b></div>
+      <div class="r"><span>Renfo</span><b>1 sur 3</b></div>
+      <div class="tip">Tes EF sont bien tenues en Z2. Il te reste 2 renfos et la sortie longue avant dimanche — pose-en un aujourd'hui.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button><i>◎</i>Aujourd'hui</button>
+  <button class="on"><i>▦</i>Semaine</button>
+  <button><i>▲</i>Prog 26-27</button>
+  <button><i>▤</i>Repères</button>
+  <button><i>💪</i>Tractions</button>
+</div>
+
+<script>
+function fold(id,btn){
+  var el=document.getElementById(id), on=el.classList.toggle('on');
+  btn.textContent=(on?'▴ Masquer la lecture':'▾ Lecture de la semaine');
+}
+var S={
+ a:function(){
+  document.getElementById('wkRange').textContent='27 juil – 2 août';
+  document.getElementById('todoN').textContent='2 sur 4';
+  document.getElementById('todoList').innerHTML=
+   '<div class="slot"><span class="tag">Renfo 2/3</span><div class="c"><div class="n">Accent EXCENTRIQUE</div><div class="s">3 × 8 · RIR 2 · 45′</div></div><div class="go">›</div></div>'+
+   '<div class="slot"><span class="tag sl">Longue</span><div class="c"><div class="n">Sortie longue</div><div class="s">~1h15 · 400 m D+</div></div><div class="go">›</div></div>';
+  document.getElementById('pgD').innerHTML='516 <i>/ 700 m</i>';
+  document.getElementById('pgBar').style.cssText='width:74%;background:var(--blue)';
+  document.getElementById('pgKm').textContent='18 / 25 km · 3 activités';
+ },
+ b:function(){
+  document.getElementById('wkRange').textContent='27 juil – 2 août';
+  document.getElementById('todoN').textContent='4 sur 4';
+  document.getElementById('todoList').innerHTML=
+   '<div class="allok">✓ Tout est posé. La semaine est complète.</div>';
+  document.getElementById('pgD').innerHTML='724 <i>/ 700 m</i>';
+  document.getElementById('pgBar').style.cssText='width:100%;background:var(--grn)';
+  document.getElementById('pgKm').textContent='27 / 25 km · 6 activités';
+ },
+ c:function(){
+  document.getElementById('wkRange').textContent='20 – 26 juil';
+  document.getElementById('todoN').textContent='terminée';
+  document.getElementById('todoList').innerHTML=
+   '<div class="allok" style="color:var(--mut)">Semaine passée · 5 séances sur 6</div>';
+  document.getElementById('pgD').innerHTML='1 240 <i>/ 1 200 m</i>';
+  document.getElementById('pgBar').style.cssText='width:100%;background:var(--grn)';
+  document.getElementById('pgKm').textContent='38 / 38 km · 6 activités';
+ }
+};
+function show(k,b){
+  document.querySelectorAll('.demo button').forEach(function(x){x.classList.remove('on');});
+  b.classList.add('on'); S[k]();
+}
+</script>
+</body>
+</html>

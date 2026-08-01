@@ -22,6 +22,46 @@
   }
   .shBubble{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:13px 15px;margin:12px 0 4px;box-shadow:var(--shadow)}
   .shBubble>div{font-size:13.5px;line-height:1.55}
+  /* ===== ONGLET SEMAINE ===== */
+  .trow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .wknav{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.5);border-radius:999px;padding:3px 4px;flex:0 0 auto}
+  .wknav button{border:none;background:none;color:var(--ink);font-size:17px;line-height:1;padding:2px 8px;cursor:pointer}
+  .wknav span{font-size:11px;font-weight:700;color:var(--ink);white-space:nowrap;padding:0 2px}
+  .sec{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);margin:0 0 7px 2px}
+  .todo{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
+  .todo .hd{display:flex;align-items:center;justify-content:space-between;padding:12px 15px 10px}
+  .todo .hd .t{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:.8px}
+  .todo .hd .n{font-size:10.5px;font-weight:700;color:var(--mut)}
+  .slot{display:flex;align-items:center;gap:10px;padding:11px 15px;border-top:1px solid var(--line);cursor:pointer}
+  .slot .tag{font-size:9px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#fff;background:var(--orange);border-radius:5px;padding:3px 6px;flex:0 0 auto}
+  .slot .tag.sl{background:var(--blue)}
+  .slot .c{flex:1;min-width:0}
+  .slot .n{font-size:13px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .slot .s{font-size:11px;color:var(--mut);margin-top:1px}
+  .slot .go{font-size:15px;color:var(--mut);font-weight:800;flex:0 0 auto}
+  .allok{padding:15px;border-top:1px solid var(--line);font-size:12.5px;color:var(--grn);display:flex;align-items:center;gap:8px}
+  .prog{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 15px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .prow{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;margin-bottom:6px}
+  .prow>span{color:var(--mut)}
+  .prow b{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.5px}
+  .prow b i{font-style:normal;color:var(--mut);font-size:12.5px}
+  .psub{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:var(--mut);margin-top:5px}
+  .days{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:12px}
+  .day{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+  .day:last-child{border-bottom:none}
+  .day.today{background:#f7f9f2}
+  .day .d{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.5px;color:var(--mut);width:52px;flex:0 0 auto}
+  .day.today .d{color:var(--ink)}
+  .day .st{width:16px;flex:0 0 auto;text-align:center;font-size:13px;font-weight:800}
+  .day .st.ok{color:var(--grn)} .day .st.no{color:var(--red)}
+  .day .st.now{color:var(--orange)} .day .st.wait{color:var(--line)}
+  .day .c{flex:1;min-width:0}
+  .day .n{font-size:12.5px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .day.pale .n{color:var(--mut);font-weight:500}
+  .day .s{font-size:10.5px;color:var(--mut);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .act{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:12px;font:600 12.5px 'DM Sans',sans-serif;color:var(--ink2);cursor:pointer;margin-bottom:7px;display:flex;align-items:center;justify-content:center;gap:7px}
+  .act .sv{color:#fc4c02;font-weight:800}
+  .fold{width:100%;border:none;background:none;color:var(--mut);font:600 11.5px 'DM Sans',sans-serif;padding:9px 0;cursor:pointer;text-align:center}
   /* ===== CARTE « OÙ J'EN SUIS » ===== */
   .loadHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
   .verdict{font-size:10.5px;font-weight:700;border-radius:999px;padding:4px 10px;white-space:nowrap}
@@ -372,14 +412,21 @@
 
   <!-- SEMAINE -->
   <section class="view" id="v-week">
-    <div class="topline"><div><div class="eyebrow">Vue d'ensemble</div><div class="bigtitle bebas">LA SEMAINE</div></div></div>
-    <div class="weeklbl"><span class="eyebrow" id="weekLbl" style="color:var(--ink)">Ta semaine</span><span style="display:flex;align-items:center;gap:8px"><span onclick="weekNav(-1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">‹</span><span class="eyebrow" id="weekRange">—</span><span onclick="weekNav(1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">›</span></span></div>
-    <div class="week" id="weekStrip"></div>
-    <div id="weekRecap"></div>
+    <div class="topline">
+      <div class="trow">
+        <div><div class="eyebrow">Vue d'ensemble</div><div class="bigtitle bebas">LA SEMAINE</div></div>
+        <div class="wknav"><button onclick="weekNav(-1)">‹</button><span id="weekRange">—</span><button onclick="weekNav(1)">›</button></div>
+      </div>
+    </div>
     <div id="slWeek"></div>
-    <div id="coachRead"></div>
+    <div id="weekRecap"></div>
+    <div class="sec">Les jours</div>
     <div id="weekViewBody"></div>
-    <div class="card stravacard">
+    <button class="act" onclick="nav('week');toggleStravaCard()"><span class="sv">↗</span> Lier une activité Strava</button>
+    <button class="fold" id="readFold" onclick="toggleFold('coachRead',this,'Lecture de la semaine')">▾ Lecture de la semaine</button>
+    <div id="coachRead" style="display:none"></div>
+    <!-- Carte Strava : dépliée au tap sur le bouton ci-dessus. -->
+    <div class="card stravacard" id="stravaCard" style="display:none">
       <div class="strava" onclick="goStrava()">
         <div class="ic">≈</div>
         <div class="t"><div class="l">Charge · cette semaine</div><div class="s" id="stravaState">Strava à connecter</div></div>
@@ -388,8 +435,11 @@
       <div id="stravaActs"></div>
       <div id="tokExport"></div>
     </div>
-
-    <div class="capnote" style="margin-top:2px">Repères : VMA 16,5 km/h · FCmax 179 bpm. Allures = références plat ; sur trail (D+), pilote à la FC / sensation. Dis-moi pour ajuster.</div>
+    <!-- Bande de 7 pastilles retirée (doublon avec la liste des jours). Conservée, masquée. -->
+    <div class="week" id="weekStrip" style="display:none"></div>
+    <!-- Pavé de références retiré : il vit dans l'onglet Repères.
+    <div class="capnote">Repères : VMA 16,5 km/h · FCmax 179 bpm…</div>
+    -->
   </section>
 
   <!-- HORIZON -->
@@ -1801,101 +1851,53 @@ function afaireBtn(o){
   '</button>';
 }
 function renderAFaire(){
-  var box=document.getElementById("slWeek"); if(!box)return;
-  vmaSel=null;
-  var rf=document.getElementById("renfoWeek"); if(rf)rf.innerHTML="";
-  var nSlots=renfoSlotCount();
-  if(blockSess(today).off && nSlots===0){ box.innerHTML=""; return; }
-  var slT=slWeekTarget(), slE=slDoneEntry();
-  var slSub = slE ? ((slE.km?slE.km+' km · ':'')+fmtMin(slE.durMin||0)) : (slT.absorption?"récup — pas de longue":("~"+fmtDur(slT.dur)+" · "+slT.dplus+" m D+"));
-  var vE=vmaDoneEntry(), vf=vmaFmt();
-  var vSub = vE ? ((vE.km?vE.km+' km · ':'')+fmtMin(vE.durMin||0)) : vf.n;
-  var btns = afaireBtn({tag:"Sortie longue",label:"Sortie longue",sub:slSub,done:!!slE,onclick:(slE?"openSL()":"slotMenu('sl',0)")})+
-             afaireBtn({tag:"Qualité",label:"Qualité",sub:vSub,done:!!vE,onclick:"openVMA()"});
-  for(var sN=1; sN<=nSlots; sN++){
-    var rr=RW()[slotIdx(sN)];
-    btns += afaireBtn({
-      tag:"Renfo "+sN+"/"+nSlots, label:rr.name,
-      sub:rr.name,
-      done:slotDone(sN),
-      onclick:(slotDone(sN)?("reviewWeeklyRenfo("+sN+")"):("slotMenu('renfo',"+sN+")"))
-    });
+  var box=document.getElementById("slWeek"); if(!box) return;
+  var nS=renfoSlotCount(), slE=slDoneEntry(), past=(weekOffset<0), rows=[], done=0, tot=0;
+
+  // slots renfo
+  for(var s=1;s<=nS;s++){
+    tot++;
+    if(slotDone(s)){ done++; continue; }
+    var rr=RW()[slotIdx(s)];
+    rows.push('<div class="slot" onclick="slotMenu(\'renfo\','+s+')">'+
+      '<span class="tag">Renfo '+s+'/'+nS+'</span>'+
+      '<div class="c"><div class="n">'+rr.name+'</div><div class="s">'+renfoFmt()+' · RIR 2 · 45′</div></div>'+
+      '<div class="go">›</div></div>');
   }
-  var bs=blockSess(today);
-  box.innerHTML='<div class="card" style="padding:13px;margin-top:10px">'+
-    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><div style="font-weight:800;font-size:13px;letter-spacing:.5px">À FAIRE</div><div style="font-size:10.5px;color:var(--mut)">cette semaine · où tu veux</div></div>'+
-    '<div style="display:flex;flex-direction:column;gap:6px">'+btns+'</div>'+
-    '<div style="font-size:10.5px;color:var(--mut);margin-top:9px">Longue · qualité · '+nSlots+' renfo'+(nSlots>1?'s':'')+' — à poser quand ta vie le permet. '+blockFor(today).name+' : '+nSlots+' séance'+(nSlots>1?'s':'')+' de renfo par semaine.</div>'+
-    '<div id="afaireDetail"></div></div>';
-}
-function openVMA(){
-  var el=document.getElementById("afaireDetail"); if(!el)return;
-  var e=vmaDoneEntry();
-  var close='<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px;padding:6px" onclick="renderAFaire()">← fermer</button>';
-  if(e){
-    el.innerHTML='<div style="border-top:1px solid var(--line);margin-top:11px;padding-top:11px">'+
-      '<div style="font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:6px">SÉANCE QUALITÉ</div>'+
-      '<div style="font-size:10.5px;font-weight:800;color:var(--grn);letter-spacing:.5px;margin-bottom:4px">✓ FAITE</div>'+
-      '<div style="font-size:14px;font-weight:700;color:var(--ink)">'+(e.stravaName||"Séance qualité")+'</div>'+
-      '<div style="font-size:11.5px;color:var(--mut);margin-top:4px">'+(e.fmt?e.fmt+' · ':'')+(e.km?e.km+' km · ':'')+fmtMin(e.durMin||0)+(e.hrAvg?' · FC '+e.hrAvg:'')+'</div>'+
-      '<button class="btn btn-ghost" style="width:100%;margin-top:9px;font-size:11px;padding:5px;color:var(--mut)" onclick="unlinkVMA()">délier</button>'+close+'</div>';
-    return;
+  // sortie longue
+  var t=slWeekTarget();
+  if(t && !t.absorption){
+    tot++;
+    if(slE) done++;
+    else rows.push('<div class="slot" onclick="slotMenu(\'sl\',0)">'+
+      '<span class="tag sl">Longue</span>'+
+      '<div class="c"><div class="n">Sortie longue</div><div class="s">~'+fmtDur(t.dur)+' · '+t.dplus+' m D+</div></div>'+
+      '<div class="go">›</div></div>');
   }
-  var f=vmaCur(), sugg=vmaFmt(), tc={SEUIL:"var(--blue)",VO2:"var(--purp)",VITESSE:"var(--orange)",FARTLEK:"var(--grn)"};
-  var pool=VMA_FORMATS.map(function(x,i){
-    var on=(x===f), isSugg=(x===sugg);
-    return '<button onclick="setVmaFmt('+i+')" style="display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:'+(on?'rgba(232,255,71,.18)':'var(--paper)')+';border:1px solid '+(on?'var(--acid)':'var(--line)')+';border-radius:9px;padding:8px 10px;margin-top:5px;cursor:pointer;font-family:inherit">'+
-      '<span style="font-size:9px;font-weight:800;letter-spacing:.5px;color:'+(tc[x.tag]||'var(--mut)')+';min-width:46px">'+x.tag+'</span>'+
-      '<span style="flex:1;font-size:12.5px;font-weight:'+(on?'800':'600')+';color:var(--ink)">'+x.n+'</span>'+
-      (isSugg?'<span style="font-size:9px;color:var(--mut)">semaine</span>':'')+'</button>';
-  }).join("");
-  el.innerHTML='<div style="border-top:1px solid var(--line);margin-top:11px;padding-top:11px">'+
-    '<div style="font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:3px">SÉANCE QUALITÉ · BONUS</div>'+
-    '<div style="font-size:11px;color:var(--mut);margin-bottom:9px">Optionnelle — à caler si tu as le créneau dans la semaine. Suggestion surlignée, ou pioche dans le pool.</div>'+
-    '<div style="font-size:14px;font-weight:800;color:var(--ink)">'+f.n+'</div>'+
-    '<div style="font-size:13px;color:var(--ink);font-weight:700;margin-top:3px">'+f.desc+'</div>'+
-    '<div style="font-size:11px;color:var(--mut);margin-top:5px">'+f.cue+'</div>'+
-    '<div style="font-size:11px;color:var(--mut);margin-top:6px">Structure : 15–20′ échauffement · corps de séance · 10′ retour au calme. Route plate ou piste — complète les côtes du mardi (vertical).</div>'+
-    '<div style="font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--mut);margin:12px 0 2px">CHOISIR UN AUTRE FORMAT</div>'+
-    pool+
-    '<button class="btn btn-go" style="width:100%;margin-top:11px;background:var(--blue)" onclick="showVMALinkList()">🔗 Lier ma séance (Strava)</button>'+
-    '<div id="vmaLinkList"></div>'+close+'</div>';
+  if(!tot){ box.innerHTML=""; return; }
+
+  var body = rows.length
+    ? rows.join("")
+    : '<div class="allok">✓ Tout est posé. La semaine est complète.</div>';
+  if(past && rows.length){
+    body='<div class="allok" style="color:var(--mut)">Semaine passée · '+done+' séance'+(done>1?'s':'')+' sur '+tot+'</div>';
+  }
+  box.innerHTML='<div class="todo">'+
+    '<div class="hd"><div class="t">RESTE À FAIRE</div><div class="n">'+(past?'terminée':(done+' sur '+tot))+'</div></div>'+
+    body+'<div id="afaireDetail"></div></div>';
 }
-function showVMALinkList(){
-  var el=document.getElementById("vmaLinkList"); if(!el)return;
-  if(!stravaToken){ el.innerHTML='<div style="color:var(--mut);font-size:12px;padding:6px 0">Connecte Strava pour lier ta séance.</div>'; return; }
-  var acts=runActsForLink().slice(0,8);
-  if(!acts.length){ el.innerHTML='<div style="color:var(--mut);font-size:12px;padding:6px 0">Aucune course Strava récente. Recharge Strava (↻).</div>'; return; }
-  el.innerHTML=acts.map(function(a){
-    var d=a.date?a.date.split("-").reverse().slice(0,2).join("/"):"";
-    return '<div class="card" style="padding:9px 12px;margin-top:6px;cursor:pointer" onclick="linkVMAStrava(\''+a.id+'\')"><div style="font-weight:700;font-size:13px">'+(a.name||"Course")+'</div><div style="color:var(--mut);font-size:11px">'+d+(a.km?' · '+a.km+' km':'')+' · '+fmtMin(a.movingMin)+'</div></div>';
-  }).join("")+'<button class="btn btn-ghost" style="width:100%;font-size:12px;padding:6px;margin-top:6px" onclick="openVMA()">← annuler</button>';
+/* Replie/déplie un bloc de l'onglet Semaine (toggleEl existe déjà ailleurs — nom distinct). */
+function toggleFold(id, btn, label){
+  var el=document.getElementById(id); if(!el) return;
+  var on = el.style.display==="none";
+  el.style.display = on ? "block" : "none";
+  if(btn && label) btn.textContent=(on?"▴ Masquer":"▾ ")+" "+label;
+  if(on && id==="coachRead") renderCoachRead();
 }
-function linkVMAStrava(id){
-  var a=null; lastActs.forEach(function(x){if(String(x.id)===String(id))a=x;}); if(!a)return;
-  var f=vmaCur(), log=loadLog();
-  log.unshift({id:"vma_"+Date.now(),dateKey:a.date||iso(new Date()),ts:Date.now(),_u:Date.now(),
-    typeKey:"vma-week",type:"QUALITÉ",title:"Séance qualité",fmt:f.n,color:"var(--purp)",wk:mondayKey(),
-    sid:a.id,stravaName:a.name||"",km:a.km,dplus:a.dplus,durMin:a.movingMin,hrAvg:a.hrAvg||null,hrMax:a.hrMax||null});
-  log.sort(function(x,y){return x.dateKey<y.dateKey?1:-1;});
-  saveLog(log); renderAFaire(); renderLog();
-}
-function unlinkVMA(){
-  if(!confirm("Délier la VMA de la semaine ?"))return;
-  var wk=mondayKey(); saveLog(loadLog().filter(function(e){return !(e.typeKey==="vma-week"&&e.wk===wk);})); renderAFaire(); renderLog();
-}
-function reviewWeeklyRenfo(slot){
-  var box=document.getElementById("afaireDetail"); if(!box)return;
-  var wk=mondayKey();
-  var e=loadLog().filter(function(x){return x.typeKey==="renfo-supp"&&x.wk===wk&&x.wslot===slot;})[0];
-  if(!e){ startWeeklyRenfo(slot); return; }
-  var meta=[]; if(e.rpe)meta.push("RPE "+e.rpe); if(e.jambes)meta.push("Jambes "+e.jambes);
-  box.innerHTML='<div style="border-top:1px solid var(--line);margin-top:11px;padding-top:11px">'+
-    '<div style="font-weight:700;font-size:13px;margin-bottom:2px">'+(e.title||"Renfo")+'</div>'+
-    (meta.length?'<div style="font-size:12px;color:var(--mut);margin-bottom:8px">'+meta.join(" · ")+'</div>':'')+
-    (e.note?'<div style="font-size:12px;color:var(--mut);margin-bottom:8px">'+e.note+'</div>':'')+
-    (e.exos&&e.exos.length?renfoRecapHTML(e.exos,"rw"+slot):'<div style="font-size:12px;color:var(--mut)">Détail des exercices non enregistré pour cette séance.</div>')+
-    '<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px;padding:6px" onclick="renderRenfoWeek()">← fermer</button></div>';
+function toggleStravaCard(){
+  var c=document.getElementById("stravaCard"); if(!c) return;
+  c.style.display = c.style.display==="none" ? "block" : "none";
+  if(c.style.display==="block" && c.scrollIntoView) c.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 /* ===== MENU D'UN SLOT À FAIRE =====
    Le slot est flottant : on doit pouvoir le faire maintenant, déclarer le jour où
@@ -2916,6 +2918,45 @@ function weekRecapData(off){
   return r;
 }
 function renderWeekRecap(){
+  var box=document.getElementById("weekRecap"); if(!box) return;
+  var _wd=new Date(today); _wd.setDate(today.getDate()+weekOffset*7);
+  var tg=weekTarget(_wd), r=weekRecapData(weekOffset);
+  if(!tg || tg.dp<=0){ box.innerHTML=""; return; }
+  var pct=Math.min(100,Math.round(r.runD/tg.dp*100));
+  var col = r.runD>=tg.dp ? "var(--grn)" : (r.runD>tg.dp*1.15 ? "var(--orange)" : "var(--blue)");
+  box.innerHTML='<div class="prog">'+
+    '<div class="prow"><span>Progression D+</span><b style="color:'+col+'">'+Math.round(r.runD).toLocaleString("fr-FR")+' <i>/ '+tg.dp.toLocaleString("fr-FR")+' m</i></b></div>'+
+    '<div class="bar"><i style="width:'+pct+'%;background:'+col+'"></i></div>'+
+    '<div class="psub"><span>'+Math.round(r.runKm)+' / '+tg.km+' km · '+r.n+' activité'+(r.n>1?'s':'')+'</span>'+
+    '<span>'+tg.block.name+' · S'+tg.wb+'/'+tg.tot+'</span></div></div>';
+}
+function weekRecapData(off){
+  var mon=new Date(today); mon.setHours(0,0,0,0); mon.setDate(today.getDate()-(dowMon(today)-1)+(off||0)*7);
+  var monK=iso(mon), sun=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+6), sunK=iso(sun);
+  function inWk(dk){ dk=(dk||"").slice(0,10); return dk>=monK && dk<=sunK; }
+  var r={runKm:0,runD:0,rideKm:0,rideD:0,totMin:0,n:0}, seen={};
+  lastActs.forEach(function(a){
+    if(!inWk(a.date))return;
+    var t=(a.type||"").toLowerCase(), sp=actSport(a);
+    var isRun = sp ? (sp==="trail"||sp==="course") : /run/.test(t);
+    var isRide = sp ? (sp==="velo_ht"||sp==="velo_route") : /ride/.test(t);
+    r.totMin+=a.movingMin||0; r.n++;
+    if(isRun){ r.runKm+=a.km||0; r.runD+=a.dplus||0; }
+    else if(isRide){ r.rideKm+=a.km||0; r.rideD+=a.dplus||0; }
+    if(a.id) seen[String(a.id)]=true;
+  });
+  extrasGet().forEach(function(e){
+    if(!inWk(e.dateKey))return;
+    if(e.sid && seen[String(e.sid)])return; // déjà compté via le flux Strava
+    r.totMin+=e.durMin||0; r.n++;
+    if(e.sport==="course"||e.sport==="trail"){ r.runKm+=e.km||0; r.runD+=e.dplus||0; }
+    else if(e.sport==="velo_ht"||e.sport==="velo_route"){ r.rideKm+=e.km||0; r.rideD+=e.dplus||0; }
+  });
+  return r;
+}
+/* ANCIENNE carte « Cette semaine » — remplacée par la jauge de progression.
+   Conservée en commentaire : sa redéfinition écrasait la nouvelle (JS garde la dernière).
+function renderWeekRecap(){
   var box=document.getElementById("weekRecap"); if(!box)return;
   var r=weekRecapData(weekOffset);
   var parts=[];
@@ -2944,6 +2985,8 @@ function renderWeekRecap(){
     '<div style="font-size:13.5px;font-weight:600;line-height:1.4">'+parts.join(' &nbsp;·&nbsp; ')+
     ' <span style="color:var(--mut);font-weight:500">— '+durStr(Math.round(r.totMin))+' d\'effort en '+r.n+' activité'+(r.n>1?'s':'')+'</span></div>'+tgHTML+'</div>';
 }
+*/
+
 /* Plafond D+ mensuel : 5000 m par défaut, levé sur les blocs marqués overCap (B12 spécifique UT4M) */
 function monthCap(d){
   var b=blockFor(d||today);
@@ -3103,34 +3146,36 @@ function wkMark(done,dk,s){
   return '<span style="color:var(--red)">✗</span>';
 }
 function renderWeekView(){
-  var out="";
-  for(var w=0;w<1;w++){
-    var mon=new Date(today); mon.setHours(0,0,0,0); mon.setDate(today.getDate()-(dowMon(today)-1)+(weekOffset+w)*7);
-    var sun=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+6);
-    var thu=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+3);
-    var blk=blockFor(thu);
-    var range=mon.getDate()+(mon.getMonth()!==sun.getMonth()?' '+MOIS[mon.getMonth()]:'')+'–'+sun.getDate()+' '+MOIS[sun.getMonth()];
-    var wtitle = weekOffset===0 ? 'Cette semaine' : (weekOffset===1 ? 'Semaine prochaine' : (weekOffset===-1 ? 'Semaine dernière' : (weekOffset>0?'Dans '+weekOffset+' semaines':'Il y a '+(-weekOffset)+' semaines')));
-    out+='<div class="wkhead"><div class="wktitle bebas">'+wtitle+'</div><div class="wkmeta">'+range+' · '+blk.name+'</div></div>';
-    out+='<div class="card" style="padding:0;margin-bottom:18px;overflow:hidden">';
-    for(var i=0;i<7;i++){var d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i);var s=sessionFor(d);var dk=iso(d);var done=sessionDone(s)||extrasForDay(dk).length>0||suppEntriesFor(dk).length>0;var dd=s.plan;
-      var real=done?realDaySummary(dk):null;
-      var mid;
-      if(real&&real.length){
-        mid=real.map(function(r){return '<div class="wkline"><span class="pip" style="background:var(--grn)"></span><div class="wtxt"><div class="wm">'+r.name+'</div>'+(r.sub?'<div class="wsub">'+r.sub+'</div>':'')+'</div></div>';}).join('');
-      } else {
-        mid='<div class="wkline"><span class="pip" style="background:'+s.info.color+'"></span><div class="wtxt"><div class="wm">'+(dd.sid?'<span style="color:var(--blue)">'+dd.sid+'</span> · ':'')+dd.label+'</div>'+(dd.sub?'<div class="wsub">'+dd.sub+'</div>':'')+'</div></div>';
-      }
-      out+='<div class="wkrow'+(dk===iso(today)?' wktoday':'')+'" onclick="openSheet(\''+dk+'\')">'
-        +'<div class="wkdn bebas">'+JOURS[i]+' '+d.getDate()+'</div>'
-        +'<div class="wkmid">'+mid+'</div>'
-        +'<div class="wkchk">'+wkMark(done,dk,s)+'</div></div>';}
-    out+='</div>';
+  var mon=new Date(today); mon.setHours(0,0,0,0);
+  mon.setDate(today.getDate()-(dowMon(today)-1)+weekOffset*7);
+  var sun=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+6);
+  var range=mon.getDate()+(mon.getMonth()!==sun.getMonth()?' '+MOIS[mon.getMonth()].slice(0,4):'')+'–'+sun.getDate()+' '+MOIS[sun.getMonth()].slice(0,4);
+  var rg=document.getElementById("weekRange"); if(rg) rg.textContent=range;
+
+  var out='<div class="days">';
+  for(var i=0;i<7;i++){
+    var d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i), dk=iso(d), s=sessionFor(d);
+    var done=sessionDone(s)||extrasForDay(dk).length>0||suppEntriesFor(dk).length>0;
+    var isToday=(dk===iso(today)), isPast=(dk<iso(today));
+    var real=done?realDaySummary(dk):null, name, sub;
+    if(done && real && real.length){ name=real[0].name; sub=real[0].sub+(real.length>1?' · +'+(real.length-1):''); }
+    else if(done){ name=s.plan.label; sub="fait"; }
+    else { name=s.plan.label; sub=s.plan.sub||""; }
+    var st, cls="";
+    if(done){ st='<div class="st ok">✓</div>'; }
+    else if(isToday){ st='<div class="st now">▸</div>'; }
+    else if(isPast && s.typeKey!=="repos"){ st='<div class="st no">✗</div>'; cls=" pale"; }
+    else { st='<div class="st wait">·</div>'; cls=" pale"; }
+    out+='<div class="day'+cls+(isToday?' today':'')+'" onclick="openSheet(\''+dk+'\')">'+
+      '<div class="d">'+JOURS[i].slice(0,3).toUpperCase()+' '+d.getDate()+'</div>'+st+
+      '<div class="c"><div class="n">'+name+'</div>'+(sub?'<div class="s">'+sub+'</div>':'')+'</div></div>';
   }
+  out+='</div>';
   document.getElementById("weekViewBody").innerHTML=out;
   renderWeekRecap();
   renderAFaire();
-  renderCoachRead();
+  var cr=document.getElementById("coachRead");
+  if(cr && cr.style.display!=="none") renderCoachRead();
 }
 function renderCoachRead(){
   var box=document.getElementById("coachRead"); if(!box)return;

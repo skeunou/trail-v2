@@ -107,16 +107,19 @@
   .sub{color:var(--ink2);font-size:14.5px;line-height:1.5}
   .card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--shadow)}
 
-  .topline{display:flex;justify-content:space-between;align-items:center;background:#c2c7b7;border-bottom:1px solid #b1b7a5;margin:calc(-1 * max(18px, env(safe-area-inset-top))) -18px 16px -18px;padding:max(18px, env(safe-area-inset-top)) 18px 12px 18px}
-  .topdate{color:var(--ink);font-weight:800;font-size:13px;letter-spacing:1.6px;flex:0 0 auto}
-  .topmorn{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;padding:0 8px}
-  .tpill{display:inline-flex;align-items:baseline;gap:3px;font-size:10px;color:var(--ink2);white-space:nowrap}
-  .tpill b{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.5px;color:var(--ink)}
+  .topline{display:block;background:#c2c7b7;border-bottom:1px solid #b1b7a5;margin:calc(-1 * max(18px, env(safe-area-inset-top))) -18px 16px -18px;padding:max(18px, env(safe-area-inset-top)) 16px 10px 16px}
+  .toprow1{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .topdate{color:var(--ink);font-weight:800;font-size:14px;letter-spacing:1.8px;flex:0 0 auto;white-space:nowrap}
+  /* Ligne 2 : état du matin, pleine largeur, une seule ligne qui ne casse jamais */
+  .topmorn{display:flex;align-items:center;gap:8px;margin-top:9px;padding-top:8px;border-top:1px solid rgba(0,0,0,.09);overflow-x:auto;scrollbar-width:none}
+  .topmorn::-webkit-scrollbar{display:none}
+  .topmorn:empty{display:none}
+  .tpill{display:inline-flex;align-items:baseline;gap:3px;font-size:10.5px;color:#4a5044;white-space:nowrap;flex:0 0 auto}
+  .tpill b{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:.5px;color:var(--ink)}
   .tpill.warn b{color:var(--orange-d)}
-  .tsep{color:#9aa08e;font-size:10px}
-  .tmorn-ask{border:1px dashed #9aa08e;background:none;border-radius:999px;padding:4px 11px;font:600 10.5px 'DM Sans',sans-serif;color:#5f6555;cursor:pointer;white-space:nowrap}
-  .tmorn-edit{border:none;background:none;color:var(--ink2);font-size:12px;cursor:pointer;padding:2px 3px;opacity:.6}
-  @media (max-width:400px){ .topmorn{padding:0 4px} .tpill{font-size:9.5px} .tpill b{font-size:13px} }
+  .tsep{color:#9aa08e;font-size:11px;flex:0 0 auto}
+  .tmorn-ask{border:1px dashed #8f9585;background:none;border-radius:999px;padding:5px 12px;font:600 11px 'DM Sans',sans-serif;color:#4a5044;cursor:pointer;white-space:nowrap;flex:0 0 auto}
+  .tmorn-edit{border:none;background:none;color:var(--ink2);font-size:13px;cursor:pointer;padding:2px 4px;opacity:.55;margin-left:auto;flex:0 0 auto}
   .blockbadge{font-size:12px;font-weight:700;color:var(--ink);background:var(--acid);border-radius:999px;padding:5px 11px}
 
   .hero{margin-bottom:16px;border-left:6px solid var(--orange)}
@@ -335,15 +338,17 @@
   <!-- AUJOURD'HUI -->
   <section class="view on" id="v-today">
     <div class="topline">
-      <div class="eyebrow topdate" id="todayDate">—</div>
-      <div class="topmorn" id="topMorn"></div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div class="toprow1">
+        <div class="eyebrow topdate" id="todayDate">—</div>
+        <div style="display:flex;align-items:center;gap:7px">
         <!-- Cloche/rappel notifs retiré (ne fonctionnait pas) — réactivable :
         <button id="notifBell" onclick="togglePush()" style="border:none;background:none;font-size:19px;cursor:pointer;padding:2px 4px;line-height:1" title="Rappel du matin">🔕</button>
         -->
-        <div id="nextSid" class="nextS" style="display:none"></div>
-        <div class="blockbadge" id="blockBadge">—</div>
+          <div id="nextSid" class="nextS" style="display:none"></div>
+          <div class="blockbadge" id="blockBadge">—</div>
+        </div>
       </div>
+      <div class="topmorn" id="topMorn"></div>
     </div>
     <div class="weeklbl"><span class="eyebrow" id="dayLbl" style="color:var(--ink)">Aujourd'hui</span><span style="display:flex;align-items:center;gap:8px"><span onclick="dayNav(-1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">‹</span><span class="eyebrow" id="dayRange" onclick="dayNav(0)" style="cursor:pointer">—</span><span onclick="dayNav(1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">›</span></span></div>
     <div class="card hero" id="heroCard" style="position:relative">

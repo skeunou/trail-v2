@@ -1137,7 +1137,22 @@ var TF_WARM_HAUT=[
     {name:"Activation dorsale suspendue (scapular)",cue:"Suspendu, descends les omoplates sans plier les bras.",reps:"8"},
     {name:"Pompes lentes",cue:"Corps gainé, amplitude complète, contrôle.",reps:"8"} ]
 ];
-function warmSegRenfo(accent){ var pool=(accent==="haut")?TF_WARM_HAUT:TF_WARM; return {kind:"renfowarm",rounds:2,label:"Échauffement",items:pool[weekCounter()%pool.length]}; }
+/* Accent déduit du contenu de la séance : le nom ou les exercices.
+   Historique : l'accent était passé en argument, oublié sur 3 appels sur 5 → échauffement
+   bas du corps sur une séance haut du corps. On ne dépend plus de l'appelant. */
+function accentOfSession(sess){
+  if(!sess) return "full";
+  var txt=(sess.name||"")+" "+((sess.blocks||[]).map(function(b){return b.name||"";}).join(" "));
+  txt=txt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  if(/haut|tirage|traction|pull-?up|rowing|developpe|dips|epaule|face ?pull|militaire/.test(txt)) return "haut";
+  return "full";
+}
+function warmSegRenfo(accent, sess){
+  // Si l'accent n'est pas fourni, on le déduit de la séance ; à défaut, de la séance en cours.
+  var a = accent || accentOfSession(sess || (typeof _wkIdx!=="undefined" && RW()[_wkIdx]) || null);
+  var pool = (a==="haut") ? TF_WARM_HAUT : TF_WARM;
+  return {kind:"renfowarm",rounds:2,label:"Échauffement"+(a==="haut"?" haut du corps":""),items:pool[weekCounter()%pool.length]};
+}
 var lastRenfoName="";
 // Garantit un tirage HORIZONTAL dans la séance (règle : rowing horizontal obligatoire)
 function ensureTirage(sess){
@@ -1167,7 +1182,7 @@ function buildSuppRenfo(signal){
   }
   lastRenfoName=bank[idx].name;
   var r=ensureTirage(bank[idx]);
-  var warm=[warmSegRenfo(accent)];
+  var warm=[warmSegRenfo(accent)];  // accent explicite ici
   var emom=Object.assign({},r.emom,{minutes:rnd([12,14,16])});
   var amrap=Object.assign({},r.amrap,{sec:rnd([480,600,720])});
   var main, pick=Math.floor(Math.random()*5);
@@ -2013,7 +2028,7 @@ function launchWeeklyRenfo(idx,slot,signal){
   var s=RW()[idx];
   var org=rnd(s.cat==="A"?["sets","sets","superset","cluster5"]:["sets","superset","circuit"]);
   pSuppName=s.name+" · "+orgLabel(org);
-  var warmSeg=warmSegRenfo();
+  var warmSeg=warmSegRenfo(accentOfSession(s), s);
   var work=tagRenfoSegs(buildWeeklyWork(s,org));
   pRenfoBlocks=s.blocks;
   pSegs=[warmSeg].concat(work); pIdx=0;
@@ -3333,7 +3348,7 @@ function startSuppWod(k,signal){
   if(r<0.5){ seg={kind:"amrap",sec:600,label:"WOD SUPP",name:wod.name,moves:wod.moves}; }
   else if(r<0.8){ var mv=wod.moves.map(function(m){return {name:m[1],reps:"",cue:m[2]||""};}); var rd=Math.max(3,Math.floor(12/mv.length)); seg={kind:"emom",minutes:rd*mv.length,label:"WOD SUPP",name:wod.name,moves:mv}; }
   else { seg={kind:"fortime",cap:720,rounds:4,label:"WOD SUPP",name:wod.name,moves:wod.moves}; }
-  pSegs=[warmSegRenfo(), seg]; pIdx=0;
+  pSegs=[warmSegRenfo("full"), seg]; pIdx=0;  // WOD : échauffement complet
   closeSheet(); document.getElementById("player").classList.add("on");
   renderSeg();
 }
@@ -3429,6 +3444,40 @@ function exSlug(name){
     .replace(/[()\/]/g," ").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
 }
 var EXIMG_REUSE={
+  /* --- alias ajoutés le 01/08/2026 : noms de la banque UT4M vers les planches existantes --- */
+  "abduction-hanche-elastique":"abduction-hanche-debout-elastique",
+  "box-step-over-leste":"step-up-explosif-sur-box",
+  "curl-marteau-halteres":"curl-marteau",
+  "descente-de-box-controlee":"step-down-freine-du-banc",
+  "developpe-militaire-debout":"developpe-militaire",
+  "extension-mollet-excentrique":"heel-drop-excentrique-sur-marche",
+  "extension-triceps-elastique":"triceps-elastique",
+  "fente-bulgare-halteres":"split-squat-bulgare",
+  "fentes-marchees-halteres":"fente-avant-lestee",
+  "fente-marchee-lestee-halteres":"fente-avant-lestee",
+  "marche-fermier-halteres":"farmer-carry",
+  "mollets-debout-jambe-tendue":"montee-sur-pointes-jambe-tendue",
+  "mollets-debout-unilateral-leste":"montee-sur-pointes-jambe-tendue",
+  "montee-sur-pointes-unipodale":"montee-sur-pointes-jambe-tendue",
+  "nordic-curl-leg-curl-trx":"nordic-curl-ou-leg-curl-trx",
+  "planche-laterale-dynamique":"gainage-lateral-abduction-jambe",
+  "pompes-lestees":"pompes",
+  "rowing-trx":"trx-row",
+  "soleaire-assis-genou-flechi":"mollet-assis-genou-flechi",
+  "souleve-de-terre-roumain-barre":"rdl-barre",
+  "squat-barre-haute":"back-squat",
+  "squat-gobelet-tempo":"goblet-squat",
+  "squat-tempo":"back-squat",
+  "step-down-box-51-cm":"step-down-freine-du-banc",
+  "step-down-box-61-cm":"step-down-freine-du-banc",
+  "step-up-box-51-cm-halteres":"step-up-explosif-sur-box",
+  "step-up-box-61-cm-halteres":"step-up-explosif-sur-box",
+  "tirage-elastique-batons":"rowing-elastique",
+  "elevations-laterales-elastique":"elevations-laterales",
+  "equilibre-unipodal-sur-disque":"equilibre-unipodal-sur-disque-de-glisse",
+  "kettlebell-swing-russe":"kb-swing-americain",
+  "kb-swing-russe":"kb-swing-americain",
+
   "ab-wheel-ou-trx-fallout":"ab-wheel",
   "activation-dorsale-suspendue-scapular":"dead-hang",
   "band-pull-apart":"face-pull-elastique",

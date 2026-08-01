@@ -2848,7 +2848,10 @@ function renderToday(){
   document.getElementById("heroId").style.display="none";
   document.getElementById("heroTitle").textContent=s.plan.displayTitle;
   document.getElementById("heroWhy").textContent=s.plan.why;
-  document.getElementById("heroSpecs").innerHTML=s.specs.map(function(x){return '<div class="spec"><b>'+x[1]+'</b>'+x[0]+'</div>';}).join("");
+  var specsEl=document.getElementById("heroSpecs");
+  specsEl.innerHTML=s.specs.map(function(x){return '<div class="spec"><b>'+x[1]+'</b>'+x[0]+'</div>';}).join("");
+  // Pas de specs (repos, créneau libre) : on supprime la rangée vide plutôt que de laisser un blanc.
+  var row=specsEl.parentNode; if(row) row.style.marginTop = s.specs.length ? "" : "4px";
   var done=sessionDone(s);
   var a, bs='style="padding:9px 15px;font-size:13px;white-space:nowrap"';
   if(done){ a='<button class="btn btn-acid" '+bs+' onclick="openSheet(\''+s.dateKey+'\',true)">VALIDÉE ✓</button>'; }
@@ -4109,10 +4112,8 @@ function renderAdapt(){
   var a=adaptCompute(), sess=sessionFor(vDay()), tx=adaptText(a,sess);
   // Conforme : une seule ligne discrète. Les chiffres vivent dans la carte « Où j'en suis ».
   if(a.level===0){
-    box.innerHTML='<div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--grn);padding:0 4px;margin-bottom:12px">'+
-      '<i style="width:6px;height:6px;border-radius:50%;background:var(--grn);flex:0 0 auto"></i>'+
-      (a.filled?'Charge conforme <span style="color:var(--mut)">· séance telle que prévue</span>'
-               :'<span style="color:var(--mut)">Saisis ton état du matin pour une suggestion adaptée</span>')+'</div>';
+    // Rien à signaler : on n'affiche rien. Le verdict de charge est déjà dans « Où j'en suis ».
+    box.innerHTML="";
     return;
   }
   box.innerHTML='<div class="card" style="padding:12px 14px;margin-bottom:12px;border-left:3px solid '+tx.c+'">'+

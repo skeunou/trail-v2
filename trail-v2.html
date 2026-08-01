@@ -108,6 +108,15 @@
   .card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--shadow)}
 
   .topline{display:flex;justify-content:space-between;align-items:center;background:#c2c7b7;border-bottom:1px solid #b1b7a5;margin:calc(-1 * max(18px, env(safe-area-inset-top))) -18px 16px -18px;padding:max(18px, env(safe-area-inset-top)) 18px 12px 18px}
+  .topdate{color:var(--ink);font-weight:800;font-size:13px;letter-spacing:1.6px;flex:0 0 auto}
+  .topmorn{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;padding:0 8px}
+  .tpill{display:inline-flex;align-items:baseline;gap:3px;font-size:10px;color:var(--ink2);white-space:nowrap}
+  .tpill b{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.5px;color:var(--ink)}
+  .tpill.warn b{color:var(--orange-d)}
+  .tsep{color:#9aa08e;font-size:10px}
+  .tmorn-ask{border:1px dashed #9aa08e;background:none;border-radius:999px;padding:4px 11px;font:600 10.5px 'DM Sans',sans-serif;color:#5f6555;cursor:pointer;white-space:nowrap}
+  .tmorn-edit{border:none;background:none;color:var(--ink2);font-size:12px;cursor:pointer;padding:2px 3px;opacity:.6}
+  @media (max-width:400px){ .topmorn{padding:0 4px} .tpill{font-size:9.5px} .tpill b{font-size:13px} }
   .blockbadge{font-size:12px;font-weight:700;color:var(--ink);background:var(--acid);border-radius:999px;padding:5px 11px}
 
   .hero{margin-bottom:16px;border-left:6px solid var(--orange)}
@@ -326,7 +335,8 @@
   <!-- AUJOURD'HUI -->
   <section class="view on" id="v-today">
     <div class="topline">
-      <div class="eyebrow" id="todayDate" style="color:var(--ink);font-weight:800">—</div>
+      <div class="eyebrow topdate" id="todayDate">—</div>
+      <div class="topmorn" id="topMorn"></div>
       <div style="display:flex;align-items:center;gap:8px">
         <!-- Cloche/rappel notifs retiré (ne fonctionnait pas) — réactivable :
         <button id="notifBell" onclick="togglePush()" style="border:none;background:none;font-size:19px;cursor:pointer;padding:2px 4px;line-height:1" title="Rappel du matin">🔕</button>
@@ -4075,31 +4085,40 @@ function adaptText(a, sess){
   }
   return {t:"Repos conseillé aujourd'hui. Trois indicateurs dégradés en même temps, ce n'est pas de la paresse — c'est le moment où la blessure arrive.", c:"var(--red)"};
 }
+/* Pastilles d'état du matin, dans le bandeau de tête */
+function renderTopMorning(){
+  var el=document.getElementById("topMorn"); if(!el) return;
+  if(dayOffset!==0){ el.innerHTML=""; return; }       // seulement sur le jour réel
+  var e=matinFor(iso(new Date()))||{}, st=matinStats(), bits=[];
+  function warnSleep(){ return (typeof e.sleep==="number" && st.sleepBase!=null && st.sleepN>=7 && e.sleep<=st.sleepBase-1.5); }
+  function warnBb(){ return (typeof e.bb==="number" && ((st.bbBase!=null && st.bbN>=7 && e.bb<=st.bbBase-15) || (st.bbN<7 && e.bb<50))); }
+  function warnVfc(){ return (typeof e.vfc==="number" && st.vfcBase!=null && st.vfcSd && st.vfcN>=14 && e.vfc<st.vfcBase-st.vfcSd); }
+  if(e.sleep!=null) bits.push('<span class="tpill'+(warnSleep()?' warn':'')+'">Sommeil <b>'+String(e.sleep).replace(".",",")+' h</b></span>');
+  if(e.vfc!=null)   bits.push('<span class="tpill'+(warnVfc()?' warn':'')+'">VFC <b>'+Math.round(e.vfc)+'</b></span>');
+  if(e.bb!=null)    bits.push('<span class="tpill'+(warnBb()?' warn':'')+'">BB <b>'+Math.round(e.bb)+'</b></span>');
+  if(e.feel){ var f=FEELS.filter(function(x){return x.k===e.feel;})[0];
+    if(f) bits.push('<span class="tpill" style="color:var(--mut)">'+(f.k==="normal"?"Comme d\'habitude":f.l)+'</span>'); }
+  el.innerHTML = bits.length
+    ? bits.join('<span class="tsep">·</span>')+'<button class="tmorn-edit" onclick="matinEdit()">✎</button>'
+    : '<button class="tmorn-ask" onclick="matinEdit()">Ton état du matin ?</button>';
+}
 function renderAdapt(){
   var box=document.getElementById("adaptBox"); if(!box) return;
-  if(dayOffset!==0){ box.innerHTML=""; return; }   // uniquement sur le jour réel
-  var a=adaptCompute(), k=iso(new Date()), e=a.entry;
-  var band="";
-  if(a.filled){
-    var bits=[];
-    if(e.sleep!=null) bits.push('<span style="color:var(--mut)">Sommeil</span> <b>'+e.sleep+' h</b>');
-    if(e.vfc!=null)   bits.push('<span style="color:var(--mut)">VFC</span> <b>'+Math.round(e.vfc)+' ms</b>');
-    if(e.bb!=null)    bits.push('<span style="color:var(--mut)">BB</span> <b>'+Math.round(e.bb)+'</b>');
-    if(e.feel){ var f=FEELS.filter(function(x){return x.k===e.feel;})[0]; if(f) bits.push('<span style="color:var(--mut)">'+f.l+'</span>'); }
-    band='<div class="mBand"><div>'+bits.join(' &nbsp;·&nbsp; ')+'</div><button onclick="matinEdit()" style="border:none;background:none;color:var(--blue);font-size:15px;cursor:pointer;padding:2px 4px">✎</button></div>';
-  } else if(a.skipped){
-    band='<div class="mBand"><div style="color:var(--mut)">État du matin non saisi</div><button onclick="matinEdit()" style="border:none;background:none;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer">saisir</button></div>';
+  renderTopMorning();
+  if(dayOffset!==0){ box.innerHTML=""; return; }
+  var a=adaptCompute(), sess=sessionFor(vDay()), tx=adaptText(a,sess);
+  // Conforme : une seule ligne discrète. Les chiffres vivent dans la carte « Où j'en suis ».
+  if(a.level===0){
+    box.innerHTML='<div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--grn);padding:0 4px;margin-bottom:12px">'+
+      '<i style="width:6px;height:6px;border-radius:50%;background:var(--grn);flex:0 0 auto"></i>'+
+      (a.filled?'Charge conforme <span style="color:var(--mut)">· séance telle que prévue</span>'
+               :'<span style="color:var(--mut)">Saisis ton état du matin pour une suggestion adaptée</span>')+'</div>';
+    return;
   }
-  var sess=sessionFor(vDay()), tx=adaptText(a,sess);
-  var ctx="";
-  if(a.ls && a.ls.acwr!=null && a.ls.daysCov>=14) ctx+="ACWR "+a.ls.acwr.toFixed(2);
-  var tg=weekTarget(today); if(tg && tg.dp>0){ var wr=weekRecapData(0); ctx+=(ctx?" · ":"")+Math.round(wr.runD)+"/"+tg.dp+" m D+ cette semaine"; }
-  box.innerHTML = band +
-    '<div class="card" style="padding:12px 14px;margin-bottom:10px;border-left:3px solid '+tx.c+'">'+
-      '<div style="font-size:10px;letter-spacing:.6px;color:var(--mut);text-transform:uppercase;font-weight:700;margin-bottom:4px">Suggestion d\'adaptation</div>'+
-      '<div style="font-size:13px;font-weight:600;line-height:1.45;color:'+tx.c+'">'+tx.t+'</div>'+
-      (a.reasons.length?'<div style="font-size:11px;color:var(--mut);margin-top:5px;line-height:1.45">'+a.reasons.join(" · ")+'</div>':'')+
-      (ctx?'<div style="font-size:10.5px;color:var(--mut);margin-top:6px">'+ctx+'</div>':'')+
+  box.innerHTML='<div class="card" style="padding:12px 14px;margin-bottom:12px;border-left:3px solid '+tx.c+'">'+
+      '<div style="font-size:10px;letter-spacing:.9px;color:var(--mut);text-transform:uppercase;font-weight:700">Suggestion d\'adaptation</div>'+
+      '<div style="font-size:13.5px;font-weight:700;line-height:1.4;margin-top:4px;color:'+tx.c+'">'+tx.t+'</div>'+
+      (a.reasons.length?'<div style="font-size:11.5px;color:var(--mut);margin-top:5px;line-height:1.45">'+a.reasons.join(" · ")+'</div>':'')+
     '</div>';
 }
 /* ================= RÉFÉRENCES (moteur, zones, prévisionnel, charges) ================= */

@@ -83,6 +83,12 @@
   .lnote.blue{color:var(--blue);border-left-color:#bcd9ef}
   .lnote.orange{color:var(--orange-d);border-left-color:#f6c9a8;font-weight:600}
   .lnote.red{color:var(--red);border-left-color:#f3bcbc;font-weight:600}
+  /* Consigne du jour, dans la carte de séance */
+  .hAdapt{display:flex;gap:8px;align-items:flex-start;margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+  .hAdapt .ic{flex:0 0 auto;font-size:13px;line-height:1.35}
+  .hAdapt .tx{flex:1;font-size:12.5px;line-height:1.45}
+  .hAdapt .tx b{font-weight:700}
+  .hAdapt .sub{display:block;font-size:11px;color:var(--mut);margin-top:3px;line-height:1.4}
   .nextS{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--ink2);background:var(--acid);border-radius:999px;padding:5px 10px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
   .nextS b{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.5px;color:#1a1d12}
   /* ===== POPUP MATINAL + ADAPTATION ===== */
@@ -400,6 +406,7 @@
         <div class="specs" id="heroSpecs" style="flex:1;margin-bottom:0"></div>
         <div id="heroActions" style="flex-shrink:0"></div>
       </div>
+      <div id="heroAdapt"></div>
     </div>
     <div id="adaptBox"></div>
     <div id="extrasBox"></div>
@@ -4315,21 +4322,30 @@ function renderTopMorning(){
     : '<button class="tmorn-ask" onclick="matinEdit()">Ton état du matin ?</button>';
 }
 function renderAdapt(){
-  var box=document.getElementById("adaptBox"); if(!box) return;
+  var box=document.getElementById("adaptBox"), hb=document.getElementById("heroAdapt");
+  if(box) box.innerHTML="";
   renderTopMorning();
-  if(dayOffset!==0){ box.innerHTML=""; return; }
-  var a=adaptCompute(), sess=sessionFor(vDay()), tx=adaptText(a,sess);
-  // Conforme : une seule ligne discrète. Les chiffres vivent dans la carte « Où j'en suis ».
-  if(a.level===0){
-    // Rien à signaler : on n'affiche rien. Le verdict de charge est déjà dans « Où j'en suis ».
-    box.innerHTML="";
-    return;
+  if(!hb) return;
+  if(dayOffset!==0){ hb.innerHTML=""; return; }   // uniquement sur le jour réel
+
+  var a=adaptCompute(), sess=sessionFor(vDay());
+  // Jour sans séance : rien à adapter.
+  if(sess.typeKey==="repos"){ hb.innerHTML=""; return; }
+
+  var ic, txt, col;
+  if(!a.filled){
+    ic="○"; col="var(--mut)";
+    txt='<b>Séance telle que prévue.</b><span class="sub">Saisis ton état du matin pour une consigne adaptée.</span>';
+  } else if(a.level===0){
+    ic="✓"; col="var(--grn)";
+    txt='<b>Fais la séance telle que prévue.</b><span class="sub">Sommeil, VFC et Body Battery dans tes normes — rien à changer.</span>';
+  } else {
+    var tx=adaptText(a,sess);
+    ic="⚠"; col=tx.c;
+    txt='<b>'+tx.t+'</b>'+(a.reasons.length?'<span class="sub">'+a.reasons.join(" · ")+'</span>':'');
   }
-  box.innerHTML='<div class="card" style="padding:12px 14px;margin-bottom:12px;border-left:3px solid '+tx.c+'">'+
-      '<div style="font-size:10px;letter-spacing:.9px;color:var(--mut);text-transform:uppercase;font-weight:700">Suggestion d\'adaptation</div>'+
-      '<div style="font-size:13.5px;font-weight:700;line-height:1.4;margin-top:4px;color:'+tx.c+'">'+tx.t+'</div>'+
-      (a.reasons.length?'<div style="font-size:11.5px;color:var(--mut);margin-top:5px;line-height:1.45">'+a.reasons.join(" · ")+'</div>':'')+
-    '</div>';
+  hb.innerHTML='<div class="hAdapt"><div class="ic" style="color:'+col+'">'+ic+'</div>'+
+    '<div class="tx" style="color:'+(a.level>0?col:"var(--ink2)")+'">'+txt+'</div></div>';
 }
 /* ================= NOUVEAUTÉS =================
    Journal des changements de l'app. À compléter en tête à chaque déploiement notable.

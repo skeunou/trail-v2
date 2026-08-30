@@ -686,8 +686,8 @@ var BLOCKS=[
    intent:"Affûtage 46K. Volume −40%, intensité maintenue.", wk:[[42,1200],[35,900],[25,500]]},
   {id:"b10", name:"Bloc Paladru",        start:"2027-03-22", end:"2027-04-25", phase:"build",
    intent:"Le gros test. Sorties longues 3h → 4h.", wk:[[35,900],[45,1400],[50,1600],[55,1800],[30,700]]},
-  {id:"b11", name:"Bloc Maxi-Race",      start:"2027-04-26", end:"2027-05-23", phase:"build",
-   intent:"Récup Paladru puis relance, spécificité longue.", wk:[[20,400],[38,1100],[45,1500],[28,600]]},
+  {id:"b11", name:"Relance post-Paladru", start:"2027-04-26", end:"2027-05-23", phase:"build",
+   intent:"Récup Paladru puis relance longue (Maxi-Race retirée du programme).", wk:[[20,400],[38,1100],[45,1500],[28,600]]},
   {id:"b12", name:"Spécifique UT4M",     start:"2027-05-24", end:"2027-06-27", phase:"build",
    intent:"Bloc décisif : 3 week-ends chocs, enchaînement multi-jours.", wk:[[40,1300],[48,2500],[52,2800],[55,3300],[32,800]], overCap:true},
   {id:"b13", name:"Affûtage final",      start:"2027-06-28", end:"2027-07-14", phase:"affutage",
@@ -713,7 +713,7 @@ var BLOCKSESS={
   b8:   {cotes:[12,14], mer:"tapis", qualite:true,  renfoN:2, slPct:0.62, note:"Tapis 4×12′, côtes 12-14 reps. Le pic d'économie de grimpe."},
   b9:   {cotes:[6,6],   mer:"ef",    qualite:true,  renfoN:1, slPct:0.55, note:"Affûtage Chianti : volume −40%, intensité maintenue."},
   b10:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.65, note:"Bloc Paladru : sorties longues 3h → 4h. Le gros test."},
-  b11:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.62, note:"Récup Paladru puis relance vers la Maxi-Race."},
+  b11:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.62, note:"Récup Paladru puis relance longue. Maxi-Race retirée (aucun WE dispo)."},
   b12:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.70, note:"Bloc décisif : week-ends chocs, partir le dimanche sur jambes entamées."},
   b13:  {cotes:[6,6],   mer:"ef",    qualite:true,  renfoN:1, slPct:0.50, note:"Affûtage final. Dernière séance dure le 6 juillet."},
   ut4m: {cotes:[0,0],   mer:"off",   qualite:false, renfoN:0, slPct:0, off:true, note:"🏁 Course."}
@@ -736,7 +736,6 @@ var RACES=[
   {d:"2026-10-18", n:"20K de Caluire",           km:20, dp:200,  role:"Test d'allure — recalage VMA"},
   {d:"2027-03-19", n:"Chianti Ultra 46K",        km:46, dp:1500, role:"Reprise de compétition · vendredi, départ 9h"},
   {d:"2027-04-18", n:"Trail de Paladru 84K",     km:84, dp:2500, role:"Le gros test (date provisoire)"},
-  {d:"2027-05-16", n:"Maxi-Race",                km:0,  dp:0,    role:"Spécificité longue (date provisoire)"},
   {d:"2027-07-15", n:"UT4M 180 Challenge",       km:176,dp:11700,role:"OBJECTIF"}
 ];
 function raceOn(d){ var k=iso(d); for(var i=0;i<RACES.length;i++){ if(RACES[i].d===k) return RACES[i]; } return null; }
@@ -5137,11 +5136,10 @@ var AG_CATS={
 };
 /* Évènements en dur (issus du cahier des charges + calendrier MTC).
    conge:1 = congés déjà posés → ne compte pas comme conflit. */
+/* Congés DÉJÀ posés sur une course (clé = date de RACES) → pas de conflit. */
+var AG_RACE_CONGE={"2027-04-18":1,"2027-07-15":1};
 var AG_SEED=[
-  {s:"2026-09-26",e:"2026-09-27",cat:"course",l:"45K Plateau d'Hauteville"},
   {s:"2026-10-01",e:"2026-10-04",cat:"vac",   l:"Maroc",conge:1},
-  {s:"2026-10-11",e:"2026-10-11",cat:"course",l:"Trail de l'Aqueduc 10K"},
-  {s:"2026-10-18",e:"2026-10-18",cat:"course",l:"20K de Caluire"},
   {s:"2026-10-18",e:"2026-11-07",cat:"vac",   l:"Pérou — trek",conge:1},
   {s:"2026-11-07",e:"2026-11-08",cat:"mtc",   l:"MTC Théorie"},
   {s:"2026-12-05",e:"2026-12-06",cat:"mtc",   l:"MTC Pratique"},
@@ -5152,12 +5150,12 @@ var AG_SEED=[
   {s:"2027-05-14",e:"2027-05-17",cat:"fam",   l:"WE famille",conge:1},
   {s:"2027-05-22",e:"2027-05-23",cat:"mtc",   l:"MTC Théorie"},
   {s:"2027-05-31",e:"2027-06-03",cat:"fam",   l:"WE en amoureux",conge:1},
-  {s:"2027-06-12",e:"2027-06-13",cat:"mtc",   l:"MTC Théorie/Pratique"},
-  {s:"2027-07-15",e:"2027-07-18",cat:"course",l:"UT4M 180 CHALLENGE",conge:1}
+  {s:"2027-06-12",e:"2027-06-13",cat:"mtc",   l:"MTC Théorie/Pratique"}
 ];
 var AG_TOFIX=[
-  {l:"Chianti Ultra 46K",     w:"mars 2027 — date à confirmer"},
-  {l:"Trail de Paladru 84K",  w:"avril 2027 — congés posés, date à confirmer"}
+  {l:"Chianti Ultra 46K",     w:"19 mars 2027 — date provisoire"},
+  {l:"Trail de Paladru 84K",  w:"18 avril 2027 — provisoire, congés posés"},
+  {l:"Maxi-Race",             w:"retirée du programme (aucun WE disponible)"}
 ];
 var AG_MONTHS=["JANVIER","FÉVRIER","MARS","AVRIL","MAI","JUIN","JUILLET","AOÛT","SEPTEMBRE","OCTOBRE","NOVEMBRE","DÉCEMBRE"];
 var agOpenM={}, agOpenW=null, agInit=false;
@@ -5182,6 +5180,13 @@ function agWork(sat,st){var o=st.we[sat]; if(o&&o.w!=null)return !!o.w;
   var w=Math.round((agD(sat)-agD(st.anchor))/604800000);
   return ((((w%2)+2)%2)===0)?!!st.anchorWork:!st.anchorWork;}
 function agSeedFor(sat){var s=agD(sat), su=new Date(s.getTime()+86400000), out=[];
+  /* Courses : lues directement dans RACES → jamais de désynchro avec le plan.
+     Une course sur 4 jours (UT4M) couvre les 2 jours du WE via sa durée. */
+  if(typeof RACES!=="undefined"){ RACES.forEach(function(r){
+    var a=agD(r.d), b=new Date(a.getTime()+((r.n||"").indexOf("UT4M")>=0?3:0)*86400000);
+    if((s>=a&&s<=b)||(su>=a&&su<=b))
+      out.push({s:r.d,e:iso(b),cat:"course",l:r.n,conge:AG_RACE_CONGE[r.d]?1:0});
+  }); }
   AG_SEED.forEach(function(e){var a=agD(e.s),b=agD(e.e);
     if((s>=a&&s<=b)||(su>=a&&su<=b)) out.push(e);});
   return out;}
@@ -5193,8 +5198,14 @@ function agState(sat,st){
   var congeSeed=false; seed.forEach(function(e){if(e.conge)congeSeed=true;});
   var conge=!!o.c||congeSeed;
   var engage=(seed.length+items.length)>0;
+  /* Chevauchement : des vacances posées tombent sur une course ou un cours MTC.
+     Le congé est posé, donc pas de "à poser" — mais l'engagement saute. */
+  var hasVac=false, hasEng=false;
+  seed.forEach(function(e){ if(e.cat==="vac"||e.cat==="fam")hasVac=true;
+                            if(e.cat==="mtc"||e.cat==="course")hasEng=true; });
   var flag=null;
-  if(work&&engage&&!conge) flag="poser";          // rouge : congé à poser
+  if(hasVac&&hasEng&&!o.k) flag="clash";          // rouge : conflit de contenu
+  else if(work&&engage&&!conge) flag="poser";     // rouge : congé à poser
   else if(!work&&engage&&!o.g) flag="garde";      // orange : enfants à gérer
   return {work:work,conge:conge,garde:!!o.g,seed:seed,items:items,engage:engage,flag:flag};
 }
@@ -5216,9 +5227,9 @@ function renderAgenda(){
     var n2=new Date(n.getFullYear(),n.getMonth()+1,1);
     agOpenM[k1]=true; agOpenM[n2.getFullYear()+"-"+n2.getMonth()]=true; agInit=true;
   }
-  var nLibre=0,nPoser=0,nGarde=0,nConge=0;
+  var nLibre=0,nPoser=0,nGarde=0,nConge=0,nClash=0;
   wes.forEach(function(sat){ var s=agState(sat,st);
-    if(s.flag==="poser")nPoser++; if(s.flag==="garde")nGarde++;
+    if(s.flag==="poser")nPoser++; if(s.flag==="garde")nGarde++; if(s.flag==="clash")nClash++;
     if(s.conge&&s.work)nConge++;
     if(!s.work&&!s.engage)nLibre++; });
 
@@ -5228,7 +5239,7 @@ function renderAgenda(){
      '<div class="agstat"><div class="v bebas">'+nLibre+'</div><div class="l">WE repos libres</div></div>'+
      '<div class="agstat'+(nPoser?' bad':'')+'"><div class="v bebas">'+nPoser+'</div><div class="l">congés à poser</div></div>'+
      '<div class="agstat'+(nGarde?' warn':'')+'"><div class="v bebas">'+nGarde+'</div><div class="l">gardes à gérer</div></div>'+
-     '<div class="agstat"><div class="v bebas">'+nConge+'</div><div class="l">congés posés</div></div>'+
+     '<div class="agstat'+(nClash?' bad':'')+'"><div class="v bebas">'+nClash+'</div><div class="l">conflits de date</div></div>'+
      '</div>';
   /* --- à caler --- */
   h+='<div class="card agfix"><div class="eyebrow" style="margin-bottom:6px">Dates à confirmer</div>';
@@ -5242,6 +5253,7 @@ function renderAgenda(){
      '<div class="agleg"><i class="p conge"></i> Congé posé</div>'+
      '<div class="agleg"><span class="agtag bad">à poser</span> engagement sur un WE travaillé</div>'+
      '<div class="agleg"><span class="agtag warn">garde</span> engagement sur un WE avec les enfants</div>'+
+     '<div class="agleg"><span class="agtag bad">conflit</span> vacances/famille posées ET course ou cours MTC le même WE</div>'+
      '<div class="agleg" style="color:var(--mut);margin-top:8px">Ancre de parité : samedi 05/09/2026 = repos, alternance 1 WE sur 2. <b>Attention aux numéros de semaine :</b> 2026 compte 53 semaines ISO, donc jusqu\'à décembre 2026 le WE <b>pair</b> est en repos, et à partir de janvier 2027 la parité s\'inverse — c\'est le WE <b>impair</b> qui est en repos. Le statut de chaque WE reste modifiable au clic.</div>'+
      '</div></div>';
   /* --- mois --- */
@@ -5269,7 +5281,9 @@ function renderAgenda(){
   box.innerHTML=h;
   var b=document.getElementById("agBadge");
   if(b){ b.textContent=(nPoser?nPoser+" conflit"+(nPoser>1?"s":""):"À jour");
-    b.style.color=nPoser?"var(--red)":"var(--grn)"; b.style.borderColor=nPoser?"var(--red)":"var(--grn)"; }
+    var nb=nPoser+nClash;
+    b.textContent=(nb?nb+" conflit"+(nb>1?"s":""):"À jour");
+    b.style.color=nb?"var(--red)":"var(--grn)"; b.style.borderColor=nb?"var(--red)":"var(--grn)"; }
 }
 
 function agRowHTML(sat,st,today){
@@ -5292,7 +5306,8 @@ function agRowHTML(sat,st,today){
   }
   h+='</span>';
   h+='<span class="agright">';
-  if(s.flag==="poser")h+='<span class="agtag bad">à poser</span>';
+  if(s.flag==="clash")h+='<span class="agtag bad">conflit</span>';
+  else if(s.flag==="poser")h+='<span class="agtag bad">à poser</span>';
   else if(s.flag==="garde")h+='<span class="agtag warn">garde</span>';
   else if(!s.work&&!s.engage)h+='<span class="agtag ok">libre</span>';
   h+='<span class="agcar">'+(op?"▾":"▸")+'</span></span>';
@@ -5314,6 +5329,7 @@ function agDetailHTML(sat,st,s){
   h+='<div class="agbtns" style="margin-top:6px">';
   h+='<button class="agb'+(o.c?" on":"")+'" onclick="agTog(\''+sat+'\',\'c\')">Congé posé</button>';
   h+='<button class="agb'+(o.g?" on":"")+'" onclick="agTog(\''+sat+'\',\'g\')">Garde arrangée</button>';
+  h+='<button class="agb'+(o.k?" on":"")+'" onclick="agTog(\''+sat+'\',\'k\')">Conflit réglé</button>';
   h+='</div>';
   /* items */
   h+='<div class="eyebrow" style="margin:14px 0 6px">Contenu</div>';

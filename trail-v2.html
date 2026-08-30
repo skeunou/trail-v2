@@ -308,11 +308,64 @@
   .ptable td b{color:var(--ink);font-family:'Bebas Neue',sans-serif;font-size:19px;font-weight:400}
   .ptesthint{background:var(--acid);color:#1a1d12;border-radius:12px;padding:10px 13px;font-size:12.5px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;line-height:1.4}
 
+  /* ===== AGENDA 26-27 ===== */
+  .agstats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
+  .agstat{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:9px 5px;text-align:center}
+  .agstat .v{font-size:26px;line-height:1;color:var(--ink)}
+  .agstat .l{font-size:9px;font-weight:700;color:var(--mut);line-height:1.15;margin-top:3px;letter-spacing:.2px}
+  .agstat.bad{border-color:var(--red)} .agstat.bad .v{color:var(--red)}
+  .agstat.warn{border-color:var(--orange)} .agstat.warn .v{color:var(--orange)}
+  .agfix{padding:12px 13px;margin-bottom:10px}
+  .agfixrow{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:4px 0;border-bottom:1px solid var(--line)}
+  .agfixrow:last-child{border-bottom:none}
+  .agfixrow span{color:var(--mut);font-size:11px;text-align:right}
+  .agleg{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink2);padding:3px 0}
+  .agmonth{padding:0;overflow:hidden;margin-bottom:10px}
+  .agmhead{width:100%;display:flex;align-items:center;gap:8px;background:none;border:none;padding:12px 13px;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left}
+  .agmhead .bebas{font-size:19px;letter-spacing:.5px;color:var(--ink);flex:0 0 auto}
+  .agmhead .s{flex:1;font-size:10.5px;color:var(--mut);font-weight:700;text-align:right}
+  .agmhead .c{color:var(--mut);font-size:12px}
+  .agrows{border-top:1px solid var(--line)}
+  .agrow{border-bottom:1px solid var(--line)}
+  .agrow:last-child{border-bottom:none}
+  .agrow.now{background:rgba(232,255,71,.16)}
+  .agmain{width:100%;display:flex;align-items:flex-start;gap:9px;background:none;border:none;padding:10px 13px;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left}
+  .agwk{flex:0 0 34px;font-size:17px;color:var(--acid-d);line-height:1.2;letter-spacing:.5px}
+  .agmid{flex:1;min-width:0}
+  .agdate{font-size:13px;font-weight:800;color:var(--ink)}
+  .agpills{display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap}
+  .agpills .p{width:8px;height:8px;border-radius:50%;flex:0 0 auto;display:inline-block}
+  .p.work{background:var(--red)} .p.rest{background:var(--grn)} .p.conge{background:var(--blue)}
+  .agstatl{font-size:9.5px;font-weight:800;color:var(--mut);letter-spacing:.5px}
+  .agkid{font-size:9.5px;font-weight:700;color:var(--mut)}
+  .agchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+  .agchip{font-size:10px;font-weight:700;border:1px solid;border-radius:20px;padding:2px 7px;line-height:1.4;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .agright{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding-top:1px}
+  .agtag{font-size:9px;font-weight:800;border-radius:20px;padding:2px 7px;letter-spacing:.3px;white-space:nowrap}
+  .agtag.bad{background:var(--red);color:#fff}
+  .agtag.warn{background:var(--orange);color:#fff}
+  .agtag.ok{background:rgba(31,157,85,.13);color:var(--grn)}
+  .agcar{color:var(--mut);font-size:11px}
+  .agdet{padding:2px 13px 14px;border-top:1px dashed var(--line);background:rgba(0,0,0,.015)}
+  .agbtns{display:flex;gap:6px;flex-wrap:wrap}
+  .agb{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-size:11.5px;font-weight:700;color:var(--ink2);font-family:'DM Sans',sans-serif;cursor:pointer}
+  .agb.on{background:var(--acid);border-color:var(--acid-d);color:var(--ink)}
+  .agb.go{background:var(--ink);color:#fff;border-color:var(--ink);font-size:15px;padding:6px 13px;flex:0 0 auto}
+  .agit{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink);padding:5px 0;border-bottom:1px solid var(--line)}
+  .agit b{font-weight:700;flex:1;min-width:0}
+  .agit .lk{font-size:9px;font-weight:800;color:var(--mut);border:1px solid var(--line);border-radius:20px;padding:1px 6px}
+  .agdel{background:none;border:none;color:var(--mut);font-size:13px;cursor:pointer;padding:0 3px}
+  .agnone{font-size:12px;color:var(--mut);font-style:italic}
+  .agadd{display:flex;gap:6px;margin-top:10px}
+  .agadd select,.agadd input{border:1px solid var(--line);border-radius:12px;padding:7px 9px;font-size:12px;font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-width:0}
+  .agadd select{flex:0 0 108px} .agadd input{flex:1}
+  .agnote{width:100%;box-sizing:border-box;margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:8px 9px;font-size:12px;font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:46px;resize:vertical}
   .nav{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;z-index:40}
   .nav button{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--mut);font-family:'DM Sans',sans-serif}
   .nav button.on{color:var(--ink)}
   .nav .ni{font-size:19px;line-height:1}
-  .nav .nl{font-size:10.5px;font-weight:700;letter-spacing:.4px}
+  .nav .nl{font-size:9.5px;font-weight:700;letter-spacing:0;white-space:nowrap}
+  .nav .ni{font-size:18px}
 
   /* ===== PLAYER overlay ===== */
   #player{position:fixed;inset:0;background:var(--bg);z-index:80;display:none;flex-direction:column;padding:max(18px,env(safe-area-inset-top)) 20px max(18px,env(safe-area-inset-bottom))}
@@ -484,6 +537,15 @@
     </div>
     <div id="pullBody"></div>
   </section>
+
+  <!-- AGENDA -->
+  <section class="view" id="v-agenda">
+    <div class="topline">
+      <div><div class="eyebrow">Vue globale de l'année</div><div class="bigtitle bebas">AGENDA 26-27</div></div>
+      <div class="blockbadge" id="agBadge" style="background:var(--bg);border:1px solid var(--line)">—</div>
+    </div>
+    <div id="agBody"></div>
+  </section>
 </div>
 
 <div id="jsErr" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#e5484d;color:#fff;padding:10px 14px;font-family:'DM Sans',system-ui,sans-serif;font-size:12px;line-height:1.4;box-shadow:0 4px 14px rgba(0,0,0,.25)">
@@ -558,6 +620,7 @@
   <button id="nav-horizon" onclick="nav('horizon')"><span class="ni">⛰</span><span class="nl">Prog 26-27</span></button>
   <button id="nav-log" onclick="nav('log')"><span class="ni">▤</span><span class="nl">Repères</span></button>
   <button id="nav-pull" onclick="nav('pull')"><span class="ni">💪</span><span class="nl">Tractions</span></button>
+  <button id="nav-agenda" onclick="nav('agenda')"><span class="ni">📅</span><span class="nl">Agenda</span></button>
 </nav>
 
 <script>
@@ -2242,7 +2305,7 @@ function cloudSave(){
   syncTimer=setTimeout(cloudSaveNow,1200); // debounce : 1 écriture par rafale
 }
 function cloudSaveNow(){
-  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet(),charges:chgAll(),refs:refGet(),matin:matinAll(),pull:pullGet()};
+  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet(),charges:chgAll(),refs:refGet(),matin:matinAll(),pull:pullGet(),agenda:(typeof agGet==="function"?agGet():null)};
   fetch(SYNC_URL+"?action=save&user="+SYNC_USER,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
     .then(function(r){return r.json();})
     .then(function(d){ setSyncBadge(d&&d.ok?"ok":"err"); })
@@ -2275,6 +2338,14 @@ function mergeCloud(d){
   if(d.matin){ var lm=matinAll(); Object.keys(d.matin).forEach(function(k){
       var ex=lm[k]; if(!ex||((d.matin[k]._u||0)>(ex._u||0))) lm[k]=d.matin[k]; });
     try{ localStorage.setItem(MATIN_KEY,JSON.stringify(lm)); }catch(e){} }
+  // agenda : union par week-end, le plus récent gagne (granularité objet entier)
+  if(d.agenda){ try{ var la=agGet();
+      if((d.agenda._u||0)>(la._u||0)){
+        var mw=la.we||{}, cw=d.agenda.we||{};
+        Object.keys(cw).forEach(function(k){ mw[k]=cw[k]; });
+        la.we=mw; la._u=d.agenda._u;
+        localStorage.setItem(AG_KEY,JSON.stringify(la));
+      } }catch(e){} }
   // références : le cloud prime si plus récent
   if(d.refs){ try{ var lr=refGet(); if((d.refs._u||0)>(lr._u||0)) localStorage.setItem(REF_KEY,JSON.stringify(d.refs)); }catch(e){} }
   // charges renfo : union par exercice + par date, on garde la plus récente (_u)
@@ -4639,7 +4710,7 @@ function renderStravaCard(){
   else { stravaMsg("Strava à connecter"); document.getElementById("stravaGo").textContent='Connecter →'; var el=document.getElementById("stravaActs"); if(el)el.innerHTML=""; if(tx)tx.innerHTML=""; }
 }
 function nav(v){
-  if(v==="today") dayOffset=0;lvView=v;if(!lvRestoring&&window.LVNAV)LVNAV.push();["today","week","horizon","log","pull"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("on",x===v);document.getElementById("nav-"+x).classList.toggle("on",x===v);});if(v==="week")renderWeekView();if(v==="horizon")renderHorizon();if(v==="log")renderLog();if(v==="pull")renderPull();window.scrollTo(0,0);}
+  if(v==="today") dayOffset=0;lvView=v;if(!lvRestoring&&window.LVNAV)LVNAV.push();["today","week","horizon","log","pull","agenda"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("on",x===v);document.getElementById("nav-"+x).classList.toggle("on",x===v);});if(v==="week")renderWeekView();if(v==="horizon")renderHorizon();if(v==="log")renderLog();if(v==="pull")renderPull();if(v==="agenda")renderAgenda();window.scrollTo(0,0);}
 
 /* ===== UI ACTIVITÉS EXTRA (suivi hors plan) ===== */
 var addSport="course", addMode="strava", addShowAll=false, addDay=null;
@@ -5049,6 +5120,245 @@ setTimeout(function(){ try{ if(matinNeeded()) matinOpen(); }catch(e){} }, 600);
 <script>
 /* deep-link : trail-v2.html#pull ouvre directement l'onglet Tractions */
 (function(){try{if((location.hash||"").replace("#","")==="pull"){setTimeout(function(){if(typeof nav==="function")nav("pull");},80);}}catch(e){}})();
+
+/* ===== AGENDA 26-27 =====================================================
+   Vue globale août 2026 → juillet 2027, une ligne par week-end.
+   Parité travail : ancre = samedi 05/09/2026 en REPOS → alternance 1 WE / 2.
+   WE repos = WE où Laurent a ses enfants à garder.
+   Principe UI : essentiel visible (statut + pastilles), détail au clic. */
+var AG_KEY="agenda:v1";
+var AG_START="2026-08-01", AG_END="2027-07-31";
+var AG_CATS={
+  course:{l:"Course",   i:"🏁", c:"var(--orange)"},
+  mtc:   {l:"MTC",      i:"☯",  c:"var(--purp)"},
+  vac:   {l:"Vacances", i:"✈",  c:"var(--blue)"},
+  fam:   {l:"Famille",  i:"👪", c:"var(--grn)"},
+  perso: {l:"Perso",    i:"●",  c:"var(--mut)"}
+};
+/* Évènements en dur (issus du cahier des charges + calendrier MTC).
+   conge:1 = congés déjà posés → ne compte pas comme conflit. */
+var AG_SEED=[
+  {s:"2026-09-26",e:"2026-09-27",cat:"course",l:"45K Plateau d'Hauteville"},
+  {s:"2026-10-01",e:"2026-10-04",cat:"vac",   l:"Maroc",conge:1},
+  {s:"2026-10-11",e:"2026-10-11",cat:"course",l:"Trail de l'Aqueduc 10K"},
+  {s:"2026-10-18",e:"2026-10-18",cat:"course",l:"20K de Caluire"},
+  {s:"2026-10-18",e:"2026-11-07",cat:"vac",   l:"Pérou — trek",conge:1},
+  {s:"2026-11-07",e:"2026-11-08",cat:"mtc",   l:"MTC Théorie"},
+  {s:"2026-12-05",e:"2026-12-06",cat:"mtc",   l:"MTC Pratique"},
+  {s:"2027-01-23",e:"2027-01-24",cat:"mtc",   l:"MTC Théorie"},
+  {s:"2027-02-20",e:"2027-02-21",cat:"mtc",   l:"MTC Pratique"},
+  {s:"2027-03-13",e:"2027-03-14",cat:"mtc",   l:"MTC Théorie"},
+  {s:"2027-04-10",e:"2027-04-11",cat:"mtc",   l:"MTC Pratique"},
+  {s:"2027-05-14",e:"2027-05-17",cat:"fam",   l:"WE famille",conge:1},
+  {s:"2027-05-22",e:"2027-05-23",cat:"mtc",   l:"MTC Théorie"},
+  {s:"2027-05-31",e:"2027-06-03",cat:"fam",   l:"WE en amoureux",conge:1},
+  {s:"2027-06-12",e:"2027-06-13",cat:"mtc",   l:"MTC Théorie/Pratique"},
+  {s:"2027-07-15",e:"2027-07-18",cat:"course",l:"UT4M 180 CHALLENGE",conge:1}
+];
+var AG_TOFIX=[
+  {l:"Chianti Ultra 46K",     w:"mars 2027 — date à confirmer"},
+  {l:"Trail de Paladru 84K",  w:"avril 2027 — congés posés, date à confirmer"}
+];
+var AG_MONTHS=["JANVIER","FÉVRIER","MARS","AVRIL","MAI","JUIN","JUILLET","AOÛT","SEPTEMBRE","OCTOBRE","NOVEMBRE","DÉCEMBRE"];
+var agOpenM={}, agOpenW=null, agInit=false;
+
+function agGet(){var o;try{o=JSON.parse(localStorage.getItem(AG_KEY)||"{}");}catch(e){o={};}
+  if(!o||typeof o!=="object")o={};
+  if(!o.we)o.we={}; if(!o.anchor)o.anchor="2026-09-05"; if(o.anchorWork==null)o.anchorWork=false;
+  return o;}
+function agSet(o){o._u=Date.now();try{localStorage.setItem(AG_KEY,JSON.stringify(o));}catch(e){}
+  if(typeof cloudSave==="function")cloudSave();}
+function agSlot(st,sat){ if(!st.we[sat])st.we[sat]={}; return st.we[sat]; }
+function agD(s){var p=String(s).split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+function agIsoWeek(d){var t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  var dn=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-dn);
+  var y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return Math.ceil((((t-y0)/86400000)+1)/7);}
+function agWeekends(){var d=agD(AG_START); while(d.getDay()!==6)d.setDate(d.getDate()+1);
+  var end=agD(AG_END), out=[];
+  while(d<=end){ out.push(iso(d)); d=new Date(d.getTime()+7*86400000); }
+  return out;}
+function agWork(sat,st){var o=st.we[sat]; if(o&&o.w!=null)return !!o.w;
+  var w=Math.round((agD(sat)-agD(st.anchor))/604800000);
+  return ((((w%2)+2)%2)===0)?!!st.anchorWork:!st.anchorWork;}
+function agSeedFor(sat){var s=agD(sat), su=new Date(s.getTime()+86400000), out=[];
+  AG_SEED.forEach(function(e){var a=agD(e.s),b=agD(e.e);
+    if((s>=a&&s<=b)||(su>=a&&su<=b)) out.push(e);});
+  return out;}
+function agItems(sat,st){var o=st.we[sat]; return (o&&o.it)?o.it:[];}
+/* Statut d'un WE : {work, conge, garde, seed, items, engage, flag} */
+function agState(sat,st){
+  var o=st.we[sat]||{}, seed=agSeedFor(sat), items=o.it||[];
+  var work=agWork(sat,st);
+  var congeSeed=false; seed.forEach(function(e){if(e.conge)congeSeed=true;});
+  var conge=!!o.c||congeSeed;
+  var engage=(seed.length+items.length)>0;
+  var flag=null;
+  if(work&&engage&&!conge) flag="poser";          // rouge : congé à poser
+  else if(!work&&engage&&!o.g) flag="garde";      // orange : enfants à gérer
+  return {work:work,conge:conge,garde:!!o.g,seed:seed,items:items,engage:engage,flag:flag};
+}
+function agFmtWE(sat){
+  var s=agD(sat), d2=new Date(s.getTime()+86400000);
+  if(s.getMonth()===d2.getMonth()) return s.getDate()+"–"+d2.getDate();
+  return s.getDate()+"–"+d2.getDate()+"/"+(d2.getMonth()+1);
+}
+function agChip(cat,label){
+  var c=AG_CATS[cat]||AG_CATS.perso;
+  return '<span class="agchip" style="border-color:'+c.c+';color:'+c.c+'">'+c.i+' '+label+'</span>';
+}
+
+function renderAgenda(){
+  var box=document.getElementById("agBody"); if(!box)return;
+  var st=agGet(), wes=agWeekends(), today=iso(new Date());
+  if(!agInit){ // ouverture par défaut : mois courant + suivant
+    var n=new Date(), k1=n.getFullYear()+"-"+n.getMonth();
+    var n2=new Date(n.getFullYear(),n.getMonth()+1,1);
+    agOpenM[k1]=true; agOpenM[n2.getFullYear()+"-"+n2.getMonth()]=true; agInit=true;
+  }
+  var nLibre=0,nPoser=0,nGarde=0,nConge=0;
+  wes.forEach(function(sat){ var s=agState(sat,st);
+    if(s.flag==="poser")nPoser++; if(s.flag==="garde")nGarde++;
+    if(s.conge&&s.work)nConge++;
+    if(!s.work&&!s.engage)nLibre++; });
+
+  var h='';
+  /* --- compteurs --- */
+  h+='<div class="agstats">'+
+     '<div class="agstat"><div class="v bebas">'+nLibre+'</div><div class="l">WE repos libres</div></div>'+
+     '<div class="agstat'+(nPoser?' bad':'')+'"><div class="v bebas">'+nPoser+'</div><div class="l">congés à poser</div></div>'+
+     '<div class="agstat'+(nGarde?' warn':'')+'"><div class="v bebas">'+nGarde+'</div><div class="l">gardes à gérer</div></div>'+
+     '<div class="agstat"><div class="v bebas">'+nConge+'</div><div class="l">congés posés</div></div>'+
+     '</div>';
+  /* --- à caler --- */
+  h+='<div class="card agfix"><div class="eyebrow" style="margin-bottom:6px">Dates à confirmer</div>';
+  AG_TOFIX.forEach(function(e){ h+='<div class="agfixrow"><b>'+e.l+'</b><span>'+e.w+'</span></div>'; });
+  h+='</div>';
+  /* --- légende --- */
+  h+='<button class="fold" onclick="toggleFold(\'agLeg\',this,\'la légende\')">▾ la légende</button>';
+  h+='<div id="agLeg" style="display:none"><div class="card" style="padding:12px 13px">'+
+     '<div class="agleg"><i class="p work"></i> WE travaillé (semaine impaire)</div>'+
+     '<div class="agleg"><i class="p rest"></i> WE de repos — enfants à garder (semaine paire)</div>'+
+     '<div class="agleg"><i class="p conge"></i> Congé posé</div>'+
+     '<div class="agleg"><span class="agtag bad">à poser</span> engagement sur un WE travaillé</div>'+
+     '<div class="agleg"><span class="agtag warn">garde</span> engagement sur un WE avec les enfants</div>'+
+     '<div class="agleg" style="color:var(--mut);margin-top:8px">Ancre de parité : samedi 05/09/2026 = repos, alternance 1 WE sur 2. <b>Attention aux numéros de semaine :</b> 2026 compte 53 semaines ISO, donc jusqu\'à décembre 2026 le WE <b>pair</b> est en repos, et à partir de janvier 2027 la parité s\'inverse — c\'est le WE <b>impair</b> qui est en repos. Le statut de chaque WE reste modifiable au clic.</div>'+
+     '</div></div>';
+  /* --- mois --- */
+  var byM={}, order=[];
+  wes.forEach(function(sat){ var d=agD(sat), k=d.getFullYear()+"-"+d.getMonth();
+    if(!byM[k]){byM[k]=[];order.push(k);} byM[k].push(sat); });
+  order.forEach(function(k){
+    var p=k.split("-"), y=+p[0], m=+p[1], list=byM[k], op=!!agOpenM[k];
+    var ml=0,mp=0,mg=0;
+    list.forEach(function(sat){var s=agState(sat,st);
+      if(!s.work&&!s.engage)ml++; if(s.flag==="poser")mp++; if(s.flag==="garde")mg++;});
+    var sum=[]; if(ml)sum.push(ml+" libre"+(ml>1?"s":""));
+    if(mp)sum.push('<b style="color:var(--red)">'+mp+" à poser</b>");
+    if(mg)sum.push('<b style="color:var(--orange)">'+mg+" garde"+(mg>1?"s":"")+"</b>");
+    h+='<div class="card agmonth">';
+    h+='<button class="agmhead" onclick="agToggleM(\''+k+'\')"><span class="bebas">'+AG_MONTHS[m]+' '+y+'</span>'+
+       '<span class="s">'+(sum.join(" · ")||"—")+'</span><span class="c">'+(op?"▾":"▸")+'</span></button>';
+    if(op){
+      h+='<div class="agrows">';
+      list.forEach(function(sat){ h+=agRowHTML(sat,st,today); });
+      h+='</div>';
+    }
+    h+='</div>';
+  });
+  box.innerHTML=h;
+  var b=document.getElementById("agBadge");
+  if(b){ b.textContent=(nPoser?nPoser+" conflit"+(nPoser>1?"s":""):"À jour");
+    b.style.color=nPoser?"var(--red)":"var(--grn)"; b.style.borderColor=nPoser?"var(--red)":"var(--grn)"; }
+}
+
+function agRowHTML(sat,st,today){
+  var s=agState(sat,st), d=agD(sat), wk=agIsoWeek(d), op=(agOpenW===sat);
+  var cur=(sat<=today&&today<iso(new Date(d.getTime()+7*86400000)));
+  var stat=s.work?(s.conge?"conge":"work"):"rest";
+  var lab=s.work?(s.conge?"CONGÉ POSÉ":"TRAVAIL"):"REPOS";
+  var h='<div class="agrow'+(cur?" now":"")+'">';
+  h+='<button class="agmain" onclick="agToggleW(\''+sat+'\')">';
+  h+='<span class="agwk bebas">S'+(wk<10?"0"+wk:wk)+'</span>';
+  h+='<span class="agmid"><span class="agdate">'+agFmtWE(sat)+'</span>';
+  h+='<span class="agpills"><i class="p '+stat+'"></i><span class="agstatl">'+lab+'</span>';
+  if(!s.work)h+='<span class="agkid">👧 enfants</span>';
+  h+='</span>';
+  if(s.seed.length||s.items.length){
+    h+='<span class="agchips">';
+    s.seed.forEach(function(e){h+=agChip(e.cat,e.l);});
+    s.items.forEach(function(e){h+=agChip(e.cat,e.l);});
+    h+='</span>';
+  }
+  h+='</span>';
+  h+='<span class="agright">';
+  if(s.flag==="poser")h+='<span class="agtag bad">à poser</span>';
+  else if(s.flag==="garde")h+='<span class="agtag warn">garde</span>';
+  else if(!s.work&&!s.engage)h+='<span class="agtag ok">libre</span>';
+  h+='<span class="agcar">'+(op?"▾":"▸")+'</span></span>';
+  h+='</button>';
+  if(op)h+=agDetailHTML(sat,st,s);
+  h+='</div>';
+  return h;
+}
+
+function agDetailHTML(sat,st,s){
+  var o=st.we[sat]||{};
+  var h='<div class="agdet">';
+  /* statut */
+  h+='<div class="eyebrow" style="margin-bottom:6px">Statut du week-end</div><div class="agbtns">';
+  h+='<button class="agb'+(s.work?" on":"")+'" onclick="agSetWork(\''+sat+'\',1)">Travail</button>';
+  h+='<button class="agb'+(!s.work?" on":"")+'" onclick="agSetWork(\''+sat+'\',0)">Repos</button>';
+  h+='<button class="agb'+(o.w==null?" on":"")+'" onclick="agSetWork(\''+sat+'\',null)">Auto</button>';
+  h+='</div>';
+  h+='<div class="agbtns" style="margin-top:6px">';
+  h+='<button class="agb'+(o.c?" on":"")+'" onclick="agTog(\''+sat+'\',\'c\')">Congé posé</button>';
+  h+='<button class="agb'+(o.g?" on":"")+'" onclick="agTog(\''+sat+'\',\'g\')">Garde arrangée</button>';
+  h+='</div>';
+  /* items */
+  h+='<div class="eyebrow" style="margin:14px 0 6px">Contenu</div>';
+  if(!s.seed.length&&!s.items.length) h+='<div class="agnone">Rien de prévu.</div>';
+  s.seed.forEach(function(e){
+    var c=AG_CATS[e.cat]||AG_CATS.perso;
+    h+='<div class="agit"><span style="color:'+c.c+'">'+c.i+'</span> <b>'+e.l+'</b><span class="lk">plan</span></div>';
+  });
+  s.items.forEach(function(e,i){
+    var c=AG_CATS[e.cat]||AG_CATS.perso;
+    h+='<div class="agit"><span style="color:'+c.c+'">'+c.i+'</span> <b>'+e.l+'</b>'+
+       '<button class="agdel" onclick="agDel(\''+sat+'\','+i+')">✕</button></div>';
+  });
+  /* ajout */
+  h+='<div class="agadd">';
+  h+='<select id="agc_'+sat+'">';
+  Object.keys(AG_CATS).forEach(function(k){h+='<option value="'+k+'">'+AG_CATS[k].i+' '+AG_CATS[k].l+'</option>';});
+  h+='</select>';
+  h+='<input id="agi_'+sat+'" type="text" placeholder="Intitulé…" onkeydown="if(event.key===\'Enter\')agAdd(\''+sat+'\')">';
+  h+='<button class="agb go" onclick="agAdd(\''+sat+'\')">+</button>';
+  h+='</div>';
+  /* note */
+  h+='<textarea class="agnote" placeholder="Note libre…" onchange="agNote(\''+sat+'\',this.value)">'+(o.n||"")+'</textarea>';
+  h+='</div>';
+  return h;
+}
+
+function agToggleM(k){ agOpenM[k]=!agOpenM[k]; renderAgenda(); }
+function agToggleW(sat){ agOpenW=(agOpenW===sat)?null:sat; renderAgenda(); }
+function agSetWork(sat,v){ var st=agGet(), o=agSlot(st,sat);
+  if(v===null){ delete o.w; } else { o.w=v?1:0; }
+  agSet(st); renderAgenda(); }
+function agTog(sat,f){ var st=agGet(), o=agSlot(st,sat);
+  if(o[f]) delete o[f]; else o[f]=1; agSet(st); renderAgenda(); }
+function agAdd(sat){
+  var ci=document.getElementById("agc_"+sat), ti=document.getElementById("agi_"+sat);
+  if(!ci||!ti)return; var v=(ti.value||"").trim(); if(!v)return;
+  var st=agGet(), o=agSlot(st,sat); if(!o.it)o.it=[];
+  o.it.push({cat:ci.value,l:v}); agSet(st); renderAgenda(); }
+function agDel(sat,i){ var st=agGet(), o=agSlot(st,sat);
+  if(o.it&&o.it[i]!=null){ o.it.splice(i,1); if(!o.it.length)delete o.it; }
+  agSet(st); renderAgenda(); }
+function agNote(sat,v){ var st=agGet(), o=agSlot(st,sat);
+  v=(v||"").trim(); if(v)o.n=v; else delete o.n; agSet(st); }
+
 
 /* ============ LV : memoire de navigation ============ */
 var lvView="today", lvRestoring=false;

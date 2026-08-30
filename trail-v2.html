@@ -5176,9 +5176,14 @@ function agWeekends(){var d=agD(AG_START); while(d.getDay()!==6)d.setDate(d.getD
   var end=agD(AG_END), out=[];
   while(d<=end){ out.push(iso(d)); d=new Date(d.getTime()+7*86400000); }
   return out;}
+/* Règle réelle : la rota suit la PARITÉ DU N° DE SEMAINE ISO, pas une alternance
+   stricte. Semaine impaire = travail. Conséquence assumée par Laurent : 2026
+   comptant 53 semaines ISO, les WE S53 (2-3 janv) et S1 (9-10 janv) sont deux
+   week-ends travaillés d'affilée, puis le rythme 1/2 reprend. */
 function agWork(sat,st){var o=st.we[sat]; if(o&&o.w!=null)return !!o.w;
-  var w=Math.round((agD(sat)-agD(st.anchor))/604800000);
-  return ((((w%2)+2)%2)===0)?!!st.anchorWork:!st.anchorWork;}
+  var wk=agIsoWeek(agD(sat)), aw=agIsoWeek(agD(st.anchor));
+  var same=((wk%2)===(aw%2));
+  return same?!!st.anchorWork:!st.anchorWork;}
 function agSeedFor(sat){var s=agD(sat), su=new Date(s.getTime()+86400000), out=[];
   /* Courses : lues directement dans RACES → jamais de désynchro avec le plan.
      Une course sur 4 jours (UT4M) couvre les 2 jours du WE via sa durée. */
@@ -5248,13 +5253,13 @@ function renderAgenda(){
   /* --- légende --- */
   h+='<button class="fold" onclick="toggleFold(\'agLeg\',this,\'la légende\')">▾ la légende</button>';
   h+='<div id="agLeg" style="display:none"><div class="card" style="padding:12px 13px">'+
-     '<div class="agleg"><i class="p work"></i> WE travaillé (semaine impaire)</div>'+
-     '<div class="agleg"><i class="p rest"></i> WE de repos — enfants à garder (semaine paire)</div>'+
+     '<div class="agleg"><i class="p work"></i> WE travaillé (<b>semaine ISO impaire</b>)</div>'+
+     '<div class="agleg"><i class="p rest"></i> WE de repos — enfants à garder (<b>semaine ISO paire</b>)</div>'+
      '<div class="agleg"><i class="p conge"></i> Congé posé</div>'+
      '<div class="agleg"><span class="agtag bad">à poser</span> engagement sur un WE travaillé</div>'+
      '<div class="agleg"><span class="agtag warn">garde</span> engagement sur un WE avec les enfants</div>'+
      '<div class="agleg"><span class="agtag bad">conflit</span> vacances/famille posées ET course ou cours MTC le même WE</div>'+
-     '<div class="agleg" style="color:var(--mut);margin-top:8px">Ancre de parité : samedi 05/09/2026 = repos, alternance 1 WE sur 2. <b>Attention aux numéros de semaine :</b> 2026 compte 53 semaines ISO, donc jusqu\'à décembre 2026 le WE <b>pair</b> est en repos, et à partir de janvier 2027 la parité s\'inverse — c\'est le WE <b>impair</b> qui est en repos. Le statut de chaque WE reste modifiable au clic.</div>'+
+     '<div class="agleg" style="color:var(--mut);margin-top:8px">Règle : <b>semaine ISO impaire = travail</b>, paire = repos (ancre : S36, 5-6 sept 2026 = repos). 2026 comptant 53 semaines, les WE <b>S53 (2-3 janv)</b> et <b>S1 (9-10 janv)</b> sont travaillés d\'affilée, puis le rythme 1 sur 2 reprend. Le statut de chaque WE reste modifiable au clic.</div>'+
      '</div></div>';
   /* --- mois --- */
   var byM={}, order=[];

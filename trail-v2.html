@@ -5168,13 +5168,17 @@ function agSet(o){o._u=Date.now();try{localStorage.setItem(AG_KEY,JSON.stringify
   if(typeof cloudSave==="function")cloudSave();}
 function agSlot(st,sat){ if(!st.we[sat])st.we[sat]={}; return st.we[sat]; }
 function agD(s){var p=String(s).split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+/* ⚠️ Jamais d'arithmétique en millisecondes sur des dates locales : le passage
+   à l'heure d'hiver (25/10) décale de 60 min et fait basculer les samedis au
+   vendredi. On passe toujours par setDate(). */
+function agPlus(d,n){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()+n);return x;}
 function agIsoWeek(d){var t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
   var dn=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-dn);
   var y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));
   return Math.ceil((((t-y0)/86400000)+1)/7);}
 function agWeekends(){var d=agD(AG_START); while(d.getDay()!==6)d.setDate(d.getDate()+1);
   var end=agD(AG_END), out=[];
-  while(d<=end){ out.push(iso(d)); d=new Date(d.getTime()+7*86400000); }
+  while(d<=end){ out.push(iso(d)); d=agPlus(d,7); }
   return out;}
 /* Règle réelle : la rota suit la PARITÉ DU N° DE SEMAINE ISO, pas une alternance
    stricte. Semaine impaire = travail. Conséquence assumée par Laurent : 2026
@@ -5184,11 +5188,11 @@ function agWork(sat,st){var o=st.we[sat]; if(o&&o.w!=null)return !!o.w;
   var wk=agIsoWeek(agD(sat)), aw=agIsoWeek(agD(st.anchor));
   var same=((wk%2)===(aw%2));
   return same?!!st.anchorWork:!st.anchorWork;}
-function agSeedFor(sat){var s=agD(sat), su=new Date(s.getTime()+86400000), out=[];
+function agSeedFor(sat){var s=agD(sat), su=agPlus(s,1), out=[];
   /* Courses : lues directement dans RACES → jamais de désynchro avec le plan.
      Une course sur 4 jours (UT4M) couvre les 2 jours du WE via sa durée. */
   if(typeof RACES!=="undefined"){ RACES.forEach(function(r){
-    var a=agD(r.d), b=new Date(a.getTime()+((r.n||"").indexOf("UT4M")>=0?3:0)*86400000);
+    var a=agD(r.d), b=agPlus(a,(r.n||"").indexOf("UT4M")>=0?3:0);
     if((s>=a&&s<=b)||(su>=a&&su<=b))
       out.push({s:r.d,e:iso(b),cat:"course",l:r.n,conge:AG_RACE_CONGE[r.d]?1:0});
   }); }
@@ -5215,7 +5219,7 @@ function agState(sat,st){
   return {work:work,conge:conge,garde:!!o.g,seed:seed,items:items,engage:engage,flag:flag};
 }
 function agFmtWE(sat){
-  var s=agD(sat), d2=new Date(s.getTime()+86400000);
+  var s=agD(sat), d2=agPlus(s,1);
   if(s.getMonth()===d2.getMonth()) return s.getDate()+"–"+d2.getDate();
   return s.getDate()+"–"+d2.getDate()+"/"+(d2.getMonth()+1);
 }
@@ -5293,7 +5297,7 @@ function renderAgenda(){
 
 function agRowHTML(sat,st,today){
   var s=agState(sat,st), d=agD(sat), wk=agIsoWeek(d), op=(agOpenW===sat);
-  var cur=(sat<=today&&today<iso(new Date(d.getTime()+7*86400000)));
+  var cur=(sat<=today&&today<iso(agPlus(d,7)));
   var stat=s.work?(s.conge?"conge":"work"):"rest";
   var lab=s.work?(s.conge?"CONGÉ POSÉ":"TRAVAIL"):"REPOS";
   var h='<div class="agrow'+(cur?" now":"")+'">';

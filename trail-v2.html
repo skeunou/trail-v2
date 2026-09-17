@@ -690,8 +690,14 @@ var BLOCKS=[
    intent:"Maintien. Zéro culpabilité.", wk:[[28,600],[28,600]]},
   {id:"b7",  name:"Spécifique montée 1", start:"2027-01-04", end:"2027-01-31", phase:"build",
    intent:"Gros bloc VAM. Tapis 15% + gilet lesté 6-8 kg + bâtons.", wk:[[40,1100],[45,1300],[48,1500],[32,900]]},
-  {id:"b8",  name:"Spécifique montée 2", start:"2027-02-01", end:"2027-02-28", phase:"build",
-   intent:"Tapis 4×12′, côtes 12-14 reps.", wk:[[45,1200],[48,1400],[50,1600],[34,800]]},
+  /* B8 découpé (sept. 2026) : Trace des Maquisards 42K le sam. 6 fév. 2027.
+     Ancienne version : b8 du 1 au 28 fév, wk:[[45,1200],[48,1400],[50,1600],[34,800]] */
+  {id:"b8a", name:"Affûtage Maquisards", start:"2027-02-01", end:"2027-02-07", phase:"build",
+   intent:"Mini-affûtage avant le 42K de nuit. Volume −30%, pas de tapis.", wk:[[22,400]]},
+  {id:"b8r", name:"Récup Maquisards",    start:"2027-02-08", end:"2027-02-14", phase:"recup",
+   intent:"4 jours de repos complet (1 j / 10 km), puis reprise EF.", wk:[[15,300]]},
+  {id:"b8",  name:"Spécifique montée 2", start:"2027-02-15", end:"2027-02-28", phase:"build",
+   intent:"Tapis 4×12′, côtes 12-14 reps.", wk:[[45,1300],[48,1500]]},
   {id:"b9",  name:"Affûtage Chianti",    start:"2027-03-01", end:"2027-03-21", phase:"affutage",
    intent:"Affûtage 46K. Volume −40%, intensité maintenue.", wk:[[42,1200],[35,900],[25,500]]},
   {id:"b10", name:"Bloc Paladru",        start:"2027-03-22", end:"2027-04-25", phase:"build",
@@ -720,7 +726,9 @@ var BLOCKSESS={
   b5:   {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.60, note:"Base hivernale : volume facile + force maximale (3×5 RIR 1-2)."},
   b6:   {cotes:[8,10],  mer:"ef",    qualite:false, renfoN:1, slPct:0.55, note:"Fêtes : maintien, zéro culpabilité."},
   b7:   {cotes:[12,14], mer:"tapis", qualite:true,  renfoN:2, slPct:0.60, note:"Gros bloc VAM : tapis 15% + gilet lesté + bâtons."},
-  b8:   {cotes:[12,14], mer:"tapis", qualite:true,  renfoN:2, slPct:0.62, note:"Tapis 4×12′, côtes 12-14 reps. Le pic d'économie de grimpe."},
+  b8a:  {cotes:[6,6],   mer:"ef",    qualite:false, renfoN:1, slPct:0,    restFrom:"2027-02-07", restUntil:"2027-02-07", note:"Affûtage Maquisards : côtes allégées, aucune séance dure, course samedi soir."},
+  b8r:  {cotes:[0,0],   mer:"ef",    qualite:false, renfoN:1, slPct:0.50, restUntil:"2027-02-10", note:"Récup post-42K : repos complet jusqu'au mercredi 10, puis EF uniquement."},
+  b8:   {cotes:[12,14], mer:"tapis", qualite:true,  renfoN:2, slPct:0.62, tapisMin:12, tapisLest:8, note:"Tapis 4×12′, côtes 12-14 reps. Le pic d'économie de grimpe."},
   b9:   {cotes:[6,6],   mer:"ef",    qualite:true,  renfoN:1, slPct:0.55, note:"Affûtage Chianti : volume −40%, intensité maintenue."},
   b10:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.65, note:"Bloc Paladru : sorties longues 3h → 4h. Le gros test."},
   b11:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.62, note:"Récup Paladru puis relance longue. Maxi-Race retirée (aucun WE dispo)."},
@@ -744,6 +752,7 @@ var RACES=[
   {d:"2026-09-26", n:"45K Plateau d'Hauteville", km:45, dp:1980, role:"Course club — sortie longue haute intensité"},
   {d:"2026-10-11", n:"Trail de l'Aqueduc ~10K",  km:10, dp:300,  role:"Séance VMA déguisée"},
   {d:"2026-10-18", n:"20K de Caluire",           km:20, dp:200,  role:"Test d'allure — recalage VMA"},
+  {d:"2027-02-06", n:"Trace des Maquisards 42K", km:42, dp:1600, role:"Course de nuit · départ 19h30 Maillat → Oyonnax · dossards à Valexpo dès 10h"},
   {d:"2027-03-19", n:"Chianti Ultra 46K",        km:46, dp:1500, role:"Reprise de compétition · vendredi, départ 9h"},
   {d:"2027-04-18", n:"Trail de Paladru 84K",     km:84, dp:2500, role:"Le gros test (date provisoire)"},
   {d:"2027-07-15", n:"UT4M 180 Challenge",       km:176,dp:11700,role:"OBJECTIF"}
@@ -776,6 +785,7 @@ function classify(d){
   // ⚠️ DOIT rester synchro avec gen() : mêmes typeKey par (phase, jour).
   // Sert uniquement à sessionId() pour numéroter les runs.
   var dow=getByDow(d), ph=weekInfo(d).phase;
+  var BSc=blockSess(d); if(BSc.restUntil && iso(d)<=BSc.restUntil && (!BSc.restFrom||iso(d)>=BSc.restFrom)) return "repos";
   if(ph==="recup"){
     if(dow==="mar")return "cotes";
     if(dow==="lun"||dow==="mer"||dow==="jeu")return "fond";
@@ -882,6 +892,13 @@ function gen(d){
       }
       return o;
     }
+
+    // ── Repos complet post-course (1 jour / 10 km) ──
+    if(BS.restUntil && iso(d)<=BS.restUntil && (!BS.restFrom||iso(d)>=BS.restFrom)){
+      o.typeKey="repos"; o.label="Repos complet"; o.sub="récup post-course";
+      o.why=BS.note; o.detail=[BS.note,"Marche, mobilité douce, sommeil. Zéro course."]; o.color="var(--mut)"; o.plan={};
+      return o;
+    }
     
     if(dow==="lun"){
       o.typeKey="fond"; o.label="EF Club facile"; o.short="EF Club 50'"; o.sub="~50′ · Z2 · club";
@@ -921,7 +938,7 @@ function gen(d){
         o.color="var(--purp)"; o.plan={durMin:sfr?75:75};
       }
       else if(BS.mer==="tapis"){
-        var nb=(wi.wb>=3?5:4), min=(wi.wb>=4?12:8), lest=(wi.wb>=2?8:6);
+        var nb=(wi.wb>=3?5:4), min=(BS.tapisMin||(wi.wb>=4?12:8)), lest=(BS.tapisLest||(wi.wb>=2?8:6));
         o.typeKey="cotes"; o.label="Tapis lesté"; o.short="Tapis "+nb+"×"+min+"′ · "+lest+" kg"; o.sub=nb+"×"+min+"′ à 15% · gilet "+lest+" kg";
         o.why="Le tapis plafonne à 15% : le lest ramène le coût à celui d'une pente à ~20% à vide.";
         o.detail=["Gilet lesté "+lest+" kg + bâtons.","Pente : 15% (max du tapis).","Corps : "+nb+" × "+min+"′ à RPE 7-8.","Récup : 3′ à plat entre les blocs.","Cadence et posture identiques aux côtes du mardi."];

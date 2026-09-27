@@ -678,16 +678,23 @@ var BLOCKS=[
    intent:"Force structurelle + aérobie sans impact.", wk:[[25,700],[28,850],[30,1000],[22,600]]},
   {id:"b2",  name:"Prépa Hauteville",    start:"2026-08-31", end:"2026-09-27", phase:"force",
    intent:"Retour trail et absorption du D+ avant le 45K.", wk:[[30,900],[38,1200],[30,800],[20,300]]},
+  /* RÉVISION PUBALGIE (27 sept. 2026) — ancien B3 désactivé, conservé :
   {id:"b3",  name:"Automne courses",     start:"2026-09-28", end:"2026-10-20", phase:"force",
-   intent:"Récup Hauteville puis courses courtes comme séances.", wk:[[15,300],[25,600],[28,700],[8,150]]},
+   intent:"Récup Hauteville puis courses courtes comme séances.", wk:[[15,300],[25,600],[28,700],[8,150]]}, */
+  {id:"r0",  name:"Repos + Aqueduc",     start:"2026-09-28", end:"2026-10-11", phase:"recup",
+   intent:"Arrêt course après Hauteville (pubalgie). Aqueduc 10K le 11 oct. : à valider tranquille.", wk:[[0,0],[10,300]]},
+  {id:"r1",  name:"Repos relatif",       start:"2026-10-12", end:"2026-10-20", phase:"recup",
+   intent:"Pas de course. Cardio sans impact si indolore et validé par le médecin. Prépa Pérou.", wk:[[0,0],[0,0]]},
   {id:"perou",name:"Pérou",              start:"2026-10-21", end:"2026-11-08", phase:"recup",
    intent:"Trek + altitude >3000 m. Transition assumée, entretien élastiques.", wk:[[0,0],[0,0],[0,0]]},
-  {id:"b4",  name:"Réathlétisation",     start:"2026-11-09", end:"2026-11-22", phase:"recup",
+  /* RÉVISION PUBALGIE (27 sept. 2026) — B4/B5/B6 désactivés, conservés. Remplacés par les blocs
+     dynamiques attente / frac / reintro calculés par rebuildBlocks() à partir du J0.
+    {id:"b4",  name:"Réathlétisation",     start:"2026-11-09", end:"2026-11-22", phase:"recup",
    intent:"Retour progressif. Aucune séance qualité.", wk:[[20,400],[28,700]]},
   {id:"b5",  name:"Base hivernale",      start:"2026-11-23", end:"2026-12-20", phase:"base",
    intent:"Volume facile + force maximale (seul bloc lourd de l'année).", wk:[[35,900],[40,1100],[45,1300],[30,800]]},
   {id:"b6",  name:"Fêtes — allégé",      start:"2026-12-21", end:"2027-01-03", phase:"base",
-   intent:"Maintien. Zéro culpabilité.", wk:[[28,600],[28,600]]},
+   intent:"Maintien. Zéro culpabilité.", wk:[[28,600],[28,600]]}, */
   {id:"b7",  name:"Spécifique montée 1", start:"2027-01-04", end:"2027-01-31", phase:"build",
    intent:"Gros bloc VAM. Tapis 15% + gilet lesté 6-8 kg + bâtons.", wk:[[40,1100],[45,1300],[48,1500],[32,900]]},
   /* B8 découpé (sept. 2026) : Trace des Maquisards 42K le sam. 6 fév. 2027.
@@ -711,6 +718,217 @@ var BLOCKS=[
   {id:"ut4m",name:"UT4M 180",            start:"2027-07-15", end:"2027-07-18", phase:"affutage",
    intent:"🏁 4 étapes · ~44 km/j · 11 700 m D+.", wk:[[176,11700]]}
 ];
+/* ================= REPRISE PUBALGIE (révision 27 sept. 2026) =================
+   Protocole : Programme Fractionné I — La Clinique du Coureur (40 séances / 8 semaines).
+   J0 = date d'infiltration + 7 j minimum, calé au lundi suivant, jamais avant le 9 nov (retour Pérou).
+   J0 manuel possible (prime sur le calcul). Sans J0 : bloc « attente » jusqu'au 31 janv.
+   Zone dynamique : 9 nov 2026 → 28 févr 2027. Les blocs fixes de la zone (b7, b8a, b8r, b8)
+   reprennent seulement après la fin de la réintroduction. */
+var REP_KEY="reprise:v1", REP_MIN_J0="2026-11-09", REP_ZONE_END="2027-02-28";
+var REP_IDS={r0:1,r1:1,attente:1,frac:1,reintro:1};
+var BLOCKS_BASE=BLOCKS.slice();
+function repGet(){ try{ return JSON.parse(localStorage.getItem(REP_KEY))||{}; }catch(e){ return {}; } }
+function repAdd(s,n){ var d=parse(s); d.setDate(d.getDate()+n); return iso(d); }
+function repMon(s){ var d=parse(s), w=dowMon(d); if(w!==1) d.setDate(d.getDate()+(8-w)); return iso(d); }
+function repJ0(){
+  var r=repGet(), j;
+  if(r.j0) j=r.j0; else if(r.inj) j=repAdd(r.inj,7); else return null;
+  j=repMon(j); if(j<REP_MIN_J0) j=REP_MIN_J0; return j;
+}
+function rebuildBlocks(){
+  var j0=repJ0(), zs=REP_MIN_J0, ze=REP_ZONE_END, dyn=[], dynEnd;
+  function mk(id,name,s,e,wk,intent){ return {id:id,name:name,start:s,end:e,phase:(id==="reintro"?"base":"recup"),intent:intent,wk:wk}; }
+  var INT_ATT="Pas de course tant que le J0 n'est pas fixé. Infiltration → 7 jours de repos minimum. Cardio sans impact si indolore.";
+  if(!j0){ dynEnd="2027-01-31"; dyn.push(mk("attente","Repos relatif · attente infiltration",zs,dynEnd,[[0,0]],INT_ATT)); }
+  else{
+    if(j0>zs) dyn.push(mk("attente","Repos relatif · attente infiltration",zs,repAdd(j0,-1),[[0,0]],INT_ATT));
+    var fe=repAdd(j0,55); if(fe>ze) fe=ze;
+    dyn.push(mk("frac","Reprise · Fractionné I",j0,fe,[[4,0],[8,0],[9,0],[12,0],[12,0],[13,0],[16,0],[19,0]],
+      "Programme Fractionné I (La Clinique du Coureur) : 40 séances, de 3×1′ à 30′ continu. Plat uniquement. Règle douleur ≤2/10."));
+    dynEnd=fe;
+    if(fe<ze){ var re=repAdd(j0,83); if(re>ze) re=ze;
+      dyn.push(mk("reintro","Réintroduction terrain",repAdd(fe,1),re,[[22,200],[25,400],[28,600],[22,400]],
+        "Montée d'abord (tapis sans lest, côtes marchées puis courues), descente en dernier."));
+      dynEnd=re; }
+  }
+  var out=[], ins=false;
+  BLOCKS_BASE.forEach(function(b){
+    if(b.end<zs){ out.push(b); return; }
+    if(!ins){ dyn.forEach(function(x){out.push(x);}); ins=true; }
+    if(b.start>ze){ out.push(b); return; }
+    if(b.end<=dynEnd) return;
+    var c=Object.assign({},b); if(c.start<=dynEnd) c.start=repAdd(dynEnd,1); out.push(c);
+  });
+  if(!ins) dyn.forEach(function(x){out.push(x);});
+  BLOCKS.length=0; out.forEach(function(b){BLOCKS.push(b);});
+}
+rebuildBlocks();
+/* Grille officielle Fractionné I : [répétitions, min course, min marche] */
+var FRAC=[[3,1,1],[4,1,1],[5,1,1],[6,1,1],[7,1,1],
+ [8,1,1],[9,1,1],[10,1,1],[11,1,1],[12,1,1],
+ [13,1,1],[14,1,1],[15,1,1],[3,2,1],[4,2,1],
+ [5,2,1],[6,2,1],[7,2,1],[8,2,1],[9,2,1],
+ [10,2,1],[3,3,1],[4,3,1],[5,3,1],[6,3,1],
+ [7,3,1],[8,3,1],[2,4,1],[3,4,1],[4,4,1],
+ [5,4,1],[6,4,1],[1,9,1],[2,9,1],[3,9,1],
+ [1,14,1],[2,14,1],[1,20,0],[1,25,0],[1,30,0]];
+var FRAC_SLOT={1:0,2:1,4:2,6:3,7:4}; // lun, mar, jeu, sam, dim
+var REP_PAIN="Règle douleur : ≤2/10 pendant ET retour à la normale le lendemain matin → séance suivante. Sinon : répète la séance ou reprends la précédente.";
+var REP_MILES={
+  "2026-11-15":"📍 JALON — Décision SaintéLyon : assistance/ravito ou SaintÉpique en marche. Pacing en course = hors protocole à ce stade.",
+  "2026-11-28":"📍 JALON — SaintéLyon 24 km (ta compagne) : pas de course pour toi. Assistance ou marche. Zéro ibuprofène.",
+  "2027-01-04":"📍 JALON — GO/NO-GO Maquisards : Fractionné I terminé sans rechute + OK médecin → go conditionnel. Fractionné pas terminé → no-go."
+};
+function repMile(d){ return REP_MILES[iso(d)]||""; }
+function repFracIdx(d){
+  var j0=repJ0(); if(!j0) return -1;
+  var slot=FRAC_SLOT[dowMon(d)]; if(slot===undefined) return -1;
+  var w=Math.floor((mondayOf(d)-parse(j0))/(7*86400000)), i=w*5+slot;
+  return (i>=0&&i<FRAC.length)?i:-1;
+}
+function repFracWeek(d){ var j0=repJ0(); return j0?Math.floor((mondayOf(d)-parse(j0))/(7*86400000)):0; }
+function repClassify(d,b){
+  var w=dowMon(d);
+  if(b.id==="frac") return (FRAC_SLOT[w]!==undefined||w===3)?"fond":(w===5?"renfo":"repos");
+  if(b.id==="reintro") return (w===1||w===3||w===4||w===7)?"fond":(w===2?"cotes":(w===5?"renfo":"repos"));
+  return w===3?"fond":(w===5?"renfo":"repos");
+}
+function repHT(o,dur,cond){
+  o.typeKey="fond"; o.label="Home-trainer souple"; o.short="H.T "+dur+"′ souple"; o.sub=dur+"′ · Z1-Z2 · sans impact";
+  o.why="Cardio de transfert, mécaniquement moins stressant (le protocole le recommande en complément).";
+  o.detail=["Échauff : 10′ très souple.","Corps : "+dur+"′ en Z1-Z2, cadence 85-95 rpm, petit braquet. Aucune SFR, aucun gros braquet.",
+    "Assis, bassin stable. Douleur pubienne → tu arrêtes.",cond||"Uniquement si indolore et validé par le médecin — sinon repos."];
+  o.color="var(--purp)"; o.plan={durMin:dur};
+  o._specs=[["Durée",dur+"′"],["Zone","Z1-Z2"],["Cadence","85-95 rpm"]];
+}
+function repAdducteurs(w){
+  if(w<=1) return ["Squeeze ballon isométrique","Squeeze ballon (entre les genoux) : 5 × 10″ genoux fléchis, puis 5 × 10″ jambes tendues. Intensité ≤2/10."];
+  if(w<=3) return ["Copenhague court iso","Copenhague levier court (genou sur le banc), isométrique : 3 × 15-20″ / côté."];
+  if(w<=5) return ["Copenhague court dyn.","Copenhague levier court dynamique : 3 × 6 / côté, montée 1″ / descente 3″."];
+  return ["Copenhague long","Copenhague levier long (cheville sur le banc) : 3 × 5 / côté, seulement si le levier court est indolore."];
+}
+function repRenfo(o,stage,extra){
+  o.typeKey="renfo"; o.label="Renfo · adducteurs + haut"; o.short="Renfo adducteurs"; o.sub=stage[0]+" · ~40′";
+  o.why="Recharger progressivement les adducteurs, garder la force du haut du corps.";
+  o.detail=["Adducteurs : "+stage[1],"Pont fessier bilatéral : 3 × 10, pause 2″ en haut.",
+    "Haut du corps : tractions 3 × 5-6 · rowing haltère 3 × 6 · développé incliné 3 × 6 — RIR 2, repos 2′30.",
+    "Gainage : dead bug 3 × 8 lent. Pas de crunch, V-ups ni relevés de jambes."]
+    .concat(extra||["Exclu pendant la reprise : squat dynamique, fentes, sauts, hinge lourd."])
+    .concat(["Si ton kiné a une autre progression, la sienne prime."]);
+  o.color="var(--ink)"; o.plan={};
+  o._specs=[["Adducteurs",stage[0]],["Format","3 × 5-6 RIR 2"],["Durée","~40′"]];
+}
+function genReprise(o,d,b){
+  var w=dowMon(d), k=iso(d), r=repGet();
+  // Repos post-infiltration : 7 jours, prioritaire
+  if(r.inj && k>=r.inj && k<=repAdd(r.inj,6)){
+    o.typeKey="repos"; o.label=(k===r.inj?"💉 Infiltration":"Repos post-infiltration"); o.sub="repos complet · J"+(Math.round((parse(k)-parse(r.inj))/86400000)+1)+"/7";
+    o.why="Minimum 7 jours de repos après l'infiltration."; o.detail=["Repos complet : ni course, ni vélo, ni renfo bas du corps.","Marche du quotidien uniquement.","Suis les consignes précises du médecin."];
+    o.color="var(--mut)"; o.plan={}; return;
+  }
+  if(b.id==="frac"){
+    var i=repFracIdx(d);
+    if(i>=0){
+      var f=FRAC[i], run=f[0]*f[1], tot=f[0]*(f[1]+f[2])+10;
+      var body=f[2]?(f[0]+" × ("+f[1]+"′ course / "+f[2]+"′ marche)"):(f[1]+"′ de course continue");
+      o.typeKey="fond"; o.label="Fractionné "+(i+1)+"/40";
+      o.short=f[2]?(f[0]+"×("+f[1]+"′C/"+f[2]+"′M)"):(f[1]+"′ continu"); o.sub=o.short+" · ~"+tot+"′";
+      o.why="Reprise progressive — Programme Fractionné I, La Clinique du Coureur.";
+      o.detail=[];
+      if(i===0) o.detail.push("✅ AVANT CETTE 1re SÉANCE : feu vert médical · 45′ de marche rapide indolore · squeeze adducteurs indolore · 10 sauts unipodaux indolores par côté. Un seul ✗ → décale le J0.");
+      o.detail=o.detail.concat(["Échauff : 5′ de marche.","Corps : "+body+". Course = jogging régulier, marche = marche régulière.","Retour : 5′ de marche.",
+        "Terrain PLAT uniquement. Zéro côte, zéro descente.",REP_PAIN,"Si tout va très bien, le protocole autorise à sauter 1-2 séances.","Zéro ibuprofène pour masquer une douleur."]);
+      o.color="var(--grn)"; o.plan={durMin:tot};
+      o._specs=[["Séance",(i+1)+"/40"],["Course",run+"′"],["Durée","~"+tot+"′"]];
+      return;
+    }
+    if(w===3){ repHT(o,[30,30,35,35,40,40,45,45][Math.min(7,Math.max(0,repFracWeek(d)))]); return; }
+    if(w===5){ repRenfo(o,repAdducteurs(repFracWeek(d))); return; }
+  }
+  else if(b.id==="reintro"){
+    var wr=Math.min(3,Math.max(0,Math.floor((mondayOf(d)-mondayOf(parse(b.start)))/(7*86400000))));
+    if(w===1||w===4){
+      var dur=(w===1?[30,35,40,30]:[35,40,45,35])[wr];
+      o.typeKey="fond"; o.label="EF continu plat"; o.short="EF "+dur+"′ plat"; o.sub=dur+"′ · Z2 · plat";
+      o.why="Consolider la course continue avant d'ajouter du relief.";
+      o.detail=["~"+dur+"′ en Z2 ("+pStr(0.70)+"–"+pStr(0.65)+"/km), terrain plat.","Allure de conversation.",REP_PAIN];
+      o.color="var(--grn)"; o.plan={durMin:dur}; return;
+    }
+    if(w===2){
+      var M=[["Tapis marche 4×5′","Tapis 15 % : 4 × 5′ de marche active, récup 2′ à plat. Sans lest, bâtons optionnels.",4],
+             ["Tapis 3×4′ + 3×2′","Tapis 15 % : 3 × 4′ marche active + 3 × 2′ trot léger, récup 2′ à plat. Sans lest.",6],
+             ["Côtes 6×1′30","Côtes 6-10 % : 6 × 1′30 courues à RPE 7. Redescente en MARCHE.",6],
+             ["Côtes 8×1′30","Côtes 6-10 % : 8 × 1′30 à RPE 7. Redescente en trot très lent : 1re réintroduction de la descente.",8]][wr];
+      o.typeKey="cotes"; o.label="Montée · réintroduction"; o.short=M[0]; o.sub=M[0]+" · RPE 7";
+      o.why="La montée revient en premier : peu d'excentrique, charge pubienne faible.";
+      o.detail=["Échauff : 10′ marche + 5′ trot plat.","Corps : "+M[1],"Cadence haute, foulée courte, buste penché depuis la cheville.",REP_PAIN];
+      o.color="var(--orange)"; o.plan={reps:M[2],format:M[0]}; o._specs=[["Format",M[0]],["RPE","7"],["Pente",wr<2?"15 % tapis":"6-10 %"]]; return;
+    }
+    if(w===3){ repHT(o,45,"Si indolore."); return; }
+    if(w===5){ repRenfo(o,["Copenhague long","Copenhague levier long : 3 × 6 / côté."],
+      ["Retour progressif du bas du corps : step-up box 51 cm 3 × 8 / jambe (léger), hip thrust 3 × 8.","Toujours exclus : sauts, fentes sautées, squat dynamique."]); return; }
+    if(w===7){
+      var S=[["50′ plat",50,"50′ plat en Z2."],["1h vallonné · 200 m D+",60,"1h vallonné doux, ~200 m D+. Descentes en marche."],
+             ["1h15 · 300 m D+",75,"1h15, ~300 m D+. Descentes en marche."],
+             ["1h30 · 400 m D+",90,"1h30, ~400 m D+. En fin de sortie : 2 × 3′ de descente trottinée contrôlée. Le reste marché."]][wr];
+      o.typeKey="longue"; o.label="Sortie · réintroduction"; o.short=S[0]; o.sub=S[0];
+      o.why="Remettre du temps de course et du relief, descente en dernier.";
+      o.detail=[S[2],"Z2 strict, marche assumée dès que ça monte fort.",REP_PAIN];
+      o.color="var(--orange-d)"; o.plan={durMin:S[1]}; return;
+    }
+    o.typeKey="repos"; o.label="Repos"; o.sub=""; o.why="Récupération."; o.color="var(--mut)"; o.plan={}; return;
+  }
+  // r0 / r1 / attente : repos relatif
+  if(w===3){ repHT(o,30); return; }
+  if(w===5){ repRenfo(o,["Squeeze ballon isométrique","Squeeze ballon : 5 × 10″ genoux fléchis, intensité ≤2/10 — uniquement si le kiné valide."]); return; }
+  if(w===7){
+    o.typeKey="repos"; o.label="Marche 45-60′"; o.sub="marche rapide · test indolore";
+    o.why="45′ de marche rapide indolore = un des critères d'entrée dans le Fractionné.";
+    o.detail=["45-60′ de marche rapide, terrain facile.","Note la douleur pendant et le lendemain matin.","Douleur >2/10 → tu raccourcis."];
+    o.color="var(--blue)"; o.plan={}; return;
+  }
+  o.typeKey="repos"; o.label="Repos relatif"; o.sub=b.name;
+  o.why=b.intent||""; o.detail=["Pas de course.","Marche du quotidien OK si indolore.",b.intent||""]; o.color="var(--mut)"; o.plan={};
+}
+function repParseIn(s){
+  s=String(s||"").trim(); var m;
+  if((m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))) return m[1]+"-"+String(m[2]).padStart(2,"0")+"-"+String(m[3]).padStart(2,"0");
+  if((m=s.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{2,4})$/))){ var y=m[3].length===2?"20"+m[3]:m[3]; return y+"-"+String(m[2]).padStart(2,"0")+"-"+String(m[1]).padStart(2,"0"); }
+  return null;
+}
+function repSave(r){
+  r._u=Date.now(); try{ localStorage.setItem(REP_KEY,JSON.stringify(r)); }catch(e){}
+  rebuildBlocks();
+  if(typeof cloudSave==="function") cloudSave();
+  ["renderToday","renderWeek","renderWeekView","renderHorizon"].forEach(function(f){ try{ if(typeof window[f]==="function") window[f](); }catch(e){} });
+}
+function repEditInj(){
+  var r=repGet(), v=prompt("Date d'infiltration (JJ/MM/AAAA) — vide pour effacer :", r.inj?r.inj.split("-").reverse().join("/"):"");
+  if(v===null) return; if(!String(v).trim()){ delete r.inj; repSave(r); return; }
+  var p=repParseIn(v); if(!p){ alert("Format non reconnu. Exemple : 20/10/2026"); return; }
+  r.inj=p; repSave(r);
+}
+function repEditJ0(){
+  var r=repGet(), v=prompt("J0 manuel (JJ/MM/AAAA), calé au lundi suivant — vide pour revenir au calcul auto :", r.j0?r.j0.split("-").reverse().join("/"):"");
+  if(v===null) return; if(!String(v).trim()){ delete r.j0; repSave(r); return; }
+  var p=repParseIn(v); if(!p){ alert("Format non reconnu. Exemple : 16/11/2026"); return; }
+  r.j0=p; repSave(r);
+}
+function repCardHTML(){
+  var r=repGet(), j0=repJ0();
+  function row(l,v){ return '<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:13px"><span style="color:var(--mut)">'+l+'</span><b>'+v+'</b></div>'; }
+  return '<div class="card" style="padding:13px 15px;margin-bottom:12px;border-left:3px solid var(--orange)">'+
+    '<div class="eyebrow" style="margin-bottom:6px">Reprise pubalgie · Fractionné I</div>'+
+    row("Infiltration", r.inj?frShort(r.inj):"non datée")+
+    row("J0 reprise", j0?("lun "+frShort(j0)+(r.j0?" · manuel":" · auto")):"en attente")+
+    (j0?row("Fin du Fractionné", frShort(repAdd(j0,55))):"")+
+    (j0?row("Fin réintroduction", frShort(repAdd(j0,83)>REP_ZONE_END?REP_ZONE_END:repAdd(j0,83))):"")+
+    '<div style="font-size:11.5px;color:var(--mut);line-height:1.45;margin:8px 0 10px">J0 = infiltration + 7 j minimum, calé au lundi suivant, jamais avant le 9 nov. Le manuel prime sur l\'auto.</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+      '<button class="btn btn-ghost" style="flex:1;width:auto" onclick="repEditInj()">💉 Date infiltration</button>'+
+      '<button class="btn btn-ghost" style="flex:1;width:auto" onclick="repEditJ0()">J0 manuel</button>'+
+    '</div></div>';
+}
 /* Paramètres de séance par bloc — c'est ce qui empêche le bricolage.
    cotes  : nb de reps du mardi (pilier)
    mer    : "ht" home-trainer · "tapis" tapis lesté · "ef" endurance
@@ -720,6 +938,11 @@ var BLOCKS=[
 var BLOCKSESS={
   b1:   {cotes:[6,8],   mer:"ht",    qualite:false, renfoN:3, slPct:0.55, note:"Bloc vélo & force : la course est en veille, le H.T et le renfo portent la charge."},
   b2:   {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.60, note:"Retour trail : on remet du D+ dans les jambes avant Hauteville."},
+  r0:     {cotes:[0,0], mer:"off", qualite:false, renfoN:0, slPct:0, note:"Repos course après Hauteville. Aqueduc à valider tranquille."},
+  r1:     {cotes:[0,0], mer:"off", qualite:false, renfoN:0, slPct:0, note:"Repos relatif, cardio sans impact si indolore."},
+  attente:{cotes:[0,0], mer:"off", qualite:false, renfoN:0, slPct:0, note:"En attente infiltration : pas de course."},
+  frac:   {cotes:[0,0], mer:"off", qualite:false, renfoN:0, slPct:0, note:"Programme Fractionné I — La Clinique du Coureur."},
+  reintro:{cotes:[0,0], mer:"off", qualite:false, renfoN:0, slPct:0, note:"Réintroduction terrain : montée d'abord, descente en dernier."},
   b3:   {cotes:[8,10],  mer:"ef",    qualite:false, renfoN:1, slPct:0.50, note:"Les courses font office de séances de qualité."},
   perou:{cotes:[0,0],   mer:"off",   qualite:false, renfoN:1, slPct:0, off:true, note:"Pérou : marche longue quotidienne + 3 séances élastiques de 20′ sur le séjour. Objectif : ne pas perdre, pas progresser."},
   b4:   {cotes:[6,6],   mer:"ef",    qualite:false, renfoN:2, slPct:0.50, note:"Réathlétisation : aucune séance dure. Le retour d'altitude trompe les sensations."},
@@ -750,8 +973,9 @@ var QUALI=[
 /* Courses du calendrier (affichées et prises en compte comme jours de course) */
 var RACES=[
   {d:"2026-09-26", n:"45K Plateau d'Hauteville", km:45, dp:1980, role:"Course club — sortie longue haute intensité"},
-  {d:"2026-10-11", n:"Trail de l'Aqueduc ~10K",  km:10, dp:300,  role:"Séance VMA déguisée"},
-  {d:"2026-10-18", n:"20K de Caluire",           km:20, dp:200,  role:"Test d'allure — recalage VMA"},
+  {d:"2026-10-11", n:"Trail de l'Aqueduc ~10K",  km:10, dp:300,  role:"À valider tranquille : objectif finir, pas de chrono. Descentes en marche active. Douleur >3/10 → marche. Zéro ibuprofène."},
+  /* Retirée (révision pubalgie, 27 sept. 2026) :
+  {d:"2026-10-18", n:"20K de Caluire",           km:20, dp:200,  role:"Test d'allure — recalage VMA"}, */
   {d:"2027-02-06", n:"Trace des Maquisards 42K", km:42, dp:1600, role:"Course de nuit · départ 19h30 Maillat → Oyonnax · dossards à Valexpo dès 10h"},
   {d:"2027-03-19", n:"Chianti Ultra 46K",        km:46, dp:1500, role:"Reprise de compétition · vendredi, départ 9h"},
   {d:"2027-04-18", n:"Trail de Paladru 84K",     km:84, dp:2500, role:"Le gros test (date provisoire)"},
@@ -784,6 +1008,7 @@ var EPOCH_START=parse("2026-06-22"), EPOCH_SWITCH=parse("2027-01-01");
 function classify(d){
   // ⚠️ DOIT rester synchro avec gen() : mêmes typeKey par (phase, jour).
   // Sert uniquement à sessionId() pour numéroter les runs.
+  var _rb=blockFor(d); if(REP_IDS[_rb.id]) return repClassify(d,_rb);
   var dow=getByDow(d), ph=weekInfo(d).phase;
   var BSc=blockSess(d); if(BSc.restUntil && iso(d)<=BSc.restUntil && (!BSc.restFrom||iso(d)>=BSc.restFrom)) return "repos";
   if(ph==="recup"){
@@ -876,6 +1101,7 @@ function gen(d){
      Les blocs de récup (Pérou, Réathlétisation) passent désormais par la branche
      paramétrée ci-dessous, pilotée par BLOCKSESS. Ne pas réactiver sans revoir BLOCKSESS. */
   /* Ancienne branche `recup` (juin 2026) déplacée dans archive-gen-juin2026.js — voir ce fichier. */
+  else if(REP_IDS[b.id]){ genReprise(o,d,b); }
   else if(ph==="base"||ph==="force"||ph==="build"||ph==="velo"||ph==="recup"){
     var isBuild=ph==="build", isForce=ph==="force";
 
@@ -1007,7 +1233,9 @@ function gen(d){
   
   // Specs utiles selon le type (plus de doublon Bloc/Semaine — déjà dans le badge)
   var t=o.typeKey;
-  if(t==="fond"||t==="longue"){ o.specs=[["Durée",o.plan.durMin?durStr(o.plan.durMin):(o.sub.split(" · ")[0])],["Zone","Z2"],["FC",t==="longue"?("<"+FCZ2HI):FCZ2]]; }
+  var _ml=repMile(d); if(_ml){ o.detail.unshift(_ml); o.sub=(o.sub?o.sub+" · ":"")+"📍 jalon"; }
+  if(o._specs){ o.specs=o._specs; }
+  else if(t==="fond"||t==="longue"){ o.specs=[["Durée",o.plan.durMin?durStr(o.plan.durMin):(o.sub.split(" · ")[0])],["Zone","Z2"],["FC",t==="longue"?("<"+FCZ2HI):FCZ2]]; }
   else if(t==="cotes"){ o.specs=[["Format",o.plan.format||"Côtes"],["Séries",(o.plan.reps||"?")+"×"],["FC",">"+FCZ4]]; }
   else if(t==="renfo"){ o.specs=[["Format",(typeof renfoFmt==="function"?renfoFmt():"3 × 5-6")],["Repos","2′30-3′"],["Durée","45′"]]; }
   else if(t==="mobilite"){ o.specs=[["Durée","~15′"],["Focus",MOBI_FOCUS[(o.plan&&o.plan.mobiIdx)||0]]]; }
@@ -2256,7 +2484,7 @@ function dowMon(d){var g=d.getDay();return g===0?7:g;}
 var MOIS=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
 var JOURS=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 function blockFor(d){var k=iso(d);for(var i=0;i<BLOCKS.length;i++){if(k>=BLOCKS[i].start&&k<=BLOCKS[i].end)return BLOCKS[i];}return k<BLOCKS[0].start?BLOCKS[0]:BLOCKS[BLOCKS.length-1];}
-function sessionFor(d){var b=blockFor(d),g=gen(d);return {dateKey:iso(d),date:d,block:b,typeKey:g.typeKey,info:TYPES[g.typeKey],plan:g,specs:g.specs};}
+function sessionFor(d){var b=blockFor(d),g=gen(d);if(!g.specs)g.specs=[];if(!g.displayTitle)g.displayTitle=g.label;return {dateKey:iso(d),date:d,block:b,typeKey:g.typeKey,info:TYPES[g.typeKey],plan:g,specs:g.specs};}
 
 /* ================= STORAGE (seam synchro) ================= */
 var LOG_KEY="lvtrail:v2:log";
@@ -2331,7 +2559,7 @@ function cloudSave(){
   syncTimer=setTimeout(cloudSaveNow,1200); // debounce : 1 écriture par rafale
 }
 function cloudSaveNow(){
-  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet(),charges:chgAll(),refs:refGet(),matin:matinAll(),pull:pullGet(),agenda:(typeof agGet==="function"?agGet():null)};
+  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet(),charges:chgAll(),refs:refGet(),matin:matinAll(),pull:pullGet(),agenda:(typeof agGet==="function"?agGet():null),rep:repGet()};
   fetch(SYNC_URL+"?action=save&user="+SYNC_USER,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
     .then(function(r){return r.json();})
     .then(function(d){ setSyncBadge(d&&d.ok?"ok":"err"); })
@@ -2372,6 +2600,8 @@ function mergeCloud(d){
         la.we=mw; la._u=d.agenda._u;
         localStorage.setItem(AG_KEY,JSON.stringify(la));
       } }catch(e){} }
+  // reprise pubalgie : le cloud prime si plus récent
+  if(d.rep){ try{ var lrp=repGet(); if((d.rep._u||0)>(lrp._u||0)){ localStorage.setItem(REP_KEY,JSON.stringify(d.rep)); rebuildBlocks(); } }catch(e){} }
   // références : le cloud prime si plus récent
   if(d.refs){ try{ var lr=refGet(); if((d.refs._u||0)>(lr._u||0)) localStorage.setItem(REF_KEY,JSON.stringify(d.refs)); }catch(e){} }
   // charges renfo : union par exercice + par date, on garde la plus récente (_u)
@@ -4213,6 +4443,8 @@ function renderHorizon(){
       '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:19px">'+bs.renfoN+'/sem</div></div>'+
     '</div>':'')+
   '</div>';
+
+  h2+=repCardHTML();
 
   /* --- Échéances : les 2 prochaines en clair, le reste au clic --- */
   var k=iso(today), next=RACES.filter(function(r){return r.d>=k;}), past=RACES.filter(function(r){return r.d<k;});

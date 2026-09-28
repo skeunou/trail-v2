@@ -719,7 +719,8 @@ var BLOCKS=[
    intent:"🏁 4 étapes · ~44 km/j · 11 700 m D+.", wk:[[176,11700]]}
 ];
 /* ================= REPRISE PUBALGIE (révision 27 sept. 2026) =================
-   Protocole : Programme Fractionné I — La Clinique du Coureur (40 séances / 8 semaines).
+   Protocole : Programme Fractionné II — La Clinique du Coureur (15 séances / 3 semaines), choix du kiné.
+   Le I (40 séances / 8 semaines) reste disponible via r.prog="I".
    J0 = date d'infiltration + 7 j minimum, calé au lundi suivant, jamais avant le 9 nov (retour Pérou).
    J0 manuel possible (prime sur le calcul). Sans J0 : bloc « attente » jusqu'au 31 janv.
    Zone dynamique : 9 nov 2026 → 28 févr 2027. Les blocs fixes de la zone (b7, b8a, b8r, b8)
@@ -742,14 +743,21 @@ function rebuildBlocks(){
   if(!j0){ dynEnd="2027-01-31"; dyn.push(mk("attente","Repos relatif · attente infiltration",zs,dynEnd,[[0,0]],INT_ATT)); }
   else{
     if(j0>zs) dyn.push(mk("attente","Repos relatif · attente infiltration",zs,repAdd(j0,-1),[[0,0]],INT_ATT));
-    var fe=repAdd(j0,55); if(fe>ze) fe=ze;
-    dyn.push(mk("frac","Reprise · Fractionné I",j0,fe,[[4,0],[8,0],[9,0],[12,0],[12,0],[13,0],[16,0],[19,0]],
-      "Programme Fractionné I (La Clinique du Coureur) : 40 séances, de 3×1′ à 30′ continu. Plat uniquement. Règle douleur ≤2/10."));
+    var FR=repFrac(), pg=repProg(), fwk=[];
+    for(var s=0;s<FR.length;s+=5){ var rm=0; FR.slice(s,s+5).forEach(function(f){ rm+=f[0]*f[1]; }); fwk.push([Math.round(rm/6),0]); }
+    var fe=repAdd(j0,repFracDays()-1); if(fe>ze) fe=ze;
+    dyn.push(mk("frac","Reprise · Fractionné "+pg,j0,fe,fwk,
+      "Programme Fractionné "+pg+" (La Clinique du Coureur) : "+FR.length+" séances jusqu'à 30′ continu. Plat uniquement. Règle douleur ≤2/10."));
     dynEnd=fe;
-    if(fe<ze){ var re=repAdd(j0,83); if(re>ze) re=ze;
+    if(fe<ze){ var re=repAdd(fe,28); if(re>ze) re=ze;
       dyn.push(mk("reintro","Réintroduction terrain",repAdd(fe,1),re,[[22,200],[25,400],[28,600],[22,400]],
         "Montée d'abord (tapis sans lest, côtes marchées puis courues), descente en dernier."));
-      dynEnd=re; }
+      dynEnd=re;
+      /* Pont 3 semaines avant de rejoindre le plan fixe (évite le saut de charge vers B7) */
+      if(re<ze){ var pe=repAdd(re,21); if(pe>ze) pe=ze;
+        var pb=mk("pont","Base progressive",repAdd(re,1),pe,[[28,600],[32,800],[35,900]],
+          "Pont vers le plan : volume facile qui remonte, côtes 8-10 reps, pas de séance qualité.");
+        pb.phase="base"; dyn.push(pb); dynEnd=pe; } }
   }
   var out=[], ins=false;
   BLOCKS_BASE.forEach(function(b){
@@ -763,8 +771,9 @@ function rebuildBlocks(){
   BLOCKS.length=0; out.forEach(function(b){BLOCKS.push(b);});
 }
 rebuildBlocks();
-/* Grille officielle Fractionné I : [répétitions, min course, min marche] */
-var FRAC=[[3,1,1],[4,1,1],[5,1,1],[6,1,1],[7,1,1],
+/* Grilles officielles La Clinique du Coureur : [répétitions, min course, min marche].
+   Programme II choisi avec le kiné (oct. 2026) ; le I reste disponible (bascule dans la carte Reprise). */
+var FRAC_I=[[3,1,1],[4,1,1],[5,1,1],[6,1,1],[7,1,1],
  [8,1,1],[9,1,1],[10,1,1],[11,1,1],[12,1,1],
  [13,1,1],[14,1,1],[15,1,1],[3,2,1],[4,2,1],
  [5,2,1],[6,2,1],[7,2,1],[8,2,1],[9,2,1],
@@ -772,19 +781,26 @@ var FRAC=[[3,1,1],[4,1,1],[5,1,1],[6,1,1],[7,1,1],
  [7,3,1],[8,3,1],[2,4,1],[3,4,1],[4,4,1],
  [5,4,1],[6,4,1],[1,9,1],[2,9,1],[3,9,1],
  [1,14,1],[2,14,1],[1,20,0],[1,25,0],[1,30,0]];
+var FRAC_II=[[5,1,1],[7,1,1],[10,1,1],[12,1,1],[15,1,1],
+ [7,2,1],[10,2,1],[5,3,1],[7,3,1],[4,4,1],
+ [6,4,1],[2,9,1],[3,9,1],[2,14,1],[1,30,0]];
+var FRACS={I:FRAC_I,II:FRAC_II};
+function repProg(){ var p=repGet().prog; return FRACS[p]?p:"II"; }
+function repFrac(){ return FRACS[repProg()]; }
+function repFracDays(){ return Math.ceil(repFrac().length/5)*7; }
 var FRAC_SLOT={1:0,2:1,4:2,6:3,7:4}; // lun, mar, jeu, sam, dim
 var REP_PAIN="Règle douleur : ≤2/10 pendant ET retour à la normale le lendemain matin → séance suivante. Sinon : répète la séance ou reprends la précédente.";
 var REP_MILES={
   "2026-11-15":"📍 JALON — Décision SaintéLyon : assistance/ravito ou SaintÉpique en marche. Pacing en course = hors protocole à ce stade.",
   "2026-11-28":"📍 JALON — SaintéLyon 24 km (ta compagne) : pas de course pour toi. Assistance ou marche. Zéro ibuprofène.",
-  "2027-01-04":"📍 JALON — GO/NO-GO Maquisards : Fractionné I terminé sans rechute + OK médecin → go conditionnel. Fractionné pas terminé → no-go."
+  "2027-01-04":"📍 JALON — GO/NO-GO Maquisards : Fractionné + réintroduction terminés sans rechute (descente comprise) + OK médecin → go en mode gestion. Sinon → no-go."
 };
 function repMile(d){ return REP_MILES[iso(d)]||""; }
 function repFracIdx(d){
   var j0=repJ0(); if(!j0) return -1;
   var slot=FRAC_SLOT[dowMon(d)]; if(slot===undefined) return -1;
   var w=Math.floor((mondayOf(d)-parse(j0))/(7*86400000)), i=w*5+slot;
-  return (i>=0&&i<FRAC.length)?i:-1;
+  var F=repFrac(); return (i>=0&&i<F.length)?i:-1;
 }
 function repFracWeek(d){ var j0=repJ0(); return j0?Math.floor((mondayOf(d)-parse(j0))/(7*86400000)):0; }
 function repClassify(d,b){
@@ -829,17 +845,17 @@ function genReprise(o,d,b){
   if(b.id==="frac"){
     var i=repFracIdx(d);
     if(i>=0){
-      var f=FRAC[i], run=f[0]*f[1], tot=f[0]*(f[1]+f[2])+10;
+      var FR=repFrac(), f=FR[i], run=f[0]*f[1], tot=f[0]*(f[1]+f[2])+10;
       var body=f[2]?(f[0]+" × ("+f[1]+"′ course / "+f[2]+"′ marche)"):(f[1]+"′ de course continue");
-      o.typeKey="fond"; o.label="Fractionné "+(i+1)+"/40";
+      o.typeKey="fond"; o.label="Fractionné "+repProg()+" · "+(i+1)+"/"+FR.length;
       o.short=f[2]?(f[0]+"×("+f[1]+"′C/"+f[2]+"′M)"):(f[1]+"′ continu"); o.sub=o.short+" · ~"+tot+"′";
-      o.why="Reprise progressive — Programme Fractionné I, La Clinique du Coureur.";
+      o.why="Reprise progressive — Programme Fractionné "+repProg()+", La Clinique du Coureur.";
       o.detail=[];
       if(i===0) o.detail.push("✅ AVANT CETTE 1re SÉANCE : feu vert médical · 45′ de marche rapide indolore · squeeze adducteurs indolore · 10 sauts unipodaux indolores par côté. Un seul ✗ → décale le J0.");
       o.detail=o.detail.concat(["Échauff : 5′ de marche.","Corps : "+body+". Course = jogging régulier, marche = marche régulière.","Retour : 5′ de marche.",
         "Terrain PLAT uniquement. Zéro côte, zéro descente.",REP_PAIN,"Si tout va très bien, le protocole autorise à sauter 1-2 séances.","Zéro ibuprofène pour masquer une douleur."]);
       o.color="var(--grn)"; o.plan={durMin:tot};
-      o._specs=[["Séance",(i+1)+"/40"],["Course",run+"′"],["Durée","~"+tot+"′"]];
+      o._specs=[["Séance",(i+1)+"/"+FR.length],["Course",run+"′"],["Durée","~"+tot+"′"]];
       return;
     }
     if(w===3){ repHT(o,[30,30,35,35,40,40,45,45][Math.min(7,Math.max(0,repFracWeek(d)))]); return; }
@@ -865,7 +881,7 @@ function genReprise(o,d,b){
       o.color="var(--orange)"; o.plan={reps:M[2],format:M[0]}; o._specs=[["Format",M[0]],["RPE","7"],["Pente",wr<2?"15 % tapis":"6-10 %"]]; return;
     }
     if(w===3){ repHT(o,45,"Si indolore."); return; }
-    if(w===5){ repRenfo(o,["Copenhague long","Copenhague levier long : 3 × 6 / côté."],
+    if(w===5){ repRenfo(o,repAdducteurs(repFracWeek(d)),
       ["Retour progressif du bas du corps : step-up box 51 cm 3 × 8 / jambe (léger), hip thrust 3 × 8.","Toujours exclus : sauts, fentes sautées, squat dynamique."]); return; }
     if(w===7){
       var S=[["50′ plat",50,"50′ plat en Z2."],["1h vallonné · 200 m D+",60,"1h vallonné doux, ~200 m D+. Descentes en marche."],
@@ -914,19 +930,26 @@ function repEditJ0(){
   var p=repParseIn(v); if(!p){ alert("Format non reconnu. Exemple : 16/11/2026"); return; }
   r.j0=p; repSave(r);
 }
+function repToggleProg(){
+  var r=repGet(), nx=(repProg()==="II"?"I":"II");
+  if(!confirm("Passer au programme Fractionné "+nx+" ? Toutes les séances de reprise sont recalculées.")) return;
+  r.prog=nx; repSave(r);
+}
 function repCardHTML(){
   var r=repGet(), j0=repJ0();
   function row(l,v){ return '<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:13px"><span style="color:var(--mut)">'+l+'</span><b>'+v+'</b></div>'; }
   return '<div class="card" style="padding:13px 15px;margin-bottom:12px;border-left:3px solid var(--orange)">'+
-    '<div class="eyebrow" style="margin-bottom:6px">Reprise pubalgie · Fractionné I</div>'+
+    '<div class="eyebrow" style="margin-bottom:6px">Reprise pubalgie · Fractionné '+repProg()+'</div>'+
     row("Infiltration", r.inj?frShort(r.inj):"non datée")+
     row("J0 reprise", j0?("lun "+frShort(j0)+(r.j0?" · manuel":" · auto")):"en attente")+
-    (j0?row("Fin du Fractionné", frShort(repAdd(j0,55))):"")+
-    (j0?row("Fin réintroduction", frShort(repAdd(j0,83)>REP_ZONE_END?REP_ZONE_END:repAdd(j0,83))):"")+
+    row("Programme", "Fractionné "+repProg()+" · "+repFrac().length+" séances")+
+    (j0?row("Fin du Fractionné", frShort(repAdd(j0,repFracDays()-1))):"")+
+    (j0?row("Fin réintroduction", frShort(repAdd(j0,repFracDays()+27)>REP_ZONE_END?REP_ZONE_END:repAdd(j0,repFracDays()+27))):"")+
     '<div style="font-size:11.5px;color:var(--mut);line-height:1.45;margin:8px 0 10px">J0 = infiltration + 7 j minimum, calé au lundi suivant, jamais avant le 9 nov. Le manuel prime sur l\'auto.</div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
       '<button class="btn btn-ghost" style="flex:1;width:auto" onclick="repEditInj()">💉 Date infiltration</button>'+
       '<button class="btn btn-ghost" style="flex:1;width:auto" onclick="repEditJ0()">J0 manuel</button>'+
+      '<button class="btn btn-ghost" style="flex:1 1 100%;width:auto" onclick="repToggleProg()">Basculer sur le programme '+(repProg()==="II"?"I":"II")+'</button>'+
     '</div></div>';
 }
 /* Paramètres de séance par bloc — c'est ce qui empêche le bricolage.
@@ -941,7 +964,8 @@ var BLOCKSESS={
   r0:     {cotes:[0,0], mer:"off", qualite:false, renfoN:0, slPct:0, note:"Repos course après Hauteville. Aqueduc à valider tranquille."},
   r1:     {cotes:[0,0], mer:"off", qualite:false, renfoN:0, slPct:0, note:"Repos relatif, cardio sans impact si indolore."},
   attente:{cotes:[0,0], mer:"off", qualite:false, renfoN:0, slPct:0, note:"En attente infiltration : pas de course."},
-  frac:   {cotes:[0,0], mer:"off", qualite:false, renfoN:0, slPct:0, note:"Programme Fractionné I — La Clinique du Coureur."},
+  frac:   {cotes:[0,0], mer:"off", qualite:false, renfoN:0, slPct:0, note:"Programme Fractionné — La Clinique du Coureur."},
+  pont:   {cotes:[8,10], mer:"ef", qualite:false, renfoN:2, slPct:0.55, note:"Base progressive : pont entre la réintroduction et le plan. Pas de séance qualité."},
   reintro:{cotes:[0,0], mer:"off", qualite:false, renfoN:0, slPct:0, note:"Réintroduction terrain : montée d'abord, descente en dernier."},
   b3:   {cotes:[8,10],  mer:"ef",    qualite:false, renfoN:1, slPct:0.50, note:"Les courses font office de séances de qualité."},
   perou:{cotes:[0,0],   mer:"off",   qualite:false, renfoN:1, slPct:0, off:true, note:"Pérou : marche longue quotidienne + 3 séances élastiques de 20′ sur le séjour. Objectif : ne pas perdre, pas progresser."},

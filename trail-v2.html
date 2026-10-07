@@ -708,11 +708,11 @@ var BLOCKS=[
   {id:"b9",  name:"Affûtage Chianti",    start:"2027-03-01", end:"2027-03-21", phase:"affutage",
    intent:"Affûtage 46K. Volume −40%, intensité maintenue.", wk:[[42,1200],[35,900],[25,500]]},
   {id:"b10", name:"Bloc Paladru",        start:"2027-03-22", end:"2027-04-25", phase:"build",
-   intent:"Le gros test. Sorties longues 3h → 4h.", wk:[[35,900],[45,1400],[50,1600],[55,1800],[30,700]]},
+   intent:"Le gros test. Sorties longues 3h → 4h.", wk:[[35,900],[45,1400],[50,1600],[40,1100],[0,0]]},
   {id:"b11", name:"Relance post-Paladru", start:"2027-04-26", end:"2027-05-23", phase:"build",
-   intent:"Récup Paladru puis relance longue (Maxi-Race retirée du programme).", wk:[[20,400],[38,1100],[45,1500],[28,600]]},
+   intent:"Récup Paladru puis relance longue (Maxi-Race retirée du programme).", wk:[[20,400],[22,500],[15,300],[28,600]]},
   {id:"b12", name:"Spécifique UT4M",     start:"2027-05-24", end:"2027-06-27", phase:"build",
-   intent:"Bloc décisif : 3 week-ends chocs, enchaînement multi-jours.", wk:[[40,1300],[48,2500],[52,2800],[55,3300],[32,800]], overCap:true},
+   intent:"Bloc décisif : 3 week-ends chocs, enchaînement multi-jours.", wk:[[40,1300],[48,2500],[52,2800],[25,800],[12,300]], overCap:true},
   {id:"b13", name:"Affûtage final",      start:"2027-06-28", end:"2027-07-14", phase:"affutage",
    intent:"Volume −50%. Dernière séance dure le 6 juillet.", wk:[[35,900],[25,600],[15,300]]},
   {id:"ut4m",name:"UT4M 180",            start:"2027-07-15", end:"2027-07-18", phase:"affutage",
@@ -728,7 +728,10 @@ var BLOCKS=[
 var REP_KEY="reprise:v1", REP_MIN_J0="2026-11-09", REP_ZONE_END="2027-02-28";
 var REP_IDS={r0:1,r1:1,attente:1,frac:1,reintro:1};
 var BLOCKS_BASE=BLOCKS.slice();
-function repGet(){ try{ return JSON.parse(localStorage.getItem(REP_KEY))||{}; }catch(e){ return {}; } }
+/* Infiltration datée au 15 oct. 2026 (oct. 2026) : valeur par défaut tant que rien n'est saisi dans l'app.
+   Effacer dans l'app enregistre inj:"" (pas de retour au défaut). */
+var REP_INJ_DEFAULT="2026-10-15";
+function repGet(){ var r; try{ r=JSON.parse(localStorage.getItem(REP_KEY))||{}; }catch(e){ r={}; } if(!("inj" in r)) r.inj=REP_INJ_DEFAULT; return r; }
 function repAdd(s,n){ var d=parse(s); d.setDate(d.getDate()+n); return iso(d); }
 function repMon(s){ var d=parse(s), w=dowMon(d); if(w!==1) d.setDate(d.getDate()+(8-w)); return iso(d); }
 function repJ0(){
@@ -770,7 +773,7 @@ function rebuildBlocks(){
   if(!ins) dyn.forEach(function(x){out.push(x);});
   BLOCKS.length=0; out.forEach(function(b){BLOCKS.push(b);});
 }
-rebuildBlocks();
+/* rebuildBlocks() initial déplacé après FRACS (sinon crash dès qu'un J0 existe) */
 /* Grilles officielles La Clinique du Coureur : [répétitions, min course, min marche].
    Programme II choisi avec le kiné (oct. 2026) ; le I reste disponible (bascule dans la carte Reprise). */
 var FRAC_I=[[3,1,1],[4,1,1],[5,1,1],[6,1,1],[7,1,1],
@@ -785,6 +788,7 @@ var FRAC_II=[[5,1,1],[7,1,1],[10,1,1],[12,1,1],[15,1,1],
  [7,2,1],[10,2,1],[5,3,1],[7,3,1],[4,4,1],
  [6,4,1],[2,9,1],[3,9,1],[2,14,1],[1,30,0]];
 var FRACS={I:FRAC_I,II:FRAC_II};
+rebuildBlocks();
 function repProg(){ var p=repGet().prog; return FRACS[p]?p:"II"; }
 function repFrac(){ return FRACS[repProg()]; }
 function repFracDays(){ return Math.ceil(repFrac().length/5)*7; }
@@ -920,7 +924,7 @@ function repSave(r){
 }
 function repEditInj(){
   var r=repGet(), v=prompt("Date d'infiltration (JJ/MM/AAAA) — vide pour effacer :", r.inj?r.inj.split("-").reverse().join("/"):"");
-  if(v===null) return; if(!String(v).trim()){ delete r.inj; repSave(r); return; }
+  if(v===null) return; if(!String(v).trim()){ r.inj=""; repSave(r); return; }
   var p=repParseIn(v); if(!p){ alert("Format non reconnu. Exemple : 20/10/2026"); return; }
   r.inj=p; repSave(r);
 }
@@ -978,7 +982,7 @@ var BLOCKSESS={
   b8:   {cotes:[12,14], mer:"tapis", qualite:true,  renfoN:2, slPct:0.62, tapisMin:12, tapisLest:8, note:"Tapis 4×12′, côtes 12-14 reps. Le pic d'économie de grimpe."},
   b9:   {cotes:[6,6],   mer:"ef",    qualite:true,  renfoN:1, slPct:0.55, note:"Affûtage Chianti : volume −40%, intensité maintenue."},
   b10:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.65, note:"Bloc Paladru : sorties longues 3h → 4h. Le gros test."},
-  b11:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.62, note:"Récup Paladru puis relance longue. Maxi-Race retirée (aucun WE dispo)."},
+  b11:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.62, note:"Récup Paladru puis relance longue. Coursières 50K le 8 mai en sortie longue spécifique."},
   b12:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.70, note:"Bloc décisif : week-ends chocs, partir le dimanche sur jambes entamées."},
   b13:  {cotes:[6,6],   mer:"ef",    qualite:true,  renfoN:1, slPct:0.50, note:"Affûtage final. Dernière séance dure le 6 juillet."},
   ut4m: {cotes:[0,0],   mer:"off",   qualite:false, renfoN:0, slPct:0, off:true, note:"🏁 Course."}
@@ -1003,8 +1007,23 @@ var RACES=[
   {d:"2027-02-06", n:"Trace des Maquisards 42K", km:42, dp:1600, role:"Course de nuit · départ 19h30 Maillat → Oyonnax · dossards à Valexpo dès 10h"},
   {d:"2027-03-19", n:"Chianti Ultra 46K",        km:46, dp:1500, role:"Reprise de compétition · vendredi, départ 9h"},
   {d:"2027-04-18", n:"Trail de Paladru 84K",     km:84, dp:2500, role:"Le gros test (date provisoire)"},
+  {d:"2027-05-08", n:"Trail des Coursières 50K",  km:50, dp:1900, role:"Sortie longue spécifique en gestion, sans chrono · Saint-Martin-en-Haut · test nutrition"},
+  {d:"2027-06-19", n:"Les Drayes du Vercors 55K", km:55, dp:2390, role:"Course club · week-end choc n°3 du B12 · départ 7h La Chapelle-en-Vercors (date 2027 à confirmer)"},
   {d:"2027-07-15", n:"UT4M 180 Challenge",       km:176,dp:11700,role:"OBJECTIF"}
 ];
+/* Fenêtres avant/après course (règles 7 et 8) — courses ≥ 40 km, hors UT4M.
+   Avant : 4 jours sans séance dure. Après : 1 jour de repos par tranche de 10 km.
+   Exception Drayes : lendemain = sortie courte jambes fatiguées (simulation multi-jours). */
+var RACE_NEXTDAY_ACTIVE={"2027-06-19":1};
+function raceWin(d){
+  var k=iso(d), t=parse(k);
+  for(var i=0;i<RACES.length;i++){ var r=RACES[i]; if(!r.km||r.km<40||r.km>=150||r.d<"2026-10-01") continue; /* passé : historique non réécrit */
+    var df=Math.round((t-parse(r.d))/86400000);
+    if(df>=1 && df<=Math.round(r.km/10)) return {post:true,race:r,day:df,active:(df===1&&RACE_NEXTDAY_ACTIVE[r.d]===1)};
+    if(df<=-1 && df>=-4) return {pre:true,race:r,dj:-df};
+  }
+  return null;
+}
 function raceOn(d){ var k=iso(d); for(var i=0;i<RACES.length;i++){ if(RACES[i].d===k) return RACES[i]; } return null; }
 function nextRace(){ var k=iso(today); for(var i=0;i<RACES.length;i++){ if(RACES[i].d>=k) return RACES[i]; } return null; }
 /* Cible hebdo du bloc pour la semaine contenant d */
@@ -1034,6 +1053,7 @@ function classify(d){
   // Sert uniquement à sessionId() pour numéroter les runs.
   var _rb=blockFor(d); if(REP_IDS[_rb.id]) return repClassify(d,_rb);
   var dow=getByDow(d), ph=weekInfo(d).phase;
+  var RWc=raceWin(d); if(RWc && !REP_IDS[_rb.id]){ if(RWc.post) return "repos"; return RWc.dj===1?"repos":"fond"; }
   var BSc=blockSess(d); if(BSc.restUntil && iso(d)<=BSc.restUntil && (!BSc.restFrom||iso(d)>=BSc.restFrom)) return "repos";
   if(ph==="recup"){
     if(dow==="mar")return "cotes";
@@ -1121,6 +1141,30 @@ function gen(d){
     return o;
   }
   
+  // ── Fenêtres avant / après course ──
+  var RW=raceWin(d);
+  if(RW && !REP_IDS[b.id]){
+    if(RW.post && RW.active){
+      o.typeKey="longue"; o.label="Sortie courte · jambes fatiguées"; o.short="2h EF / rando"; o.sub="~2h · EF ou rando active · lendemain "+RW.race.n;
+      o.why="Simulation multi-jours de l'UT4M : repartir le lendemain sur jambes entamées.";
+      o.detail=["~2h en EF stricte ou rando active, bâtons.","Montées en marche, descentes prudentes.","Douleur ou boiterie → on coupe.","Repos complet les 5 jours suivants."];
+      o.color="var(--orange)"; o.plan={durMin:120}; return o;
+    }
+    if(RW.post){
+      o.typeKey="repos"; o.label="Repos complet"; o.sub="récup "+RW.race.n+" · J+"+RW.day;
+      o.why="1 jour de repos par tranche de 10 km (règle 8). Prime sur le mardi côtes.";
+      o.detail=[o.why,"Marche, mobilité douce, sommeil. Zéro course."]; o.color="var(--mut)"; o.plan={}; return o;
+    }
+    if(RW.dj===1){
+      o.typeKey="repos"; o.label="Veille de course"; o.sub=RW.race.n+" demain";
+      o.why="Repos, ou 20′ de décrassage + 3 lignes droites si tu tournes en rond.";
+      o.detail=[o.why,"Sac, nutrition et matériel préparés.","Glucides augmentés, aliments connus uniquement."]; o.color="var(--mut)"; o.plan={}; return o;
+    }
+    o.typeKey="fond"; o.label="EF pré-course"; o.short="EF 40'"; o.sub="~40′ · Z2 · J-"+RW.dj+" "+RW.race.n;
+    o.why="4 jours avant course : aucune séance dure (règle 7).";
+    o.detail=["~40′ EF facile, allure de conversation.","Pas de côtes, pas de qualité, pas de renfo lourd."]; o.color="var(--grn)"; o.plan={durMin:40}; return o;
+  }
+
   /* ── ANCIENNE BRANCHE post-100K (juin 2026) — DÉSACTIVÉE, conservée pour référence.
      Les blocs de récup (Pérou, Réathlétisation) passent désormais par la branche
      paramétrée ci-dessous, pilotée par BLOCKSESS. Ne pas réactiver sans revoir BLOCKSESS. */
@@ -4804,7 +4848,7 @@ function renderRefs(){
     REF_DIST.map(function(d){
       return '<tr><td>'+d[0]+'</td><td class="n">'+refTime(d[1],vma,d[2])+'</td><td class="m">'+refPace(vma,d[2])+'/km</td></tr>';
     }).join('')+'</table>'+
-    '<div class="refNote">Temps dérivés de la VMA, pas de performances réelles. Pour un profil trail peu habitué au bitume, ils sont <b>optimistes</b> — compte plutôt 10 à 15 min de plus sur marathon. Le 20K de Caluire (18 oct.) donnera le premier repère mesuré.</div>'+
+    '<div class="refNote">Temps dérivés de la VMA, pas de performances réelles. Pour un profil trail peu habitué au bitume, ils sont <b>optimistes</b> — compte plutôt 10 à 15 min de plus sur marathon. Le 20K de Caluire a été retiré (pubalgie) : pas de repère mesuré avant la reprise.</div>'+
     '</div></div>';
 
   /* 4 — charges de référence */

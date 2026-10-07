@@ -814,9 +814,25 @@ function repClassify(d,b){
   var w=dowMon(d);
   if(b.id==="frac") return (FRAC_SLOT[w]!==undefined||w===3)?"fond":(w===5?"renfo":"repos");
   if(b.id==="reintro") return (w===1||w===3||w===4||w===7)?"fond":(w===2?"cotes":(w===5?"renfo":"repos"));
-  return (w===1||w===3)?"fond":(w===5?"renfo":"repos");
+  return (w===1||w===3)?"fond":((w===5||w===2)?"renfo":"repos");
 }
-function repHT(o,dur,cond){
+function repHT(o,dur,cond,d){
+  /* oct. 2026 : cadence progressive (pubCad) quand la date est fournie. Ancienne consigne fixe 85-95 rpm conservée en repli (sans date). */
+  var _c=d?pubCad(d):null;
+  o.typeKey="fond"; o.label="Home-trainer souple"; o.short="H.T "+dur+"′ souple"; o.sub=dur+"′ · "+(_c?_c[0]+" tr/min":"Z1-Z2")+" · sans impact";
+  o.why=_c?"Entretenir le moteur aérobie sans charger le bassin : c'est le cœur qui travaille, pas les jambes.":"Cardio de transfert, mécaniquement moins stressant (le protocole le recommande en complément).";
+  if(_c){
+    o.detail=["Échauff : 10′ très souple.",_c[1],
+      "FC visée 105-125 bpm (à vélo, ~10 bpm sous tes zones course). Au-dessus de 130 → baisse la cadence, pas la résistance.",
+      "Cuisses qui brûlent + FC basse = résistance trop forte → passe un plus petit développement.",
+      "Pédale « rond », haut du corps relâché. Si tu sautilles sur la selle → baisse la cadence ou la selle de quelques mm.",
+      "Aucune SFR, aucun gros braquet, pas de danseuse. Selle à plat, position relevée.",
+      cond||"Critère : douleur pubis inchangée pendant ET le lendemain matin. +2 points ou plus → raccourcis et vérifie la hauteur de selle.",
+      "Alternative : crawl (pull-buoy) ou aquajogging. Pas de brasse (ciseau = adducteurs)."];
+    o.color="var(--purp)"; o.plan={durMin:dur};
+    o._specs=[["Durée",dur+"′"],["Cadence",_c[0]+" tr/min"],["FC","105-125"]];
+    return;
+  }
   o.typeKey="fond"; o.label="Home-trainer souple"; o.short="H.T "+dur+"′ souple"; o.sub=dur+"′ · Z1-Z2 · sans impact";
   o.why="Cardio de transfert, mécaniquement moins stressant (le protocole le recommande en complément).";
   o.detail=["Échauff : 10′ très souple.","Corps : "+dur+"′ en Z1-Z2, cadence 85-95 rpm, petit braquet. Aucune SFR, aucun gros braquet.",
@@ -843,6 +859,98 @@ function repRenfo(o,stage,extra){
   o.color="var(--ink)"; o.plan={};
   o._specs=[["Adducteurs",stage[0]],["Format","3 × 5-6 RIR 2"],["Durée","~40′"]];
 }
+/* ================= TRÉPIED PUBIS (oct. 2026) =================
+   Protocole détaillé adducteurs + transverse + fessiers, progression par semaine.
+   Semaine 0 = lun. 9 nov. 2026 (retour Pérou). Avant : niveau 0.
+   Remplace repRenfo()/repAdducteurs() (conservés plus haut, non appelés).
+   Règle : douleur ≤2/10 pendant ET normale le lendemain matin → niveau suivant. Sinon on reste au niveau. Le kiné prime. */
+var PUB_START="2026-11-09";
+function pubWeek(d){ return Math.floor((mondayOf(d)-parse(PUB_START))/(7*86400000)); }
+var PUB_RULE="Règle : douleur ≤2/10 pendant ET normale le lendemain matin → niveau suivant la semaine d'après. Sinon tu restes au même niveau. Si ton kiné donne une autre progression, la sienne prime.";
+function pubEx(name,reps,cue){ return {name:name,reps:reps,cue:cue}; }
+function pubAdd(w){
+  if(w<=0) return pubEx("Squeeze adducteurs (genoux fléchis)","5 × 10″ · récup 20″","Allongé sur le dos, genoux fléchis, ballon ou coussin plié entre les genoux.\nSerre à ~30 % de ta force, souffle normal, 10″, relâche.\nAucune douleur au pubis. Si ça tire → serre moins fort.");
+  if(w===1) return pubEx("Squeeze adducteurs (genoux fléchis)","5 × 10″ · récup 20″","Même position. Serre à ~50 %.\nPuis, si indolore : 2 séries jambes tendues, ballon entre les chevilles.");
+  if(w===2) return pubEx("Squeeze adducteurs (jambes tendues)","6 × 10″ · récup 20″","Jambes tendues, ballon entre les genoux ou les chevilles. Serre à ~70 %.\nTest clé : squeeze fort indolore = prérequis du Copenhague.");
+  if(w===3) return pubEx("Copenhague court (isométrique)","3 × 10″ / côté · récup 45″","Allongé sur le côté, avant-bras au sol. GENOU du dessus posé sur le banc (levier court).\nMonte le bassin, corps aligné, tiens 10″. La jambe du dessous pend librement.\nSeulement si le squeeze à 70 % est indolore. Sinon : refais la semaine squeeze.");
+  if(w<=5) return pubEx("Copenhague court (isométrique)","3 × 20″ / côté · récup 45″","Genou sur le banc, bassin haut, corps gainé. 20″ par côté.\nLe pubis ne doit rien sentir. Une gêne = tu redescends à 10″.");
+  if(w<=7) return pubEx("Copenhague court (dynamique)","3 × 6 / côté · récup 60″","Genou sur le banc. Monte le bassin en 1″, redescends en 3″ sans toucher le sol.\nMouvement lent et contrôlé, jamais d'à-coup.");
+  return pubEx("Copenhague long","3 × 5 / côté · récup 60″","CHEVILLE sur le banc (levier long). Monte en 1″, descends en 3″.\nUniquement si le levier court dynamique est totalement indolore.");
+}
+function pubTr(w){
+  var resp=pubEx("Gainage respiratoire (transverse)","3 × 6 respirations · récup 30″","Sur le dos, genoux fléchis, doigts à l'intérieur des os du bassin.\nExpire longuement en rentrant doucement le bas du ventre (comme fermer un jean serré) : tu sens le muscle se tendre sous les doigts.\nTiens 10″ en respirant par le haut du thorax. Pas de bascule du bassin, pas de dos qui s'écrase.");
+  if(w<=0) return [resp, pubEx("Dead bug","3 × 6 / côté · récup 45″","Sur le dos, bras tendus vers le plafond, hanches et genoux à 90°.\nBas du dos plaqué au sol (transverse activé). Descends lentement un bras et la jambe opposée, expire, remonte.\nSi le dos décolle → réduis l'amplitude. Début de semaine : bras seuls, puis bras + jambe.")];
+  if(w===1) return [pubEx("Dead bug","3 × 8 / côté · récup 45″","Bras et jambe opposés, 3″ pour descendre. Expire pendant la descente.\nLe bas du dos reste collé au sol du début à la fin."), pubEx("Planche genoux","3 × 20″ · récup 40″","Avant-bras et genoux au sol, corps aligné des genoux aux épaules.\nRentre le bas du ventre, serre les fessiers, respire.")];
+  if(w===2) return [pubEx("Dead bug","3 × 10 / côté · récup 45″","Même consigne, plus lent. Arrête la série si le dos se creuse."), pubEx("Planche","3 × 25″ · récup 40″","Avant-bras et pointes de pieds. Bassin ni trop haut ni affaissé.\nVentre rentré, fessiers serrés, respiration courte et régulière.")];
+  if(w<=4) return [pubEx("Planche","3 × 30″ · récup 40″","Corps gainé. Si tu trembles fort avant la fin, coupe à 20″ propres."), pubEx("Pallof press","3 × 10 / côté · récup 45″","Élastique accroché sur le côté, à hauteur de poitrine. Debout, pieds largeur de hanches.\nPousse l'élastique droit devant toi, tiens 2″, ramène. Le tronc ne tourne pas d'un millimètre.\nÉlastique Light, puis Medium.")];
+  if(w<=6) return [pubEx("Pallof press","3 × 12 / côté · récup 45″","Plus de résistance ou un pas de plus loin de l'ancrage. Toujours zéro rotation."), pubEx("Gainage latéral genoux","3 × 20″ / côté · récup 40″","Sur le côté, avant-bras sous l'épaule, genoux fléchis au sol.\nMonte le bassin : épaule, hanche, genou alignés. Pas de bassin qui pique vers l'avant.")];
+  return [pubEx("Bird dog","3 × 8 / côté · pause 2″ · récup 45″","À quatre pattes, dos plat. Tends un bras et la jambe opposée, tiens 2″, reviens.\nLe bassin ne bascule pas : imagine un verre d'eau posé sur ton dos."), pubEx("Gainage latéral","3 × 25″ / côté · récup 40″","Version pieds (jambes tendues). Si gêne pubienne → reviens sur les genoux.")];
+}
+function pubFe(w){
+  if(w<=0) return [pubEx("Pont fessier bilatéral","3 × 10 · pause 2″ · récup 45″","Sur le dos, pieds à plat largeur de hanches, genoux fléchis.\nMonte le bassin en serrant les fessiers, pause 2″ en haut, redescends lentement.\nGenoux qui restent parallèles : ils ne s'écartent pas, ne se serrent pas."), pubEx("Clamshell","2 × 12 / côté · récup 30″","Allongé sur le côté, genoux fléchis à 45°, pieds collés.\nOuvre le genou du dessus comme une coquille, sans faire rouler le bassin en arrière. Redescends en 2″.\nTu dois sentir le côté de la fesse (moyen fessier).")];
+  if(w===1) return [pubEx("Pont fessier bilatéral","3 × 12 · pause 2″ · récup 45″","Même consigne, plus de répétitions. Ne cambre pas en haut : ce sont les fessiers qui montent, pas le dos."), pubEx("Clamshell élastique","3 × 12 / côté · récup 30″","Élastique Light autour des cuisses, au-dessus des genoux. Bassin immobile.")];
+  if(w<=3) return [pubEx("Pont fessier bilatéral","3 × 12 · pause 3″ · récup 45″","Pause 3″ en haut, descente en 3″."), pubEx("Abduction hanche couché","3 × 12 / côté · récup 30″","Allongé sur le côté, jambe du dessous fléchie, jambe du dessus tendue dans l'axe du corps.\nMonte la jambe d'environ 30-40 cm, pointe de pied légèrement vers le bas, redescends en 2″.\nLa jambe ne part pas vers l'avant (sinon c'est le fléchisseur qui travaille).")];
+  if(w<=5) return [pubEx("Pont fessier bilatéral","3 × 15 · pause 2″ · récup 45″","Possible avec un disque ou un haltère sur le bassin si trop facile."), pubEx("Abduction hanche debout élastique","3 × 12 / côté · récup 30″","Élastique aux chevilles, main posée sur un mur. Écarte la jambe sur le côté, buste droit, sans pencher.\nPetite amplitude, lent, contrôlé.")];
+  return [pubEx("Pont fessier unilatéral","3 × 8 / côté · pause 2″ · récup 60″","Un pied au sol, l'autre jambe tendue ou genou ramené. Bassin parfaitement horizontal en haut.\nSi le bassin penche ou si le pubis réagit → retour en bilatéral."), pubEx("Monster walk élastique","3 × 10 pas / côté · récup 45″","Élastique au-dessus des genoux, légère flexion. Petits pas latéraux, pieds parallèles, sans laisser les genoux rentrer.\nPetits pas = zéro tension sur les adducteurs.")];
+}
+var PUB_HAUT=[
+  pubEx("Tractions pronation","3 × 5-6 · RIR 2 · récup 2′30","Prise un peu plus large que les épaules. Pars bras tendus, menton au-dessus de la barre, descente contrôlée en 2″.\nRIR 2 : tu t'arrêtes 2 reps avant l'échec."),
+  pubEx("Rowing haltère unilatéral","3 × 6 / bras · RIR 2 · récup 2′","Main et genou posés sur le banc, dos plat. Tire le coude vers la hanche, descente en 2″.\nLe genou sur le banc limite l'écart des jambes : rien sur le pubis."),
+  pubEx("Développé incliné haltères","3 × 6 · RIR 2 · récup 2′30","Banc incliné ~30°. Pieds à plat, descente contrôlée jusqu'à la poitrine, poussée franche.")
+];
+var PUB_WARM_FULL=[{name:"Respiration diaphragmatique",reps:"5 respirations lentes"},{name:"Bascule du bassin (sur le dos)",reps:"10"},{name:"Chat-vache",reps:"8"},{name:"Pont fessier sans pause",reps:"10"},{name:"Rotations d'épaules + tirage élastique léger",reps:"15"}];
+var PUB_WARM_SHORT=[{name:"Respiration diaphragmatique",reps:"5 respirations lentes"},{name:"Bascule du bassin (sur le dos)",reps:"10"},{name:"Chat-vache",reps:"8"}];
+function pubSegs(warm,list){
+  return [{kind:"renfowarm",rounds:1,label:"Échauffement",items:warm}].concat(tagRenfoSegs(list.map(function(x){ return {kind:"flow",label:x.lab||"",name:x.name,reps:x.reps,cue:x.cue,noSwap:true}; })));
+}
+function pubLines(list){ return list.map(function(x){ return "<b>"+x.name+"</b> — "+x.reps; }); }
+function pubLab(list,lab){ return list.map(function(x){ var y={name:x.name,reps:x.reps,cue:x.cue,lab:lab}; return y; }); }
+function pubLvl(w){ return w<0?"Niveau 0 (avant le 9 nov.)":"Semaine "+(w+1)+" du trépied"; }
+// Séance complète (vendredi) : trépied + haut du corps (+ extras en réintroduction)
+function repRenfoPub(o,d,extra){
+  var w=pubWeek(d), A=pubAdd(w), T=pubTr(w), F=pubFe(w);
+  /* avec extras (réintroduction) : développé incliné retiré pour tenir les 45′ */
+  var list=pubLab([A],"Adducteurs").concat(pubLab([T[0]],"Transverse"),pubLab([F[0]],"Fessiers"),pubLab([T[1]],"Transverse"),pubLab([F[1]],"Fessiers"),pubLab(extra||[],"Bas du corps"),pubLab(extra&&extra.length?PUB_HAUT.slice(0,2):PUB_HAUT,"Haut du corps"));
+  o.typeKey="renfo"; o.label="Renfo · trépied pubis + haut"; o.short="Renfo trépied"; o.sub=pubLvl(w)+" · ~45′";
+  o.why="Rééquilibrer les tractions sur le pubis : adducteurs qui ne tirent plus trop, transverse qui contre-tire, fessiers qui stabilisent. + entretien du haut du corps.";
+  o.detail=["Échauff 5′ : respiration, bascule du bassin, chat-vache, pont fessier, épaules."].concat(pubLines(list),
+    ["Exclu : squat dynamique, fentes, sauts, hinge lourd, crunch, V-ups, relevés de jambes, étirements forcés des adducteurs.",PUB_RULE,"▶ OUVRIR lance la séance guidée (séries, récup, « comment faire » sur chaque exo)."]);
+  o.color="var(--ink)"; o.plan={segs:pubSegs(PUB_WARM_FULL,list)};
+  o._specs=[["Adducteurs",A.name.replace(/ \(.*\)/,"")],["Exos",String(list.length)],["Durée","~45′"]];
+}
+// Séance courte (mardi, bloc d'attente) : trépied seul
+function repTrepied(o,d){
+  var w=pubWeek(d), A=pubAdd(w), T=pubTr(w), F=pubFe(w);
+  var list=pubLab([A],"Adducteurs").concat(pubLab([T[0]],"Transverse"),pubLab([F[0]],"Fessiers"),pubLab([T[1]],"Transverse"));
+  o.typeKey="renfo"; o.label="Trépied pubis · court"; o.short="Trépied 20′"; o.sub=pubLvl(w)+" · ~20′";
+  o.why="2e dose de la semaine : le trépied marche par la régularité, pas par la charge.";
+  o.detail=["Échauff 3′ : respiration, bascule du bassin, chat-vache."].concat(pubLines(list),[PUB_RULE,"▶ OUVRIR lance la séance guidée."]);
+  o.color="var(--ink)"; o.plan={segs:pubSegs(PUB_WARM_SHORT,list)};
+  o._specs=[["Adducteurs",A.name.replace(/ \(.*\)/,"")],["Exos",String(list.length)],["Durée","~20′"]];
+}
+// Version voyage (Pérou) : élastiques + poids du corps, niveau 0
+function repTrepiedVoyage(o){
+  var list=[pubEx("Squeeze adducteurs (genoux fléchis)","5 × 10″ · récup 20″","Veste ou pull roulé entre les genoux. Serre à ~30 %, aucune douleur."),
+    pubEx("Dead bug","3 × 8 / côté · récup 45″","Bas du dos plaqué au sol, descente lente bras + jambe opposés, expire."),
+    pubEx("Pont fessier bilatéral","3 × 12 · pause 2″ · récup 45″","Fessiers serrés en haut, genoux parallèles."),
+    pubEx("Clamshell élastique","3 × 12 / côté · récup 30″","Élastique Light au-dessus des genoux, bassin immobile."),
+    pubEx("Rowing élastique","3 × 12 · récup 45″","Élastique accroché à une porte ou un poteau. Tire les coudes vers l'arrière, omoplates serrées. Remplace les tractions."),
+    pubEx("Pompes","3 × 8-10 · récup 60″","Corps gainé, poitrine jusqu'au sol. Sur les genoux si besoin.")];
+  o.typeKey="renfo"; o.label="Entretien voyage · trépied pubis"; o.short="Entretien 20′"; o.sub="~20′ · élastiques + poids du corps";
+  o.why="Ne pas perdre. 3 séances sur le séjour, pas plus. Zéro fente, zéro saut.";
+  o.detail=pubLines(list).concat(["Pas de fentes : appui unilatéral chargé = cisaillement pubien.","Sac : élastiques Light/Medium/Hard. Corde à sauter : NON pendant la reprise.",PUB_RULE]);
+  o.color="var(--ink)"; o.plan={segs:pubSegs(PUB_WARM_SHORT,list)};
+  o._specs=[["Format","Circuit libre"],["Exos","6"],["Durée","~20′"]];
+}
+// H.T : progression de cadence par semaine
+function pubCad(d){
+  var w=pubWeek(d);
+  if(w<=0) return ["75-80","Corps : alterne 5′ à 75-78 tr/min et 2′ à 85, résistance très légère. Le reste du temps, ton aise."];
+  if(w===1) return ["80-85","Corps : alterne 5′ à 80-82 tr/min et 2′ à 88. Résistance très légère."];
+  if(w===2) return ["82-88","Corps : 82-88 tr/min en continu. 3 × 2′ à 90 pour la coordination."];
+  return ["85-90","Corps : 85-90 tr/min en continu, petit braquet."];
+}
+
 function genReprise(o,d,b){
   var w=dowMon(d), k=iso(d), r=repGet();
   // Repos post-infiltration : 7 jours, prioritaire
@@ -867,8 +975,9 @@ function genReprise(o,d,b){
       o._specs=[["Séance",(i+1)+"/"+FR.length],["Course",run+"′"],["Durée","~"+tot+"′"]];
       return;
     }
-    if(w===3){ repHT(o,[30,30,35,35,40,40,45,45][Math.min(7,Math.max(0,repFracWeek(d)))]); return; }
-    if(w===5){ repRenfo(o,repAdducteurs(repFracWeek(d))); return; }
+    if(w===3){ repHT(o,[30,30,35,35,40,40,45,45][Math.min(7,Math.max(0,repFracWeek(d)))],null,d); return; }
+    /* ancien : repRenfo(o,repAdducteurs(repFracWeek(d))) */
+    if(w===5){ repRenfoPub(o,d); return; }
   }
   else if(b.id==="reintro"){
     var wr=Math.min(3,Math.max(0,Math.floor((mondayOf(d)-mondayOf(parse(b.start)))/(7*86400000))));
@@ -889,9 +998,10 @@ function genReprise(o,d,b){
       o.detail=["Échauff : 10′ marche + 5′ trot plat.","Corps : "+M[1],"Cadence haute, foulée courte, buste penché depuis la cheville.",REP_PAIN];
       o.color="var(--orange)"; o.plan={reps:M[2],format:M[0]}; o._specs=[["Format",M[0]],["RPE","7"],["Pente",wr<2?"15 % tapis":"6-10 %"]]; return;
     }
-    if(w===3){ repHT(o,45,"Si indolore."); return; }
-    if(w===5){ repRenfo(o,repAdducteurs(repFracWeek(d)),
-      ["Retour progressif du bas du corps : step-up box 51 cm 3 × 8 / jambe (léger), hip thrust 3 × 8.","Toujours exclus : sauts, fentes sautées, squat dynamique."]); return; }
+    if(w===3){ repHT(o,45,"Si indolore.",d); return; }
+    /* ancien : repRenfo(o,repAdducteurs(repFracWeek(d)),[step-up 51 cm, hip thrust]) — remplacé par le trépied pubis (oct. 2026) */
+    if(w===5){ repRenfoPub(o,d,[pubEx("Step-up box 51 cm","3 × 8 / jambe · récup 90″","Charge légère. Pousse sur le pied posé sur la box, sans impulsion du pied au sol. Descente en 3″."),
+      pubEx("Hip thrust barre","3 × 8 · pause 1″ · récup 2′","Haut du dos sur le banc, barre sur le bassin avec une mousse. Pause 1″ en haut, menton rentré.")]); return; }
     if(w===7){
       var S=[["50′ plat",50,"50′ plat en Z2."],["1h vallonné · 200 m D+",60,"1h vallonné doux, ~200 m D+. Descentes en marche."],
              ["1h15 · 300 m D+",75,"1h15, ~300 m D+. Descentes en marche."],
@@ -904,8 +1014,10 @@ function genReprise(o,d,b){
     o.typeKey="repos"; o.label="Repos"; o.sub=""; o.why="Récupération."; o.color="var(--mut)"; o.plan={}; return;
   }
   // r0 / r1 / attente : repos relatif — H.T validé (oct. 2026), lundi + mercredi, durée progressive
-  if(w===1||w===3){ var wa=Math.floor((mondayOf(d)-mondayOf(parse(b.start)))/(7*86400000)); repHT(o,[30,35,40,45][Math.min(3,Math.max(0,wa))]); return; }
-  if(w===5){ repRenfo(o,["Squeeze ballon isométrique","Squeeze ballon : 5 × 10″ genoux fléchis, intensité ≤2/10 — uniquement si le kiné valide."]); return; }
+  if(w===1||w===3){ var wa=Math.floor((mondayOf(d)-mondayOf(parse(b.start)))/(7*86400000)); repHT(o,[30,35,40,45][Math.min(3,Math.max(0,wa))],null,d); return; }
+  /* ancien : repRenfo(o,["Squeeze ballon isométrique",...]) — remplacé par le trépied pubis (oct. 2026) */
+  if(w===2){ repTrepied(o,d); return; }
+  if(w===5){ repRenfoPub(o,d); return; }
   if(w===7){
     o.typeKey="repos"; o.label="Marche 45-60′"; o.sub="marche rapide · test indolore";
     o.why="45′ de marche rapide indolore = un des critères d'entrée dans le Fractionné.";
@@ -1188,7 +1300,8 @@ function gen(d){
 
     // ── Bloc hors structure (Pérou, semaine de course) ──
     if(BS.off){
-      if(dow==="ven" && BS.renfoN>0){
+      if(dow==="ven" && BS.renfoN>0 && b.id==="perou"){ repTrepiedVoyage(o); }  /* oct. 2026 : entretien Pérou sans fentes (pubis) */
+      else if(dow==="ven" && BS.renfoN>0){
         o.typeKey="renfo"; o.label="Entretien élastiques"; o.short="Entretien 20′"; o.sub="~20′ · élastiques + poids du corps";
         o.why="Ne pas perdre. On ne cherche pas à progresser ici.";
         o.detail=["~20′ : pompes, fentes, gainage, tirage élastique.","3 séances sur l'ensemble du séjour, pas plus.","Barre de traction indisponible — tirage élastique en remplacement.","Élastiques Light/Medium/Hard + corde à sauter dans le sac."];
@@ -2541,6 +2654,7 @@ var RENFO_FORCE={
 };
 function content(k){
   var g=gen(parse(k)), t=g.typeKey;
+  if(g.plan&&g.plan.segs) return g.plan.segs;  /* séances guidées sur mesure (trépied pubis, oct. 2026) */
   if(t==="mobilite"){ return MOBIS[g.mobiIdx].map(function(s){return {kind:"flow",name:s.name,cue:s.cue,hold:s.hold,reps:s.reps,side:s.side};}); }
   if(t==="trailforce"){
     var wi=(g.plan&&g.plan.tfIdx)||0;
@@ -3870,6 +3984,10 @@ function exSlug(name){
     .replace(/[()\/]/g," ").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
 }
 var EXIMG_REUSE={
+  /* --- trépied pubis (oct. 2026) --- */
+  "dead-bug":"dead-bug-leste","planche-genoux":"planche","gainage-lateral-genoux":"gainage-lateral","bird-dog":"bird-dog-tirage-elastique",
+  "clamshell":"clamshell-leste-elastique","clamshell-elastique":"clamshell-leste-elastique",
+  "copenhague-court-isometrique":"copenhagen-plank","copenhague-court-dynamique":"copenhagen-plank","copenhague-long":"copenhagen-plank",
   /* --- alias ajoutés le 01/08/2026 : noms de la banque UT4M vers les planches existantes --- */
   "abduction-hanche-elastique":"abduction-hanche-debout-elastique",
   /* "box-step-over-leste" : alias retiré, la planche dédiée existe depuis le 01/08/2026 */
@@ -4021,8 +4139,8 @@ function renfoSeries(seg){
 }
 function renfoRecup(seg){
   var src=(seg.reps||"")+" "+(seg.cue||"");
-  var m=src.match(/récup\s*(\d+)\s*(′|'|min|″|"|s)/i);
-  if(m){ var v=parseInt(m[1],10); return /['′]|min/i.test(m[2])?v*60:v; }
+  var m=src.match(/récup\s*(\d+)\s*(′|'|min|″|"|s)(\d+)?/i);  /* oct. 2026 : gère « 2′30 » */
+  if(m){ var v=parseInt(m[1],10); return /['′]|min/i.test(m[2])?v*60+(m[3]?parseInt(m[3],10):0):v; }
   return 75;
 }
 function tagRenfoSegs(segs){
@@ -4117,7 +4235,7 @@ function chgSlug(n){
 /* Unité par exercice : none = pas de charge, band = élastique, lest = poids de corps + lest */
 function chgUnit(n){
   var s=String(n||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  if(/planche|gainage|hollow|dead ?bug|shoulder ?tap|chaise|isometr|mountain|crunch|v-?up|russian|bicycle|superman|bird ?dog|ab ?wheel|nordic|tabata|abdos|finisher/.test(s)) return "none";
+  if(/squeeze|copenhag|respiratoire|chat-vache|planche|gainage|hollow|dead ?bug|shoulder ?tap|chaise|isometr|mountain|crunch|v-?up|russian|bicycle|superman|bird ?dog|ab ?wheel|nordic|tabata|abdos|finisher/.test(s)) return "none";
   if(/elastique|band|pallof|face ?pull|rotation externe|y\/t\/w/.test(s)) return "band";
   if(/traction|pull-?up|dips|pompes|push-?up|dead ?hang|muscle-?up|rowing trx|nordic/.test(s)) return "lest";
   if(/wall ?ball|kettlebell|\bkb\b|medecine|sissy/.test(s)) return "kg";
@@ -4244,7 +4362,7 @@ function renderRenfoWork(seg){
     '<div class="pname bebas">'+seg.name+'</div>'+
     (seg.repsHead?'<div class="preps">'+seg.repsHead+'</div>':'')+
     chgRowHTML(seg.name, seg.repsHead)+
-    (String(seg.label||"").indexOf("Ancre")>-1 ? "" :
+    ((String(seg.label||"").indexOf("Ancre")>-1 || seg.noSwap) ? "" :  /* noSwap : trépied pubis, pas de remplacement aléatoire */
       '<button onclick="swapExo()" style="width:100%;margin:8px 0 2px;padding:8px;border:1px dashed var(--line);border-radius:10px;background:none;color:var(--mut);font-size:11.5px;font-family:inherit">⇄ Remplacer cet exercice</button>')+
     '<div class="rrow">'+
       '<button class="rserie'+(pState.rfDone>=pState.rfN?' done':'')+'" id="rfSerie" onclick="rfValidate()"><span class="rlab">Série ✓</span><span class="rcnt bebas" id="rfCnt">'+pState.rfDone+' / '+pState.rfN+'</span></button>'+

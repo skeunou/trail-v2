@@ -469,6 +469,13 @@
   .co-wait{text-align:center;padding:26px 10px;color:var(--ink2);font-size:14px;line-height:1.5}
   .co-spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--acid-d);border-radius:50%;margin:0 auto 12px;animation:cospin 0.9s linear infinite}
   @keyframes cospin{to{transform:rotate(360deg)}}
+  .co-msg{margin:9px 0;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.5;color:var(--ink2)}
+  .co-me{background:var(--bg);margin-left:28px}
+  .co-bot{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--acid);margin-right:12px}
+  .co-tag{display:block;font-size:10px;letter-spacing:.8px;text-transform:uppercase;font-weight:700;color:var(--mut);margin-bottom:3px}
+  .co-dots{color:var(--mut);font-style:italic}
+  .co-deep{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2);margin:0 0 10px}
+  .co-flag{background:#fdecec;border:1px solid #f3c2c2;border-radius:12px;padding:10px 12px;margin:0 0 12px;font-size:13.5px;color:#9b1c1c;line-height:1.45}
   .co-in{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:12px;font:15px 'DM Sans',sans-serif;margin:10px 0}
 </style>
 <script src="/lvnav.js"></script>
@@ -858,6 +865,7 @@ function repClassify(d,b){
   if(b.id==="reintro") return (w===1||w===3||w===4||w===7)?"fond":(w===2?"cotes":(w===5?"renfo":"repos"));
   return (w===1||w===3)?"fond":((w===5||w===2)?"renfo":"repos");
 }
+function coachPowerRef(){ try{ var r=JSON.parse(localStorage.getItem("coach:refs:v1")||"null"); return r&&r.ht&&r.ht.lo?r.ht:null; }catch(e){ return null; } }
 function repHT(o,dur,cond,d){
   /* oct. 2026 : cadence progressive (pubCad) quand la date est fournie. Ancienne consigne fixe 85-95 rpm conservée en repli (sans date). */
   var _c=d?pubCad(d):null;
@@ -871,8 +879,12 @@ function repHT(o,dur,cond,d){
       "Aucune SFR, aucun gros braquet, pas de danseuse. Selle à plat, position relevée.",
       cond||"Critère : douleur pubis inchangée pendant ET le lendemain matin. +2 points ou plus → raccourcis et vérifie la hauteur de selle.",
       "Alternative : crawl (pull-buoy) ou aquajogging. Pas de brasse (ciseau = adducteurs)."];
+    /* oct. 2026 : repère de puissance calibré automatiquement sur tes séances HT (calcul côté coach, gardé dans ce téléphone) */
+    var _pw=coachPowerRef();
+    o.detail.splice(3,0,_pw?("Puissance : "+_pw.lo+"-"+_pw.hi+" W — ton repère réel à 105-125 bpm, calculé sur "+_pw.n+" min de tes dernières séances HT. C'est un repère, la FC reste la consigne."):"Puissance : pas encore de repère. Il se calcule tout seul dès 2-3 séances HT avec capteur ; en attendant, la FC 105-125 fait foi.");
+    o.detail.push("Note Strava : « H.T souple, RPE x, Cad : "+_c[0]+", ZP pré x/10, ZP post x/10 ».");
     o.color="var(--purp)"; o.plan={durMin:dur};
-    o._specs=[["Durée",dur+"′"],["Cadence",_c[0]+" tr/min"],["FC","105-125"]];
+    o._specs=[["Durée",dur+"′"],["Cadence",_c[0]+" tr/min"],["FC","105-125"]].concat(_pw?[["Puissance",_pw.lo+"-"+_pw.hi+" W"]]:[]);
     return;
   }
   o.typeKey="fond"; o.label="Home-trainer souple"; o.short="H.T "+dur+"′ souple"; o.sub=dur+"′ · Z1-Z2 · sans impact";
@@ -956,7 +968,9 @@ function repRenfoPub(o,d,extra){
   o.typeKey="renfo"; o.label="Renfo · trépied pubis + haut"; o.short="Renfo trépied"; o.sub=pubLvl(w)+" · ~45′";
   o.why="Rééquilibrer les tractions sur le pubis : adducteurs qui ne tirent plus trop, transverse qui contre-tire, fessiers qui stabilisent. + entretien du haut du corps.";
   o.detail=["Échauff 5′ : respiration, bascule du bassin, chat-vache, pont fessier, épaules."].concat(pubLines(list),
-    ["Exclu : squat dynamique, fentes, sauts, hinge lourd, crunch, V-ups, relevés de jambes, étirements forcés des adducteurs.",PUB_RULE,"▶ OUVRIR lance la séance guidée (séries, récup, « comment faire » sur chaque exo)."]);
+    ["Exclu : squat dynamique, fentes, sauts, hinge lourd, crunch, V-ups, relevés de jambes, étirements forcés des adducteurs.",PUB_RULE,"▶ OUVRIR lance la séance guidée (séries, récup, « comment faire » sur chaque exo).",
+     "Charges du haut du corps : RIR 2 = tu finis chaque série en pouvant en faire encore 2. Note la charge dans le carnet : le coach suit sa progression.",
+     "Note Strava : « renfo, RPE x, ZP pré x/10, ZP post x/10 »."]);
   o.color="var(--ink)"; o.plan={segs:pubSegs(PUB_WARM_FULL,list)};
   o._specs=[["Adducteurs",A.name.replace(/ \(.*\)/,"")],["Exos",String(list.length)],["Durée","~45′"]];
 }
@@ -1011,10 +1025,15 @@ function genReprise(o,d,b){
       o.why="Reprise progressive — Programme Fractionné "+repProg()+", La Clinique du Coureur.";
       o.detail=[];
       if(i===0) o.detail.push("✅ AVANT CETTE 1re SÉANCE : feu vert médical · 45′ de marche rapide indolore · squeeze adducteurs indolore · 10 sauts unipodaux indolores par côté. Un seul ✗ → décale le J0.");
-      o.detail=o.detail.concat(["Échauff : 5′ de marche.","Corps : "+body+". Course = jogging régulier, marche = marche régulière.","Retour : 5′ de marche.",
-        "Terrain PLAT uniquement. Zéro côte, zéro descente.",REP_PAIN,"Si tout va très bien, le protocole autorise à sauter 1-2 séances.","Zéro ibuprofène pour masquer une douleur."]);
+      o.detail=o.detail.concat(["Échauff : 5′ de marche.","Corps : "+body+". Course = jogging régulier, marche = marche régulière.",
+        /* oct. 2026 : intensité chiffrée pour que le coach puisse juger la séance */
+        "Intensité course : FC < 140 bpm (Z1-Z2), allure ≥ "+pStr(0.60)+"/km. Si la FC dépasse 140, ralentis ; si elle reste au-dessus, passe en marche plus tôt.",
+        "Cadence ≥ 170 pas/min, foulée courte, pose du pied sous le bassin : moins de cisaillement au pubis.",
+        "Retour : 5′ de marche.",
+        "Terrain PLAT uniquement. Zéro côte, zéro descente.",REP_PAIN,"Si tout va très bien, le protocole autorise à sauter 1-2 séances.","Zéro ibuprofène pour masquer une douleur.",
+        "Note Strava : « fractionné, RPE x, ZP pré x/10, ZP post x/10 »."]);
       o.color="var(--grn)"; o.plan={durMin:tot};
-      o._specs=[["Séance",(i+1)+"/"+FR.length],["Course",run+"′"],["Durée","~"+tot+"′"]];
+      o._specs=[["Séance",(i+1)+"/"+FR.length],["Course",run+"′"],["FC","< 140"],["Cadence","≥ 170"]];
       return;
     }
     if(w===3){ repHT(o,[30,30,35,35,40,40,45,45][Math.min(7,Math.max(0,repFracWeek(d)))],null,d); return; }
@@ -1027,8 +1046,9 @@ function genReprise(o,d,b){
       var dur=(w===1?[30,35,40,30]:[35,40,45,35])[wr];
       o.typeKey="fond"; o.label="EF continu plat"; o.short="EF "+dur+"′ plat"; o.sub=dur+"′ · Z2 · plat";
       o.why="Consolider la course continue avant d'ajouter du relief.";
-      o.detail=["~"+dur+"′ en Z2 ("+pStr(0.70)+"–"+pStr(0.65)+"/km), terrain plat.","Allure de conversation.",REP_PAIN];
-      o.color="var(--grn)"; o.plan={durMin:dur}; return;
+      o.detail=["~"+dur+"′ en Z2 : FC 125-143 bpm, allure "+pStr(0.70)+"–"+pStr(0.65)+"/km, terrain plat.","Allure de conversation. La FC commande : au-dessus de 143, ralentis même si l'allure te semble lente.",
+        "Cadence 170-180 pas/min, foulée courte.",REP_PAIN,"Note Strava : « EF, RPE x, ZP pré x/10, ZP post x/10 »."];
+      o.color="var(--grn)"; o.plan={durMin:dur}; o._specs=[["Durée",dur+"′"],["FC","125-143"],["Allure",pStr(0.70)+"–"+pStr(0.65)],["Cadence","170-180"]]; return;
     }
     if(w===2){
       var M=[["Tapis marche 4×5′","Tapis 15 % : 4 × 5′ de marche active, récup 2′ à plat. Sans lest, bâtons optionnels.",4],
@@ -1037,8 +1057,9 @@ function genReprise(o,d,b){
              ["Côtes 8×1′30","Côtes 6-10 % : 8 × 1′30 à RPE 7. Redescente en trot très lent : 1re réintroduction de la descente.",8]][wr];
       o.typeKey="cotes"; o.label="Montée · réintroduction"; o.short=M[0]; o.sub=M[0]+" · RPE 7";
       o.why="La montée revient en premier : peu d'excentrique, charge pubienne faible.";
-      o.detail=["Échauff : 10′ marche + 5′ trot plat.","Corps : "+M[1],"Cadence haute, foulée courte, buste penché depuis la cheville.",REP_PAIN];
-      o.color="var(--orange)"; o.plan={reps:M[2],format:M[0]}; o._specs=[["Format",M[0]],["RPE","7"],["Pente",wr<2?"15 % tapis":"6-10 %"]]; return;
+      o.detail=["Échauff : 10′ marche + 5′ trot plat.","Corps : "+M[1],"Cadence haute (≥ 165 pas/min en côte), foulée courte, buste penché depuis la cheville.",
+        "FC plafond 155 bpm en fin de répétition : au-dessus, tu montes trop vite pour une réintroduction.",REP_PAIN,"Note Strava : « côtes, RPE x, ZP pré x/10, ZP post x/10 »."];
+      o.color="var(--orange)"; o.plan={reps:M[2],format:M[0]}; o._specs=[["Format",M[0]],["RPE","7"],["FC max","155"],["Pente",wr<2?"15 % tapis":"6-10 %"]]; return;
     }
     if(w===3){ repHT(o,45,"Si indolore.",d); return; }
     /* ancien : repRenfo(o,repAdducteurs(repFracWeek(d)),[step-up 51 cm, hip thrust]) — remplacé par le trépied pubis (oct. 2026) */
@@ -1050,8 +1071,9 @@ function genReprise(o,d,b){
              ["1h30 · 400 m D+",90,"1h30, ~400 m D+. En fin de sortie : 2 × 3′ de descente trottinée contrôlée. Le reste marché."]][wr];
       o.typeKey="longue"; o.label="Sortie · réintroduction"; o.short=S[0]; o.sub=S[0];
       o.why="Remettre du temps de course et du relief, descente en dernier.";
-      o.detail=[S[2],"Z2 strict, marche assumée dès que ça monte fort.",REP_PAIN];
-      o.color="var(--orange-d)"; o.plan={durMin:S[1]}; return;
+      o.detail=[S[2],"Z2 strict : FC 125-143 bpm sur le plat et en descente. En montée, tu passes en marche dès que la FC dépasse 150.",
+        "Cadence ≥ 170 sur le plat, petits pas en descente.",REP_PAIN,"Note Strava : « sortie longue, RPE x, ZP pré x/10, ZP post x/10 »."];
+      o.color="var(--orange-d)"; o.plan={durMin:S[1]}; o._specs=[["Durée",S[0]],["FC","125-143"],["Montée","marche > 150"]]; return;
     }
     o.typeKey="repos"; o.label="Repos"; o.sub=""; o.why="Récupération."; o.color="var(--mut)"; o.plan={}; return;
   }
@@ -5285,15 +5307,80 @@ function coachRegen(){
   },5000);
 }
 function coachToggle(i,btn){var el=document.getElementById("coCh"+i);if(!el)return;var open=el.style.display==="block";el.style.display=open?"none":"block";btn.textContent=(open?"▾ ":"▴ ")+btn.getAttribute("data-l");}
+
+/* ===== DISCUSSION AVEC LE COACH (oct. 2026) =====
+   Fil unique mémorisé dans lv-data (coach/chat.json) : le coach se souvient de vos échanges.
+   Réponse rapide = Haiku (quelques secondes). « Approfondie » = Sonnet, en arrière-plan (~30 s).
+   Plafond de sécurité : 10 questions par jour. */
+var coachChat={msgs:[],remaining:null,open:false,busy:false}, coachChatPollT=null;
+function coachChatHTML(){
+  var h='<div class="co-card" id="coChat"><div class="co-h" style="margin-top:0">Discuter avec le coach</div>';
+  h+='<div id="coThread"><div class="co-plan">Chargement du fil…</div></div>';
+  h+='<textarea class="co-in" id="coQ" rows="3" placeholder="Ta question — ex. « comment remonter ma cadence en côte ? »"></textarea>';
+  h+='<label class="co-deep"><input type="checkbox" id="coDeep"> Réponse approfondie (Sonnet, ~30 s)</label>';
+  h+='<button class="btn btn-acid" id="coSend" onclick="coachAsk()">Envoyer</button><div class="co-plan" id="coLeft" style="text-align:center;margin-top:8px"></div></div>';
+  return h;
+}
+function coachMsgHTML(m){
+  var p=(m.ymd||"").split("-"), tag=p.length===3?(+p[2])+"/"+(+p[1]):"";
+  if(m.role==="user") return '<div class="co-msg co-me"><span class="co-tag">Toi · '+tag+'</span>'+coEsc(m.t)+'</div>';
+  return '<div class="co-msg co-bot"><span class="co-tag">Coach'+(m.model&&m.model!=="erreur"?' · '+coEsc(m.model):'')+'</span>'+coEsc(m.t).replace(/\n/g,"<br>")+'</div>';
+}
+function coachThreadRender(){
+  var el=document.getElementById("coThread"); if(!el)return;
+  var M=coachChat.msgs||[], n=M.length, show=coachChat.open?M:M.slice(-4), h="";
+  if(!n) h='<div class="co-plan">Pas encore d\'échange. Pose ta question sur le rapport, ta technique, ta reprise…</div>';
+  if(n>4) h+='<button class="fold" onclick="coachChat.open=!coachChat.open;coachThreadRender()">'+(coachChat.open?"▴ masquer l'historique":"▾ tout l'historique ("+n+" messages)")+'</button>';
+  h+=show.map(coachMsgHTML).join("");
+  if(coachChat.busy) h+='<div class="co-msg co-bot"><span class="co-tag">Coach</span><span class="co-dots">Le coach réfléchit…</span></div>';
+  el.innerHTML=h;
+  var left=document.getElementById("coLeft"); if(left) left.textContent=coachChat.remaining==null?"":(coachChat.remaining+" question"+(coachChat.remaining>1?"s":"")+" restante"+(coachChat.remaining>1?"s":"")+" aujourd'hui");
+  var b=document.getElementById("coSend"); if(b) b.disabled=coachChat.busy||coachChat.remaining===0;
+}
+function coachThreadLoad(cb){
+  fetch(COACH_FN+"coach-chat?action=thread&key="+encodeURIComponent(coKey())+"&t="+Date.now()).then(function(r){return r.json();})
+    .then(function(j){ if(j&&j.msgs){ coachChat.msgs=j.msgs; coachChat.remaining=j.remaining; } coachThreadRender(); if(cb)cb(j); })
+    .catch(function(){ var el=document.getElementById("coThread"); if(el&&!coachChat.msgs.length) el.innerHTML='<div class="co-plan">Fil indisponible (réseau).</div>'; if(cb)cb(null); });
+}
+function coachAsk(){
+  var ta=document.getElementById("coQ"), q=ta?ta.value.trim():"", deep=!!(document.getElementById("coDeep")||{}).checked;
+  if(!q||coachChat.busy)return;
+  coachChat.busy=true; var sent=Date.now();
+  coachChat.msgs=coachChat.msgs.concat([{role:"user",t:q,ymd:coachDay}]); ta.value=""; coachThreadRender();
+  fetch(COACH_FN+"coach-chat?key="+encodeURIComponent(coKey()),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({date:coachDay,question:q,deep:deep?1:0})})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j&&j.pending){ // Sonnet en arrière-plan : on surveille le fil
+        var tries=0; clearInterval(coachChatPollT);
+        coachChatPollT=setInterval(function(){ tries++;
+          coachThreadLoad(function(t){ var M=(t&&t.msgs)||[], last=M[M.length-1];
+            if((last&&last.role==="coach"&&Date.parse(last.at)>=sent-5000)||tries>=30){ clearInterval(coachChatPollT); coachChat.busy=false; coachThreadRender(); } });
+        },5000);
+        return;
+      }
+      coachChat.busy=false;
+      if(j&&j.ok){ coachThreadLoad(); return; }
+      coachChat.msgs=coachChat.msgs.concat([{role:"coach",t:(j&&j.message)||"Erreur.",ymd:coachDay,model:"erreur"}]);
+      if(j&&j.remaining!=null)coachChat.remaining=j.remaining; coachThreadRender();
+    })
+    .catch(function(e){ coachChat.busy=false; coachChat.msgs=coachChat.msgs.concat([{role:"coach",t:"Réseau indisponible, réessaie.",ymd:coachDay,model:"erreur"}]); coachThreadRender(); });
+}
+
+function coachSaveRefs(r){ if(!r)return; try{ var old=localStorage.getItem("coach:refs:v1"); var nw=JSON.stringify(r); if(old!==nw){ localStorage.setItem("coach:refs:v1",nw); try{ if(typeof renderToday==="function")renderToday(); }catch(e){} } }catch(e){} }
+/* Au démarrage : récupère les repères calibrés (puissance HT) pour enrichir les séances du plan */
+function coachRefsSync(){ if(!coKey())return; fetch(COACH_FN+"report-data?refs=1&key="+encodeURIComponent(coKey())+"&t="+Date.now()).then(function(r){return r.json();}).then(function(j){ if(j&&j.refs)coachSaveRefs(j.refs); }).catch(function(){}); }
+setTimeout(coachRefsSync,2500);
 function coachRender(j){
+  if(j.refs)coachSaveRefs(j.refs);
   var h="";
   var regen='<button class="co-regen" onclick="coachRegen()">↻ Régénérer l\'analyse</button>';
   var when=j.generatedAt?new Date(j.generatedAt):null;
   var whenTxt=when?("généré le "+when.getDate()+"/"+(when.getMonth()+1)+" à "+String(when.getHours()).padStart(2,"0")+":"+String(when.getMinutes()).padStart(2,"0")):"";
   if(j.status==="empty"){
-    coBody('<div class="co-card"><div class="co-ttl">Rien à analyser</div><div class="co-p" style="margin-top:6px">'+coEsc(j.message||"Aucune activité Strava ce jour-là.")+'</div><div class="co-foot"><span>'+whenTxt+'</span>'+regen+'</div></div>');return;
+    coBody('<div class="co-card"><div class="co-ttl">Rien à analyser</div><div class="co-p" style="margin-top:6px">'+coEsc(j.message||"Aucune activité Strava ce jour-là.")+'</div><div class="co-foot"><span>'+whenTxt+'</span>'+regen+'</div></div>'+coachChatHTML());coachThreadLoad();return;
   }
   var c=j.coach||{};
+  (j.flags||[]).forEach(function(f){ h+='<div class="co-flag">🚩 <b>'+coEsc(f.label)+'</b> — '+f.count+'e fois en 3 semaines.</div>'; });
   h+='<div class="co-card"><div class="co-ttl">'+coEsc(c.titre||"Le rapport du jour")+'</div>';
   if(j.plan&&j.plan.label)h+='<div class="co-plan">Prévu au plan : <b style="color:var(--ink)">'+coEsc(j.plan.label)+'</b>'+(j.plan.sub?' — '+coEsc(j.plan.sub):'')+'</div>';
   if(c.passe)h+='<div class="co-h">Ce qui s\'est passé</div><div class="co-p">'+coEsc(c.passe)+'</div>';
@@ -5305,6 +5392,7 @@ function coachRender(j){
   h+='<div class="co-foot"><span>'+(c.src==="ia"?"Rédigé par "+coEsc(c.model||"le coach IA"):"Diagnostic automatique")+(whenTxt?"<br>"+whenTxt:"")+'</span>'+regen+'</div>';
   if(fails.length)h+='<button class="fold" style="text-align:left;padding:6px 0 0" onclick="var d=this.nextSibling;d.style.display=d.style.display===\'block\'?\'none\':\'block\'">▾ détails techniques</button><div style="display:none;font-size:11px;color:var(--mut);line-height:1.5">'+fails.join("<br>")+'</div>';
   h+='</div>';
+  h+=coachChatHTML();
   (j.activities||[]).forEach(function(a,i){
     h+='<div class="co-card"><div class="co-type">'+coEsc(a.typeLbl)+(a.intent?'<span class="co-intent">'+coEsc(a.intent)+'</span>':'')+'</div><div class="co-name">'+coEsc(a.name)+'</div><div class="co-kpis">';
     (a.kpis||[]).forEach(function(k){h+='<div><div class="co-k">'+coEsc(k.k)+'</div><div class="co-v"'+(k.color?' style="color:'+k.color+'"':'')+'>'+(k.color?'<i>●</i>':'')+coEsc(k.v)+'</div></div>';});
@@ -5322,6 +5410,7 @@ function coachRender(j){
   });
   if(j.week)h+='<div class="capnote"><b>Semaine en cours :</b> '+j.week.km+' km · '+j.week.dp+' m D+ course/trail'+(j.week.ride?' · '+j.week.ride+' min de vélo':'')+(j.week.tg&&j.week.tg.km?' — cible plan '+j.week.tg.km+' km / '+j.week.tg.dp+' m':'')+'</div>';
   coBody(h);
+  coachThreadLoad();
 }
 
 /* ===== UI ACTIVITÉS EXTRA (suivi hors plan) ===== */

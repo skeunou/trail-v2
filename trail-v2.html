@@ -5300,7 +5300,11 @@ function coachRender(j){
   if(c.sens)h+='<div class="co-h">Ce que ça veut dire</div><div class="co-p">'+coEsc(c.sens)+'</div>';
   if(c.demain)h+='<div class="co-demain"><div class="co-h">Demain</div><div class="co-p">'+coEsc(c.demain)+'</div></div>';
   if(c.src==="calc"&&c.note)h+='<div class="co-plan" style="margin-top:10px">'+coEsc(c.note)+'</div>';
-  h+='<div class="co-foot"><span>'+(c.src==="ia"?"Rédigé par "+coEsc(c.model||"le coach IA"):"Diagnostic automatique")+(whenTxt?"<br>"+whenTxt:"")+'</span>'+regen+'</div></div>';
+  // Transparence : quels modèles ont été essayés et pourquoi l'un a été écarté (clé sans accès, chiffre inventé…)
+  var fails=(c.tried||[]).filter(function(t){return !t.ok;}).map(function(t){return coEsc(t.model)+" : "+coEsc(t.why);});
+  h+='<div class="co-foot"><span>'+(c.src==="ia"?"Rédigé par "+coEsc(c.model||"le coach IA"):"Diagnostic automatique")+(whenTxt?"<br>"+whenTxt:"")+'</span>'+regen+'</div>';
+  if(fails.length)h+='<button class="fold" style="text-align:left;padding:6px 0 0" onclick="var d=this.nextSibling;d.style.display=d.style.display===\'block\'?\'none\':\'block\'">▾ détails techniques</button><div style="display:none;font-size:11px;color:var(--mut);line-height:1.5">'+fails.join("<br>")+'</div>';
+  h+='</div>';
   (j.activities||[]).forEach(function(a,i){
     h+='<div class="co-card"><div class="co-type">'+coEsc(a.typeLbl)+(a.intent?'<span class="co-intent">'+coEsc(a.intent)+'</span>':'')+'</div><div class="co-name">'+coEsc(a.name)+'</div><div class="co-kpis">';
     (a.kpis||[]).forEach(function(k){h+='<div><div class="co-k">'+coEsc(k.k)+'</div><div class="co-v"'+(k.color?' style="color:'+k.color+'"':'')+'>'+(k.color?'<i>●</i>':'')+coEsc(k.v)+'</div></div>';});

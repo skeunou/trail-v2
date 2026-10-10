@@ -438,6 +438,38 @@
   .coachBtn{background:none;border:none;color:var(--acid-d);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:6px 0 2px}
   .coachBody{font-size:13px;color:var(--ink2);line-height:1.5;margin-top:4px}
   .pact{flex:0 0 auto;padding-top:12px}
+  /* ===== ONGLET COACH (rapport du soir) ===== */
+  .co-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 12px}
+  .co-nav button{border:1px solid var(--line);background:var(--paper);border-radius:12px;width:40px;height:36px;font-size:18px;font-weight:700;color:var(--ink);cursor:pointer}
+  .co-nav button:disabled{opacity:.3}
+  .co-nav .co-d{font:700 15px 'DM Sans',sans-serif;color:var(--ink);text-align:center;flex:1}
+  .co-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px}
+  .co-ttl{font:800 19px/1.25 'DM Sans',sans-serif;color:var(--ink)}
+  .co-plan{font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4}
+  .co-h{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;font-weight:700;color:var(--orange-d);margin:14px 0 3px}
+  .co-p{font-size:14.5px;line-height:1.58;color:var(--ink2)}
+  .co-demain{background:var(--bg);border-left:4px solid var(--acid);border-radius:10px;padding:11px 13px;margin-top:14px}
+  .co-demain .co-h{color:var(--ink);margin-top:0}
+  .co-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:11px;color:var(--mut)}
+  .co-regen{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:7px 11px;font:700 12px 'DM Sans',sans-serif;color:var(--ink);cursor:pointer;white-space:nowrap}
+  .co-type{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:var(--orange-d)}
+  .co-intent{display:inline-block;margin-left:6px;font-size:10.5px;letter-spacing:.3px;text-transform:none;color:var(--ink);background:var(--acid);border-radius:999px;padding:2px 8px;font-weight:700}
+  .co-name{font:800 17px 'DM Sans',sans-serif;color:var(--ink);margin:3px 0 8px}
+  .co-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 10px}
+  .co-k{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+  .co-v{font-family:'Bebas Neue',sans-serif;font-size:25px;line-height:1.05;color:var(--ink)}
+  .co-v i{font-style:normal;font-size:13px;vertical-align:4px;margin-right:3px}
+  .co-zbar{display:flex;height:9px;border-radius:5px;overflow:hidden;margin-top:12px;background:var(--bg)}
+  .co-zl{font-size:11px;color:var(--mut);margin-top:5px;line-height:1.6}
+  .co-zl span{white-space:nowrap;margin-right:8px}
+  .co-zl b{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:3px;vertical-align:0}
+  .co-note{font-size:12.5px;color:var(--mut);font-style:italic;margin-top:9px;line-height:1.4}
+  .co-ch{display:none;margin-top:6px}
+  .co-ch svg{display:block;width:100%;height:auto;border-radius:12px;margin-top:8px}
+  .co-wait{text-align:center;padding:26px 10px;color:var(--ink2);font-size:14px;line-height:1.5}
+  .co-spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--acid-d);border-radius:50%;margin:0 auto 12px;animation:cospin 0.9s linear infinite}
+  @keyframes cospin{to{transform:rotate(360deg)}}
+  .co-in{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:12px;font:15px 'DM Sans',sans-serif;margin:10px 0}
 </style>
 <script src="/lvnav.js"></script>
 </head>
@@ -548,6 +580,15 @@
     <div id="pullBody"></div>
   </section>
 
+  <!-- COACH : rapport du soir (remplace le mail de 21h, oct. 2026) -->
+  <section class="view" id="v-coach">
+    <div class="topline">
+      <div><div class="eyebrow">Analyse de tes séances</div><div class="bigtitle bebas">COACH</div></div>
+    </div>
+    <div class="co-nav"><button id="coPrev" onclick="coachShift(-1)">‹</button><div class="co-d" id="coDate">—</div><button id="coNext" onclick="coachShift(1)">›</button></div>
+    <div id="coBody"></div>
+  </section>
+
   <!-- AGENDA -->
   <section class="view" id="v-agenda">
     <div class="topline">
@@ -631,6 +672,7 @@
   <button id="nav-log" onclick="nav('log')"><span class="ni">▤</span><span class="nl">Repères</span></button>
   <button id="nav-pull" onclick="nav('pull')"><span class="ni">💪</span><span class="nl">Tractions</span></button>
   <button id="nav-agenda" onclick="nav('agenda')"><span class="ni">📅</span><span class="nl">Agenda</span></button>
+  <button id="nav-coach" onclick="nav('coach')"><span class="ni">💬</span><span class="nl">Coach</span></button>
 </nav>
 
 <script>
@@ -5167,7 +5209,116 @@ function renderStravaCard(){
   else { stravaMsg("Strava à connecter"); document.getElementById("stravaGo").textContent='Connecter →'; var el=document.getElementById("stravaActs"); if(el)el.innerHTML=""; if(tx)tx.innerHTML=""; }
 }
 function nav(v){
-  if(v==="today") dayOffset=0;lvView=v;if(!lvRestoring&&window.LVNAV)LVNAV.push();["today","week","horizon","log","pull","agenda"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("on",x===v);document.getElementById("nav-"+x).classList.toggle("on",x===v);});if(v==="week")renderWeekView();if(v==="horizon")renderHorizon();if(v==="log")renderLog();if(v==="pull")renderPull();if(v==="agenda")renderAgenda();window.scrollTo(0,0);}
+  if(v==="today") dayOffset=0;lvView=v;if(!lvRestoring&&window.LVNAV)LVNAV.push();["today","week","horizon","log","pull","agenda","coach"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("on",x===v);document.getElementById("nav-"+x).classList.toggle("on",x===v);});if(v==="week")renderWeekView();if(v==="horizon")renderHorizon();if(v==="log")renderLog();if(v==="pull")renderPull();if(v==="agenda")renderAgenda();if(v==="coach")renderCoach();window.scrollTo(0,0);}
+
+/* ===== ONGLET COACH — rapport du soir (oct. 2026) =====
+   Le calcul se fait côté Netlify (daily-report) et le rapport est rangé dans
+   lv-data : à 21h automatiquement (report-build-cron) ou à la demande
+   (report-build-background, bouton « Régénérer »). Ici on ne fait que LIRE
+   (report-data) et afficher. La clé RECAP_KEY est saisie une fois et gardée
+   dans ce téléphone (localStorage) — jamais dans le code (repo public). */
+var COACH_FN="https://coach-nutrition.netlify.app/.netlify/functions/";
+var coachDay=null, coachBusy=false, coachAuto={}, coachPollT=null;
+var CO_JOURS=["dim.","lun.","mar.","mer.","jeu.","ven.","sam."], CO_MOIS=["janv.","févr.","mars","avril","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+var CO_ZCOL=["#b8bcc4","#4ade80","#d4e83a","#ff6b35","#e5484d"];
+function coKey(){try{return localStorage.getItem("coach:key:v1")||"";}catch(e){return "";}}
+function coEsc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function coDateLbl(k){var p=k.split("-").map(Number),d=new Date(p[0],p[1]-1,p[2]);var t=iso(new Date());return (k===t?"Aujourd'hui · ":"")+CO_JOURS[d.getDay()]+" "+p[2]+" "+CO_MOIS[p[1]-1];}
+function coBody(h){var b=document.getElementById("coBody");if(b)b.innerHTML=h;}
+function coachSetKey(){var el=document.getElementById("coKeyIn");var v=el?el.value.trim():"";if(!v)return;try{localStorage.setItem("coach:key:v1",v);}catch(e){}renderCoach();}
+function coachForgetKey(){try{localStorage.removeItem("coach:key:v1");}catch(e){}renderCoach();}
+function renderCoach(){
+  if(!coachDay)coachDay=iso(new Date());
+  document.getElementById("coDate").textContent=coDateLbl(coachDay);
+  document.getElementById("coNext").disabled=(coachDay>=iso(new Date()));
+  if(!coKey()){
+    coBody('<div class="co-card"><div class="co-ttl">Clé du coach</div><div class="co-p" style="margin-top:6px">Saisis ta clé <b>RECAP_KEY</b> (Netlify → Environment variables). Elle reste dans ce téléphone, jamais dans le code.</div>'+
+      '<input class="co-in" id="coKeyIn" type="password" autocomplete="off" placeholder="RECAP_KEY"><button class="btn btn-acid" onclick="coachSetKey()">Enregistrer</button></div>');
+    return;
+  }
+  if(!coachBusy)coachLoad();
+}
+function coachShift(n){
+  if(coachBusy)return;
+  var p=coachDay.split("-").map(Number),d=new Date(p[0],p[1]-1,p[2]+n),k=iso(d);
+  if(k>iso(new Date()))return; coachDay=k; renderCoach();
+}
+function coachFetch(cb){
+  fetch(COACH_FN+"report-data?key="+encodeURIComponent(coKey())+"&date="+coachDay+"&t="+Date.now())
+    .then(function(r){return r.json();}).then(cb)
+    .catch(function(e){cb({status:"neterror",error:String(e&&e.message||e)});});
+}
+function coachLoad(){
+  var day=coachDay;
+  coBody('<div class="co-wait"><div class="co-spin"></div>Chargement du rapport…</div>');
+  coachFetch(function(j){
+    if(day!==coachDay)return;
+    if(j.status==="unauthorized"){coBody('<div class="co-card"><div class="co-ttl">Clé refusée</div><div class="co-p" style="margin-top:6px">La clé enregistrée ne correspond pas à RECAP_KEY.</div><button class="btn btn-ghost" style="margin-top:12px" onclick="coachForgetKey()">Saisir une autre clé</button></div>');return;}
+    if(j.status==="missing"){
+      // Aujourd'hui sans rapport : on le génère une fois automatiquement
+      if(day===iso(new Date())&&!coachAuto[day]){coachAuto[day]=1;coachRegen();return;}
+      coBody('<div class="co-card"><div class="co-ttl">Pas encore de rapport</div><div class="co-p" style="margin-top:6px">Aucune analyse enregistrée pour ce jour.</div><button class="btn btn-acid" style="margin-top:12px" onclick="coachRegen()">Générer l\'analyse</button></div>');return;
+    }
+    if(j.status==="ok"||j.status==="empty"){coachRender(j);return;}
+    coBody('<div class="co-card"><div class="co-ttl">Rapport indisponible</div><div class="co-p" style="margin-top:6px">'+coEsc(j.error||j.status)+'</div><button class="btn btn-ghost" style="margin-top:12px" onclick="renderCoach()">Réessayer</button></div>');
+  });
+}
+function coachRegen(){
+  if(coachBusy)return;
+  coachBusy=true; var day=coachDay, since=Date.now(), tries=0;
+  coBody('<div class="co-wait"><div class="co-spin"></div><b>Le coach analyse ta journée…</b><br>Strava, calculs, graphiques, puis rédaction.<br>Compte 30 à 60 secondes.</div>');
+  // Fonction d'arrière-plan : répond 202 tout de suite, le rapport arrive dans lv-data ensuite
+  fetch(COACH_FN+"report-build-background?key="+encodeURIComponent(coKey())+"&date="+day+"&t="+since,{mode:"no-cors"}).catch(function(){});
+  clearInterval(coachPollT);
+  coachPollT=setInterval(function(){
+    tries++;
+    coachFetch(function(j){
+      if(!coachBusy)return;
+      var fresh=(j.status==="ok"||j.status==="empty")&&Date.parse(j.generatedAt)>=since-3000;
+      if(fresh||tries>=30){
+        clearInterval(coachPollT); coachBusy=false;
+        if(day!==coachDay)return;
+        if(fresh)coachRender(j);
+        else coBody('<div class="co-card"><div class="co-ttl">Toujours rien après 2 min 30</div><div class="co-p" style="margin-top:6px">La génération a peut-être échoué (Strava ou réseau). Réessaie dans un moment.</div><button class="btn btn-ghost" style="margin-top:12px" onclick="renderCoach()">Recharger</button></div>');
+      }
+    });
+  },5000);
+}
+function coachToggle(i,btn){var el=document.getElementById("coCh"+i);if(!el)return;var open=el.style.display==="block";el.style.display=open?"none":"block";btn.textContent=(open?"▾ ":"▴ ")+btn.getAttribute("data-l");}
+function coachRender(j){
+  var h="";
+  var regen='<button class="co-regen" onclick="coachRegen()">↻ Régénérer l\'analyse</button>';
+  var when=j.generatedAt?new Date(j.generatedAt):null;
+  var whenTxt=when?("généré le "+when.getDate()+"/"+(when.getMonth()+1)+" à "+String(when.getHours()).padStart(2,"0")+":"+String(when.getMinutes()).padStart(2,"0")):"";
+  if(j.status==="empty"){
+    coBody('<div class="co-card"><div class="co-ttl">Rien à analyser</div><div class="co-p" style="margin-top:6px">'+coEsc(j.message||"Aucune activité Strava ce jour-là.")+'</div><div class="co-foot"><span>'+whenTxt+'</span>'+regen+'</div></div>');return;
+  }
+  var c=j.coach||{};
+  h+='<div class="co-card"><div class="co-ttl">'+coEsc(c.titre||"Le rapport du jour")+'</div>';
+  if(j.plan&&j.plan.label)h+='<div class="co-plan">Prévu au plan : <b style="color:var(--ink)">'+coEsc(j.plan.label)+'</b>'+(j.plan.sub?' — '+coEsc(j.plan.sub):'')+'</div>';
+  if(c.passe)h+='<div class="co-h">Ce qui s\'est passé</div><div class="co-p">'+coEsc(c.passe)+'</div>';
+  if(c.sens)h+='<div class="co-h">Ce que ça veut dire</div><div class="co-p">'+coEsc(c.sens)+'</div>';
+  if(c.demain)h+='<div class="co-demain"><div class="co-h">Demain</div><div class="co-p">'+coEsc(c.demain)+'</div></div>';
+  if(c.src==="calc"&&c.note)h+='<div class="co-plan" style="margin-top:10px">'+coEsc(c.note)+'</div>';
+  h+='<div class="co-foot"><span>'+(c.src==="ia"?"Rédigé par "+coEsc(c.model||"le coach IA"):"Diagnostic automatique")+(whenTxt?"<br>"+whenTxt:"")+'</span>'+regen+'</div></div>';
+  (j.activities||[]).forEach(function(a,i){
+    h+='<div class="co-card"><div class="co-type">'+coEsc(a.typeLbl)+(a.intent?'<span class="co-intent">'+coEsc(a.intent)+'</span>':'')+'</div><div class="co-name">'+coEsc(a.name)+'</div><div class="co-kpis">';
+    (a.kpis||[]).forEach(function(k){h+='<div><div class="co-k">'+coEsc(k.k)+'</div><div class="co-v"'+(k.color?' style="color:'+k.color+'"':'')+'>'+(k.color?'<i>●</i>':'')+coEsc(k.v)+'</div></div>';});
+    h+='</div>';
+    if(a.zones){
+      h+='<div class="co-zbar">'+a.zones.map(function(v,z){return v>0?'<div style="width:'+v+'%;background:'+CO_ZCOL[z]+'"></div>':'';}).join("")+'</div>';
+      h+='<div class="co-zl">'+a.zones.map(function(v,z){return v>=1?'<span><b style="background:'+CO_ZCOL[z]+'"></b>Z'+(z+1)+' '+v+'%</span>':'';}).join("")+'</div>';
+    }
+    if(a.note)h+='<div class="co-note">Ta note : « '+coEsc(a.note)+' »</div>';
+    if(a.charts&&a.charts.length){
+      var lbl="Graphiques ("+a.charts.length+")";
+      h+='<button class="fold" data-l="'+lbl+'" onclick="coachToggle('+i+',this)">▾ '+lbl+'</button><div class="co-ch" id="coCh'+i+'">'+a.charts.map(function(g){return g.svg;}).join("")+'</div>';
+    }
+    h+='</div>';
+  });
+  if(j.week)h+='<div class="capnote"><b>Semaine en cours :</b> '+j.week.km+' km · '+j.week.dp+' m D+ course/trail'+(j.week.ride?' · '+j.week.ride+' min de vélo':'')+(j.week.tg&&j.week.tg.km?' — cible plan '+j.week.tg.km+' km / '+j.week.tg.dp+' m':'')+'</div>';
+  coBody(h);
+}
 
 /* ===== UI ACTIVITÉS EXTRA (suivi hors plan) ===== */
 var addSport="course", addMode="strava", addShowAll=false, addDay=null;

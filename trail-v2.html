@@ -735,7 +735,7 @@ var BLOCKS=[
   {id:"r1",  name:"Repos relatif",       start:"2026-10-12", end:"2026-10-20", phase:"recup",
    intent:"Pas de course. Cardio sans impact si indolore et validé par le médecin. Prépa Pérou.", wk:[[0,0],[0,0]]},
   {id:"perou",name:"Pérou",              start:"2026-10-21", end:"2026-11-08", phase:"recup",
-   intent:"Trek + altitude >3000 m. Transition assumée, entretien élastiques.", wk:[[0,0],[0,0],[0,0]]},
+   intent:"Trek + altitude >3000 m (retour le 7 nov.). Transition assumée, entretien élastiques.", wk:[[0,0],[0,0],[0,0]]},
   /* RÉVISION PUBALGIE (27 sept. 2026) — B4/B5/B6 désactivés, conservés. Remplacés par les blocs
      dynamiques attente / frac / reintro calculés par rebuildBlocks() à partir du J0.
     {id:"b4",  name:"Réathlétisation",     start:"2026-11-09", end:"2026-11-22", phase:"recup",
@@ -1189,9 +1189,11 @@ var RACES=[
   {d:"2027-02-06", n:"Trace des Maquisards 42K", km:42, dp:1600, role:"Course de nuit · départ 19h30 Maillat → Oyonnax · dossards à Valexpo dès 10h"}, */
   {d:"2027-02-06", n:"Trace des Maquisards 18K (à confirmer)", km:20, dp:660, role:"Go/no-go le 4 janv. : bascule sur le 18K (19,8 km · 657 m D+ / 454 m D−) ou annulation. De nuit, en gestion, descentes contrôlées"},
   {d:"2027-03-19", n:"Chianti Ultra 46K",        km:46, dp:1500, role:"Reprise de compétition · vendredi, départ 9h"},
-  {d:"2027-04-18", n:"Trail de Paladru 84K",     km:84, dp:2500, role:"Le gros test (date provisoire)"},
+  /* Oct. 2026 : date et D+ confirmés par Laurent (site traildulacdepaladru.fr). Ancienne entrée :
+  {d:"2027-04-18", n:"Trail de Paladru 84K",     km:84, dp:2500, role:"Le gros test (date provisoire)"}, */
+  {d:"2027-04-17", n:"Trail de Paladru 84K",     km:84, dp:3200, role:"Le gros test · Ultra du Pays Voironnais, samedi départ 6h · 3200 m D+/D− · plus longue montée 390 m (casse-pattes, pas de grande ascension) · 6 ravitos dont 1 liquide · UTMB qualifier"},
   {d:"2027-05-08", n:"Trail des Coursières 50K",  km:50, dp:1900, role:"Sortie longue spécifique en gestion, sans chrono · Saint-Martin-en-Haut · test nutrition"},
-  {d:"2027-06-19", n:"Les Drayes du Vercors 55K", km:55, dp:2390, role:"Course club · week-end choc n°3 du B12 · départ 7h La Chapelle-en-Vercors (date 2027 à confirmer)"},
+  {d:"2027-06-19", n:"Les Drayes du Vercors 55K", km:55, dp:2390, role:"Course club · week-end choc n°3 du B12 · départ 7h La Chapelle-en-Vercors (date confirmée)"},
   {d:"2027-07-15", n:"UT4M 180 Challenge",       km:176,dp:11700,role:"OBJECTIF"}
 ];
 /* Fenêtres avant/après course (règles 7 et 8) — courses ≥ 40 km, hors UT4M.
@@ -5839,7 +5841,7 @@ var AG_CATS={
 /* Évènements en dur (issus du cahier des charges + calendrier MTC).
    conge:1 = congés déjà posés → ne compte pas comme conflit. */
 /* Congés DÉJÀ posés sur une course (clé = date de RACES) → pas de conflit. */
-var AG_RACE_CONGE={"2027-04-18":1,"2027-07-15":1};
+var AG_RACE_CONGE={"2027-04-17":1,"2027-07-15":1};
 var AG_SEED=[
   {s:"2026-10-01",e:"2026-10-04",cat:"vac",   l:"Maroc",conge:1},
   {s:"2026-10-21",e:"2026-11-07",cat:"vac",   l:"Pérou — trek",conge:1},
@@ -5856,7 +5858,7 @@ var AG_SEED=[
 ];
 var AG_TOFIX=[
   {l:"Chianti Ultra 46K",     w:"19 mars 2027 — date provisoire"},
-  {l:"Trail de Paladru 84K",  w:"18 avril 2027 — provisoire, congés posés"},
+  {l:"Trail de Paladru 84K",  w:"sam. 17 avril 2027, départ 6h — congés à vérifier (posés pour le 18)"},
   {l:"Maxi-Race",             w:"retirée du programme (aucun WE disponible)"}
 ];
 var AG_MONTHS=["JANVIER","FÉVRIER","MARS","AVRIL","MAI","JUIN","JUILLET","AOÛT","SEPTEMBRE","OCTOBRE","NOVEMBRE","DÉCEMBRE"];

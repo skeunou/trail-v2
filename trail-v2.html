@@ -499,6 +499,7 @@
       <div class="topmorn" id="topMorn"></div>
     </div>
     <div class="weeklbl"><span class="eyebrow" id="dayLbl" style="color:var(--ink)">Aujourd'hui</span><span style="display:flex;align-items:center;gap:8px"><span onclick="dayNav(-1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">‹</span><span class="eyebrow" id="dayRange" onclick="dayNav(0)" style="cursor:pointer">—</span><span onclick="dayNav(1)" style="cursor:pointer;font-size:20px;line-height:1;color:var(--blue);user-select:none;padding:2px 6px">›</span></span></div>
+    <div id="tripBox"></div><!-- Programme Pérou (21/10 → 07/11/2026) -->
     <div class="card hero" id="heroCard" style="position:relative">
       <div class="type" id="heroType">—</div>
       <div class="sessionid bebas" id="heroId" style="font-size:14px;color:var(--acc);letter-spacing:1px">—</div>
@@ -3457,6 +3458,42 @@ function freeSlotDone(k){
     return e.dateKey===k && (e.typeKey==="renfo-supp"||e.typeKey==="sl-week");
   });
 }
+/* ===== PROGRAMME PÉROU (oct.-nov. 2026) — affichage seul, n'est pas une séance =====
+   Source : Travel Book Terres Magiques (version finale). r = randonnée (affichée en avant). */
+var TRIP_PE=[
+ {d:"2026-10-21",t:"Arrivée Lima → Arequipa",alt:"2335 m",h:"Hotel Santa Rosa",x:["Vol Paris-Lima AF500, arrivée 15h40","Vol Lima-Arequipa LA2326 : 19h15 → 20h45","Accueil francophone + briefing à l'hôtel"]},
+ {d:"2026-10-22",t:"Arequipa : visite de la ville",alt:"2335 m",h:"Hotel Santa Rosa",x:["Matin guidé : Plaza de Armas, cathédrale, église de la Compagnie de Jésus","Mirador de Yanahuara, couvent Santa Catalina","Après-midi libre"]},
+ {d:"2026-10-23",t:"Arequipa → Chivay (canyon de Colca)",alt:"3600 m",h:"Pozo del Cielo",x:["Départ tôt, réserve Salinas y Aguada Blanca (lamas, vigognes)","Col de Pata Pampa 4800 m, mirador des Volcans","⚠️ Première nuit en altitude : hydratation, pas d'effort"]},
+ {d:"2026-10-24",t:"Croix des Condors → Puno",alt:"3800 m",h:"Hotel Sol Plaza",x:["Départ aux premières heures : observation des condors","Villages Maca et Yanque","Altiplano, Mirador de los Andes 4910 m, arrivée début de soirée"]},
+ {d:"2026-10-25",t:"Lac Titicaca : Uros → Amantani",alt:"3950 m",h:"Famille d'accueil (gîte rustique)",r:"Rando l'après-midi vers les temples Pachamama et Pachatata (sommet de l'île)",x:["Navigation ~3h30, îles flottantes des Uros","Déjeuner et dîner chez l'habitant","Coucher de soleil sur le lac"]},
+ {d:"2026-10-26",t:"Taquile → Puno",alt:"3950 m",h:"Hotel Sol Plaza",r:"Rando ~1h30 jusqu'au village principal, descente par l'autre versant",x:["Bateau ~3h30 au total","Art textile classé UNESCO","Retour Puno milieu d'après-midi"]},
+ {d:"2026-10-27",t:"Puno → Cusco en bus",alt:"3400 m",h:"Hotel Amaru Inca",x:["Bus 5h45 → 17h30 (~400 km)","Pukara, col de La Raya 4338 m, Raqchi, Andahuaylillas","Journée assise : marche de quelques minutes à chaque arrêt"]},
+ {d:"2026-10-28",t:"Cusco : journée libre",alt:"3400 m",h:"Hotel Amaru Inca",x:["San Blas, Plaza de Armas, Qoricancha, marché central","Sites hauts : Tambomachay, Puca Pucara, Q'enqo, Sacsayhuamán","Créneau possible pour une séance élastique"]},
+ {d:"2026-10-29",t:"Vallée Sacrée : Maras, Moray → Ollantaytambo",alt:"2792 m",h:"Hotel Sol Natura",x:["Salines de Maras 3380 m","Terrasses circulaires de Moray 3500 m","~112 km en voiture"]},
+ {d:"2026-10-30",t:"Chemin Inca (1 jour) → Aguas Calientes",alt:"2100 m",h:"Hotel Retama Machu Picchu",r:"TREK 12 km · 7h-8h de marche · 2200 → 2720 m (Inti Punku)",x:["Train 6h10 → Km 104, départ du trek ~7h15","Chachabamba, Wiñay Wayna (~4h), Porte du Soleil (~2h plus tard)","Descente ~30′ vers Machu Picchu, navette Aguas Calientes","Box lunch : prévoir eau + collations"]},
+ {d:"2026-10-31",t:"Machu Picchu → Cusco",alt:"2430 m",h:"Hotel Amaru Inca",x:["Navette très tôt, visite guidée 6h-8h","Train Aguas Calientes → Ollantaytambo 15h20 → 17h08","Transfert Cusco (~1h45)"]},
+ {d:"2026-11-01",t:"Cusco : cours de cuisine avec un chef",alt:"3400 m",h:"Hotel Amaru Inca",x:["Marché avec le chef, préparation et dégustation","Mis à jour hors Travel Book (ex-journée libre)"]},
+ {d:"2026-11-02",t:"Vinicunca, montagne Arc-en-Ciel",alt:"5036 m",h:"Hotel Amaru Inca",r:"RANDO ~6 km A/R · +450 m · 4600 → 5036 m · montée 1h30-2h, descente 1h-1h30",x:["Départ hôtel ~4h30, 3h30 de route aller","Petit-déj à Cusipata, déjeuner inclus au retour","Retour Cusco 15h30-16h","⚠️ Point culminant du séjour : allure lente, souffle avant tout"]},
+ {d:"2026-11-03",t:"Cusco → Puerto Maldonado (Amazonie)",alt:"200 m",h:"Eco Amazonia Lodge",x:["Vol H2 5721 : 10h05 → 11h10","Bateau ~1h30-2h sur le Madre de Dios","Après-midi : Cocha Caïman, coucher de soleil","Sac à dos uniquement (valises laissées en ville)"]},
+ {d:"2026-11-04",t:"Amazonie : lac Apuvictor + île aux singes",alt:"200 m",h:"Eco Amazonia Lodge",r:"Rando ~3h en forêt + promenade ~1h",x:["Lac Apuvictor : loutres géantes, caïmans, canoë","Île aux singes à 15′ en bateau"]},
+ {d:"2026-11-05",t:"Puerto Maldonado → Lima",alt:"0 m",h:"Arawi Miraflores Express",x:["Bateau ~1h30, vol LA2261 : 12h45 → 14h20","Fin de journée libre à Lima"]},
+ {d:"2026-11-06",t:"Lima → vol retour",alt:"0 m",h:"Vol de nuit",x:["Transfert aéroport","Vol AF501 Lima → Paris : 19h15"]},
+ {d:"2026-11-07",t:"Arrivée Paris — retour",alt:"",h:"",x:["Repos. Reprise home-trainer quand tu veux, règle zéro douleur"]}
+];
+function tripDay(k){ for(var i=0;i<TRIP_PE.length;i++) if(TRIP_PE[i].d===k) return {e:TRIP_PE[i],n:i+1}; return null; }
+function renderTrip(vd){
+  var box=document.getElementById("tripBox"); if(!box) return;
+  var f=tripDay(iso(vd)); if(!f){ box.innerHTML=""; return; }
+  var e=f.e, sub=[e.alt, e.h].filter(Boolean).join(" · ");
+  box.innerHTML='<div class="card" style="margin-bottom:12px;border-left:5px solid var(--orange)">'
+   +'<div style="display:flex;justify-content:space-between;align-items:center">'
+   +'<div class="eyebrow" style="color:var(--orange-d)">🇵🇪 Pérou · Jour '+f.n+'/'+TRIP_PE.length+'</div></div>'
+   +'<div style="font-weight:800;font-size:16px;margin:4px 0 2px">'+e.t+'</div>'
+   +(sub?'<div style="color:var(--mut);font-size:13px">'+sub+'</div>':'')
+   +(e.r?'<div style="margin-top:8px;padding:8px 10px;border-radius:12px;background:#fff3ec;color:var(--orange-d);font-weight:700;font-size:13px">🥾 '+e.r+'</div>':'')
+   +'<details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:var(--ink2)">Détail du jour</summary>'
+   +'<ul style="margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.5">'+e.x.map(function(s){return '<li>'+s+'</li>';}).join("")+'</ul></details></div>';
+}
 function renderToday(){
   var vd=vDay(), s=sessionFor(vd);
   var _k=iso(vd), _free=(s.typeKey==="repos") ? freeSlotDone(_k) : [];
@@ -3488,6 +3525,7 @@ function renderToday(){
   renderLoadCard();
   renderGtgMini();
   renderAdapt();
+  renderTrip(vd);
   renderExtras(vd);
   renderSuppHome(vd);
   /* renderRenfoWeek() / renderSLWeek() : cartes retirées de l'accueil, conteneurs masqués.

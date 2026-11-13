@@ -513,6 +513,7 @@
     </div>
     <div id="adaptBox"></div>
     <div id="extrasBox"></div>
+    <div id="rqCard"></div><!-- nov. 2026 : file de séances renfo (A → B → C) -->
     <div id="suppHome"></div>
     <!-- Carte "À FAIRE" (slots flexibles) : déplacée dans l'onglet Semaine. -->
     <div id="renfoWeek" style="display:none"></div>
@@ -862,9 +863,10 @@ function repFracIdx(d){
 function repFracWeek(d){ var j0=repJ0(); return j0?Math.floor((mondayOf(d)-parse(j0))/(7*86400000)):0; }
 function repClassify(d,b){
   var w=dowMon(d);
-  if(b.id==="frac") return (FRAC_SLOT[w]!==undefined||w===3)?"fond":(w===5?"renfo":"repos");
-  if(b.id==="reintro") return (w===1||w===3||w===4||w===7)?"fond":(w===2?"cotes":(w===5?"renfo":"repos"));
-  return (w===1||w===3)?"fond":((w===5||w===2)?"renfo":"repos");
+  /* nov. 2026 : renfo en file → plus de "renfo" fixe dans le calendrier (ancien : w===5 → "renfo") */
+  if(b.id==="frac") return (FRAC_SLOT[w]!==undefined||w===3)?"fond":"repos";
+  if(b.id==="reintro") return (w===1||w===3||w===4||w===7)?"fond":(w===2?"cotes":"repos");
+  return (w===1||w===3)?"fond":"repos";
 }
 function coachPowerRef(){ try{ var r=JSON.parse(localStorage.getItem("coach:refs:v1")||"null"); return r&&r.ht&&r.ht.lo?r.ht:null; }catch(e){ return null; } }
 function repHT(o,dur,cond,d){
@@ -975,6 +977,14 @@ function repRenfoPub(o,d,extra){
   o.color="var(--ink)"; o.plan={segs:pubSegs(PUB_WARM_FULL,list)};
   o._specs=[["Adducteurs",A.name.replace(/ \(.*\)/,"")],["Exos",String(list.length)],["Durée","~45′"]];
 }
+/* nov. 2026 : le renfo n'est plus posé sur un jour fixe → FILE de séances A/B/C (carte « Renfo du jour »).
+   repRenfoPub()/repTrepied() conservés, plus appelés. Le bloc pubalgie (trépied) est intégré à chaque séance de la file. */
+function repRenfoFile(o){
+  o.typeKey="repos"; o.label="Créneau libre"; o.sub="renfo du jour possible";
+  o.why="Le renfo se fait quand ta journée le permet : la séance du jour t'attend dans la carte « Renfo du jour ».";
+  o.detail=["Renfo, H.T souple ou repos selon ta journée.","Accueil → carte RENFO DU JOUR pour lancer ou valider la séance.",PUB_RULE];
+  o.color="var(--blue)"; o.plan={};
+}
 // Séance courte (mardi, bloc d'attente) : trépied seul
 function repTrepied(o,d){
   var w=pubWeek(d), A=pubAdd(w), T=pubTr(w), F=pubFe(w);
@@ -1038,8 +1048,8 @@ function genReprise(o,d,b){
       return;
     }
     if(w===3){ repHT(o,[30,30,35,35,40,40,45,45][Math.min(7,Math.max(0,repFracWeek(d)))],null,d); return; }
-    /* ancien : repRenfo(o,repAdducteurs(repFracWeek(d))) */
-    if(w===5){ repRenfoPub(o,d); return; }
+    /* ancien : repRenfo(o,repAdducteurs(repFracWeek(d))) · puis repRenfoPub(o,d) jusqu'à nov. 2026 */
+    if(w===5){ repRenfoFile(o); return; }
   }
   else if(b.id==="reintro"){
     var wr=Math.min(3,Math.max(0,Math.floor((mondayOf(d)-mondayOf(parse(b.start)))/(7*86400000))));
@@ -1064,7 +1074,8 @@ function genReprise(o,d,b){
     }
     if(w===3){ repHT(o,45,"Si indolore.",d); return; }
     /* ancien : repRenfo(o,repAdducteurs(repFracWeek(d)),[step-up 51 cm, hip thrust]) — remplacé par le trépied pubis (oct. 2026) */
-    if(w===5){ repRenfoPub(o,d,[pubEx("Step-up box 51 cm","3 × 8 / jambe · récup 90″","Charge légère. Pousse sur le pied posé sur la box, sans impulsion du pied au sol. Descente en 3″."),
+    if(w===5){ repRenfoFile(o); return; }  /* nov. 2026 : file renfo. Ancien ci-dessous, désactivé */
+    if(false&&w===5){ repRenfoPub(o,d,[pubEx("Step-up box 51 cm","3 × 8 / jambe · récup 90″","Charge légère. Pousse sur le pied posé sur la box, sans impulsion du pied au sol. Descente en 3″."),
       pubEx("Hip thrust barre","3 × 8 · pause 1″ · récup 2′","Haut du dos sur le banc, barre sur le bassin avec une mousse. Pause 1″ en haut, menton rentré.")]); return; }
     if(w===7){
       var S=[["50′ plat",50,"50′ plat en Z2."],["1h vallonné · 200 m D+",60,"1h vallonné doux, ~200 m D+. Descentes en marche."],
@@ -1081,8 +1092,8 @@ function genReprise(o,d,b){
   // r0 / r1 / attente : repos relatif — H.T validé (oct. 2026), lundi + mercredi, durée progressive
   if(w===1||w===3){ var wa=Math.floor((mondayOf(d)-mondayOf(parse(b.start)))/(7*86400000)); repHT(o,[30,35,40,45][Math.min(3,Math.max(0,wa))],null,d); return; }
   /* ancien : repRenfo(o,["Squeeze ballon isométrique",...]) — remplacé par le trépied pubis (oct. 2026) */
-  if(w===2){ repTrepied(o,d); return; }
-  if(w===5){ repRenfoPub(o,d); return; }
+  /* nov. 2026 : ancien repTrepied(o,d) le mardi + repRenfoPub(o,d) le vendredi → file renfo */
+  if(w===2||w===5){ repRenfoFile(o); return; }
   if(w===7){
     o.typeKey="repos"; o.label="Marche 45-60′"; o.sub="marche rapide · test indolore";
     o.why="45′ de marche rapide indolore = un des critères d'entrée dans le Fractionné.";
@@ -1464,8 +1475,8 @@ function gen(d){
          On ne veut pas deux sources de vérité. */
       if(BS.renfoN>0){
         o.typeKey="repos"; o.label="Créneau libre"; o.sub="renfo à caler cette semaine";
-        o.why="Ton créneau habituel de renfo. "+BS.renfoN+" séance"+(BS.renfoN>1?"s":"")+" à poser cette semaine — le suivi se fait dans la carte À FAIRE.";
-        o.detail=["Renfo, EF facile ou repos selon ta journée.","Onglet Semaine → À FAIRE pour lancer, dater ou lier une séance."];
+        o.why="Renfo, EF facile ou repos selon ta journée. La séance de renfo du jour t'attend dans la carte « Renfo du jour » (accueil).";
+        o.detail=["Renfo, EF facile ou repos selon ta journée.","Accueil → carte RENFO DU JOUR pour lancer ou valider la séance."];
         o.color="var(--blue)"; o.plan={};
       } else {
         var durv=round5(45*wi.m);
@@ -2457,7 +2468,8 @@ function afaireBtn(o){
 }
 function renderAFaire(){
   var box=document.getElementById("slWeek"); if(!box) return;
-  var nS=renfoSlotCount(), slE=slDoneEntry(), past=(weekOffset<0), rows=[], done=0, tot=0;
+  /* nov. 2026 : renfo passé en FILE (carte « Renfo du jour », accueil). Ancien : var nS=renfoSlotCount() */
+  var nS=0, slE=slDoneEntry(), past=(weekOffset<0), rows=[], done=0, tot=0;
 
   // slots renfo
   for(var s=1;s<=nS;s++){
@@ -2614,7 +2626,7 @@ function buildWeeklyWork(s,org){
 }
 function launchWeeklyRenfo(idx,slot,signal){
   unlockAudio(); reqWake(); beep(660,.12);
-  pKey=iso(new Date()); pIsSupp=true; pSuppKind="renfo"; pWeekly=true; _wkSlot=slot; _wkIdx=idx;
+  pKey=iso(new Date()); pIsSupp=true; pSuppKind="renfo"; pWeekly=true; pRQ=null; rqCurDl=false; _wkSlot=slot; _wkIdx=idx;
   pState={}; pSeriesDone={}; pSignal=signal||{zones:[],text:""};
   var s=RW()[idx];
   var org=rnd(s.cat==="A"?["sets","sets","superset","cluster5"]:["sets","superset","circuit"]);
@@ -3527,6 +3539,7 @@ function renderToday(){
   renderAdapt();
   renderTrip(vd);
   renderExtras(vd);
+  renderRQCard();
   renderSuppHome(vd);
   /* renderRenfoWeek() / renderSLWeek() : cartes retirées de l'accueil, conteneurs masqués.
      Appels conservés pour ne rien casser si les cartes sont réactivées. */
@@ -3978,7 +3991,7 @@ function chooseSupp(k){
 }
 function startSuppRenfo(k,signal){
   unlockAudio(); reqWake(); beep(660,.12);
-  pKey=k; pIsSupp=true; pSuppKind="renfo"; pWeekly=false; pState={}; pSeriesDone={}; pSignal=signal||{zones:[],text:""};
+  pKey=k; pIsSupp=true; pSuppKind="renfo"; pWeekly=false; pRQ=null; rqCurDl=false; pState={}; pSeriesDone={}; pSignal=signal||{zones:[],text:""};
   var r=buildSuppRenfo(pSignal); pSuppName=r.name; pSegs=r.segs; pIdx=0;
   closeSheet(); document.getElementById("player").classList.add("on");
   renderSeg();
@@ -4339,7 +4352,7 @@ function chgSlug(n){
 /* Unité par exercice : none = pas de charge, band = élastique, lest = poids de corps + lest */
 function chgUnit(n){
   var s=String(n||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  if(/squeeze|copenhag|respiratoire|chat-vache|planche|gainage|hollow|dead ?bug|shoulder ?tap|chaise|isometr|mountain|crunch|v-?up|russian|bicycle|superman|bird ?dog|ab ?wheel|nordic|tabata|abdos|finisher/.test(s)) return "none";
+  if(/squeeze|copenhag|respiratoire|chat-vache|planche|gainage|hollow|dead ?bug|shoulder ?tap|chaise|isometr|mountain|crunch|v-?up|russian|bicycle|superman|bird ?dog|ab ?wheel|nordic|tabata|abdos|finisher|pont fessier|clamshell|tibial|leg curl trx|squat unipodal sur box|step-?down/.test(s)) return "none";
   if(/elastique|band|pallof|face ?pull|rotation externe|y\/t\/w/.test(s)) return "band";
   if(/traction|pull-?up|dips|pompes|push-?up|dead ?hang|muscle-?up|rowing trx|nordic/.test(s)) return "lest";
   if(/wall ?ball|kettlebell|\bkb\b|medecine|sissy/.test(s)) return "kg";
@@ -4368,8 +4381,9 @@ function chgFmt(e){
 }
 function chgDateFR(d){ try{ var p=String(d).split("-"); return p[2]+"/"+p[1]; }catch(e){ return d; } }
 /* Bloc affiché en tête d'exercice */
-function chgRowHTML(name, repsHead){
-  var u=chgUnit(name); if(u==="none") return "";
+function chgRowHTML(name, repsHead, sfx, sugg){
+  sfx=sfx||"";  /* nov. 2026 : suffixe d'id → 2 carnets sur un superset (file renfo) */
+  var u=chgUnit(name); if(u==="none") return (sugg&&sugg.txt)?'<div class="chgBox"><div class="chgLast">'+sugg.txt+'</div></div>':"";
   var h=chgHist(name), d=iso(new Date());
   var cur=(h.length && h[h.length-1].d===d) ? h[h.length-1] : null;
   var prev=null;
@@ -4377,19 +4391,22 @@ function chgRowHTML(name, repsHead){
   var lastLine = prev
     ? 'Dernière fois : <b>'+chgFmt(prev)+'</b>'+(prev.r?' · '+prev.r:'')+(prev.f?' · '+prev.f:'')+' <span style="opacity:.7">('+chgDateFR(prev.d)+')</span>'
     : 'Première fois sur cet exercice — note ta charge, elle servira de repère.';
-  var val = cur && cur.c!==undefined ? String(cur.c) : (prev? String(prev.c) : "");
+  var val = cur && cur.c!==undefined ? String(cur.c) : ((sugg&&sugg.c!=null)? String(sugg.c) : (prev? String(prev.c) : ""));
+  if(!prev && sugg && sugg.c!=null) lastLine='Pas encore d\'historique · repère de départ proposé.';
+  var suggLine = (sugg && (sugg.c!=null||sugg.txt)) ? '<div class="chgLast" style="color:var(--acid-d);font-weight:700;margin-top:3px">🎯 Aujourd\'hui : '+(sugg.c!=null?chgFmt({c:sugg.c,u:u}):"")+(sugg.txt?(sugg.c!=null?' · ':'')+sugg.txt:"")+'</div>' : "";
   var feels=["facile","correct","dur","trop dur"];
   var esc=String(name).replace(/'/g,"\\'");
   return '<div class="chgBox">'+
-    '<div class="chgLast">'+lastLine+'</div>'+
+    (sfx?'<div style="font-weight:800;font-size:12px;margin-bottom:3px">'+name+'</div>':'')+
+    '<div class="chgLast">'+lastLine+'</div>'+suggLine+
     '<div class="chgIn">'+
-      '<input id="chgVal" type="'+(u==="band"?"text":"number")+'" inputmode="'+(u==="band"?"text":"decimal")+'" step="0.5" placeholder="'+CHG_PH[u]+'" value="'+val+'" onchange="chgOnVal(\''+esc+'\')" onblur="chgOnVal(\''+esc+'\')">'+
+      '<input id="chgVal'+sfx+'" type="'+(u==="band"?"text":"number")+'" inputmode="'+(u==="band"?"text":"decimal")+'" step="0.5" placeholder="'+CHG_PH[u]+'" value="'+val+'" onchange="chgOnVal(\''+esc+'\',\''+sfx+'\')" onblur="chgOnVal(\''+esc+'\',\''+sfx+'\')">'+
       '<span class="chgU">'+CHG_ULAB[u]+'</span>'+
     '</div>'+
-    '<div class="chgFeel" id="chgFeel">'+feels.map(function(f){
-      return '<button class="'+(cur&&cur.f===f?'on':'')+'" onclick="chgOnFeel(\''+esc+'\',\''+f+'\')">'+f+'</button>';
+    '<div class="chgFeel" id="chgFeel'+sfx+'">'+feels.map(function(f){
+      return '<button class="'+(cur&&cur.f===f?'on':'')+'" onclick="chgOnFeel(\''+esc+'\',\''+f+'\',\''+sfx+'\')">'+f+'</button>';
     }).join('')+'</div>'+
-    (h.length?'<button class="chgHistBtn" onclick="chgToggleHist()">▾ Historique ('+h.length+')</button><div class="chgHist" id="chgHistBox" style="display:none">'+
+    (h.length?'<button class="chgHistBtn" onclick="chgToggleHist(\''+sfx+'\')">▾ Historique ('+h.length+')</button><div class="chgHist" id="chgHistBox'+sfx+'" style="display:none">'+
       h.slice(-8).reverse().map(function(e){
         return '<div><span>'+chgDateFR(e.d)+'</span><b>'+(chgFmt(e)||'—')+'</b><span>'+(e.f||'')+'</span></div>';
       }).join('')+'</div>':'')+
@@ -4417,20 +4434,25 @@ function swapExo(){
   _swapMap[seg._orig]=nx.n;
   renderRenfoWork(seg);
 }
-function chgOnVal(name){
-  var el=document.getElementById("chgVal"); if(!el) return;
+function chgOnVal(name,sfx){
+  sfx=sfx||"";
+  var el=document.getElementById("chgVal"+sfx); if(!el) return;
   var v=el.value.trim(); if(v==="") return;
-  var seg=pSegs[pIdx]||{};
-  chgSaveToday(name,{c:(chgUnit(name)==="band"? v : Number(v)), u:chgUnit(name), r:(seg.repsHead||"")});
+  var seg=pSegs[pIdx]||{}, pi=sfx?parseInt(sfx.slice(1),10):-1;
+  var r=(pi>=0&&seg.partReps)?seg.partReps[pi]:(seg.repsHead||"");
+  var patch={c:(chgUnit(name)==="band"? v : Number(v)), u:chgUnit(name), r:r};
+  if(pRQ && rqCurDl) patch.dl=true;  /* file renfo : charge de décharge, ignorée pour la progression */
+  chgSaveToday(name,patch);
 }
-function chgOnFeel(name,f){
-  chgOnVal(name);
+function chgOnFeel(name,f,sfx){
+  sfx=sfx||"";
+  chgOnVal(name,sfx);
   chgSaveToday(name,{f:f});
-  var box=document.getElementById("chgFeel"); if(!box) return;
+  var box=document.getElementById("chgFeel"+sfx); if(!box) return;
   Array.prototype.forEach.call(box.children,function(b){ b.className = (b.textContent===f?"on":""); });
 }
-function chgToggleHist(){
-  var b=document.getElementById("chgHistBox"); if(!b) return;
+function chgToggleHist(sfx){
+  var b=document.getElementById("chgHistBox"+(sfx||"")); if(!b) return;
   b.style.display = b.style.display==="none" ? "block" : "none";
 }
 /* Bilan hebdo : évolution des charges sur 7 jours (utilisé par le récap du dimanche) */
@@ -4463,9 +4485,10 @@ function renderRenfoWork(seg){
   }
   document.getElementById("pBody").innerHTML=
     figHTML+
-    '<div class="pname bebas">'+seg.name+'</div>'+
+    '<div class="pname bebas"'+(seg.parts?' style="font-size:30px;line-height:1.05"':'')+'>'+seg.name+'</div>'+
     (seg.repsHead?'<div class="preps">'+seg.repsHead+'</div>':'')+
-    chgRowHTML(seg.name, seg.repsHead)+
+    ((seg.rq && seg.parts) ? seg.parts.map(function(nm,i){ return chgRowHTML(nm, seg.partReps[i], "_"+i, seg.sugg&&seg.sugg[i]); }).join("")
+      : chgRowHTML(seg.name, seg.repsHead, "", seg.sugg&&seg.sugg[0]))+
     ((String(seg.label||"").indexOf("Ancre")>-1 || seg.noSwap) ? "" :  /* noSwap : trépied pubis, pas de remplacement aléatoire */
       '<button onclick="swapExo()" style="width:100%;margin:8px 0 2px;padding:8px;border:1px dashed var(--line);border-radius:10px;background:none;color:var(--mut);font-size:11.5px;font-family:inherit">⇄ Remplacer cet exercice</button>')+
     '<div class="rrow">'+
@@ -4635,7 +4658,7 @@ function saveSuppWod(){
   closeSheet(); renderToday(); renderLog();
 }
 function finishSuppRenfo(){
-  var displayType = pWeekly ? ("RENFO "+_wkSlot+"/2") : "RENFO SUPP";
+  var displayType = pRQ ? ("RENFO "+pRQ.L) : (pWeekly ? ("RENFO "+_wkSlot+"/2") : "RENFO SUPP");
   var entry={id:"r_"+Date.now(),dateKey:pKey,ts:Date.now(),
     typeKey:"renfo-supp",type:displayType,title:pSuppName,color:"var(--orange)",
     rpe:"",zp:"",jambes:"",score:"",note:""};
@@ -4643,32 +4666,316 @@ function finishSuppRenfo(){
   curKey=pKey; editing=entry;
   document.getElementById("shTitle").textContent=pSuppName;
   document.getElementById("shWhy").textContent="Séance de renfo — note ton ressenti (RPE, jambes, sensations).";
-  document.getElementById("shSpecs").innerHTML='<div class="spec"><b>≈30′</b>FAIT</div>';
-  var recap = pWeekly ? renfoRecapHTML(pRenfoBlocks,"fin") : "";
+  document.getElementById("shSpecs").innerHTML='<div class="spec"><b>'+(pRQ?"≈60′":"≈30′")+'</b>FAIT</div>';
+  var recap = (pWeekly||pRQ) ? renfoRecapHTML(pRenfoBlocks,"fin") : "";
   var f='<div class="field"><label>RPE <b id="frV">6</b></label><input type="range" min="1" max="10" value="6" id="fRpe" oninput="frV.textContent=this.value"></div>'+
     '<div class="field"><label>Jambes <b id="fjV">6</b></label><input type="range" min="1" max="10" value="6" id="fJambes" oninput="fjV.textContent=this.value"></div>'+
+    (pRQ?'<div class="field"><label>Douleur pubis max pendant <b id="fzV">0</b>/10</label><input type="range" min="0" max="10" value="0" id="fZp" oninput="fzV.textContent=this.value"></div>':'')+
     '<div class="field"><label>Note</label><textarea id="fNote" placeholder="Charges, sensations, douleur…"></textarea></div>'+
     '';
   document.getElementById("shSummary").innerHTML='<div class="summary" style="padding:12px">'+recap+f+'</div><div id="suppLink" style="margin-top:8px"></div>';
   document.getElementById("shForm").style.display="none";
   document.getElementById("shButtons").style.display="flex";
-  document.getElementById("shButtons").innerHTML='<button class="btn btn-ghost" onclick="closeSheet()">Ignorer</button><button class="btn btn-go" onclick="saveSuppRenfo()">VALIDER LE RENFO</button>';
+  document.getElementById("shButtons").innerHTML='<button class="btn btn-ghost" onclick="closeSheet()">'+(pRQ?'Pas maintenant':'Ignorer')+'</button><button class="btn btn-go" onclick="saveSuppRenfo()">VALIDER LE RENFO</button>';
   renderSuppLink();
 }
 function saveSuppRenfo(){
   var log=loadLog();
   var entry={id:"r_"+Date.now(),dateKey:curKey,ts:Date.now(),_u:Date.now(),
-    typeKey:"renfo-supp",type:pWeekly?("RENFO "+_wkSlot+"/2"):"RENFO SUPP",title:editing.title,color:"var(--orange)",
-    rpe:val("fRpe"),zp:"",jambes:val("fJambes"),score:"",note:[signalNote(),(val("fNote")||"").trim()].filter(Boolean).join(" · "),
-    exos:pWeekly?pRenfoBlocks.map(function(b){return {name:b.name,reps:b.reps};}):null,
+    typeKey:"renfo-supp",type:pRQ?("RENFO "+pRQ.L):(pWeekly?("RENFO "+_wkSlot+"/2"):"RENFO SUPP"),title:editing.title,color:"var(--orange)",
+    rpe:val("fRpe"),zp:(pRQ?val("fZp"):""),jambes:val("fJambes"),score:"",note:[signalNote(),(val("fNote")||"").trim()].filter(Boolean).join(" · "),
+    exos:(pWeekly||pRQ)?pRenfoBlocks.map(function(b){return {name:b.name,reps:b.reps};}):null,
     wk:pWeekly?mondayKey():"",wslot:pWeekly?_wkSlot:0,
     sid:editing.sid||"",stravaName:editing.stravaName||"",hrAvg:editing.hrAvg||null,hrMax:editing.hrMax||null,durMin:editing.durMin||null,wAvg:editing.wAvg||null};
+  if(pRQ){ entry.rq=true; entry.rqPos=pRQ.pos; entry.rqL=pRQ.L; entry.rqDl=!!pRQ.dl; entry.rqPain=!!pRQ.pain; entry.rqVar=pRQ.v; }
   log.unshift(entry);
   log.sort(function(a,b){return a.dateKey<b.dateKey?1:-1;});
   saveLog(log);
-  pWeekly=false;
+  pWeekly=false; pRQ=null; rqCurDl=false; rqSwap=false;
   closeSheet(); renderToday(); renderLog();
 }
+
+/* ================= FILE DE SÉANCES RENFO (nov. 2026) =================
+   Principe : la séance n'est PAS liée à un jour. La prochaine séance de la file est proposée
+   chaque jour tant qu'elle n'est pas validée ; une fois validée, on passe à la suivante.
+   File : A (force jambes) → B (haut du corps) → C (unilatéral & descente) → A…
+   Cycle de 12 séances validées : 9 en montée de charge (3 tours A-B-C) + 3 de décharge (−30 %),
+   puis nouvelles variantes (3 jeux de variantes en rotation).
+   Séance ~60′ : échauffement fixe 8′ · bloc pubalgie 15′ · force 33′ · finisher gainage 4′.
+   État dérivé du journal (entrées renfo-supp avec rq:true) → synchro cloud gratuite via le log. */
+var pRQ=null, rqCurDl=false, rqSwap=false;
+var RQ_PAIN_KEY="renfoq:pain:v1";
+function rqPainGet(){ try{ var o=JSON.parse(localStorage.getItem(RQ_PAIN_KEY)||"null"); return !!(o&&o.d===iso(new Date())&&o.on); }catch(e){ return false; } }
+function rqPainSet(on){ try{ localStorage.setItem(RQ_PAIN_KEY,JSON.stringify({d:iso(new Date()),on:!!on})); }catch(e){} }
+function rqTogglePain(){ rqPainSet(!rqPainGet()); renderRQCard(); }
+function rqToggleSwap(){ rqSwap=!rqSwap; renderRQCard(); }
+function rqEntries(){ return loadLog().filter(function(e){ return e && e.rq && e.typeKey==="renfo-supp"; }); }
+function rqDoneSet(){ var s={}; rqEntries().forEach(function(e){ if(e.rqPos!=null) s[e.rqPos]=true; }); return s; }
+function rqNextPos(){ var s=rqDoneSet(), p=0; while(s[p]) p++; return p; }
+function rqNextAfter(p){ var s=rqDoneSet(); p++; while(s[p]) p++; return p; }
+function rqShownPos(){ var p=rqNextPos(); return rqSwap ? rqNextAfter(p) : p; }
+function rqInfo(pos){ var k=((pos%12)+12)%12; return {pos:pos, L:"ABC".charAt(((pos%3)+3)%3), cyc:Math.floor(pos/12), tour:Math.floor(k/3)+1, dl:k>=9, v:((Math.floor(pos/12)%3)+3)%3}; }
+function rqWeekCount(){
+  var mon=iso(mondayOf(new Date())), sun=new Date(mondayOf(new Date())); sun.setDate(sun.getDate()+6); var sk=iso(sun);
+  return rqEntries().filter(function(e){ return e.dateKey>=mon && e.dateKey<=sk; }).length;
+}
+function rqLast(){ var a=rqEntries().sort(function(x,y){ return x.dateKey<y.dateKey?1:(x.dateKey>y.dateKey?-1:((y.ts||0)-(x.ts||0))); }); return a[0]||null; }
+var RQ_NAMES={A:"Force jambes",B:"Haut du corps",C:"Unilatéral & descente"};
+function _rx(n,c,r){ return {n:n,c:c,r:r}; }
+/* Slot : lab · r (reps par série) · v (3 variantes, 1 par cycle) · p (version douleur pubis, optionnelle) */
+var RQ_DEF={
+  A:{
+    main:{lab:"Force · squat", r:"5-6 · RIR 2", rec:"récup 2′30", dlR:"5", v:[
+      _rx("Back squat","Barre sur les trapèzes, pieds largeur d'épaules. Descends en 2″ jusqu'aux cuisses parallèles, talons au sol, genoux qui suivent les pointes. Remontée franche.\nRIR 2 : tu t'arrêtes 2 reps avant de ne plus pouvoir."),
+      _rx("Front squat","Barre devant, sur les épaules, coudes hauts. Buste plus vertical que le back squat, plus de quadriceps. Commence 10-15 kg sous ton back squat."),
+      _rx("Squat barre tempo","Back squat avec 3″ de descente et 1″ de pause en bas. Charge ~10 % sous ton back squat. Le contrôle prime.")],
+      p:_rx("Chaise murale isométrique","Dos au mur, cuisses parallèles au sol, genoux à 90°. Tiens sans bouger. Le pubis ne doit rien sentir : sinon remonte un peu.","30-40″")},
+    ss:[
+      {lab:"Unilatéral", r:"6 / jambe", v:[
+        _rx("Fente arrière haltères","Grand pas en arrière, genou arrière qui frôle le sol. Le poids reste sur le talon de la jambe avant. Pas de rebond en bas."),
+        _rx("Fente marchée haltères","Fentes vers l'avant en avançant. Buste droit, genou avant aligné sur le pied. Jamais de version sautée."),
+        _rx("Fente arrière déficit haltères","Pied avant sur un disque (2-5 cm). Plus d'amplitude = plus de fessiers. Charge un peu sous la fente arrière.")],
+        p:_rx("Step-up box 51 cm (haltères)","Charge légère. Pousse sur le pied posé sur la box, sans impulsion du pied au sol. Descente en 3″.","8 / jambe")},
+      {lab:"Tirage", r:"6-8", v:[
+        _rx("Rowing barre","Buste penché à 45°, dos plat. Tire la barre vers le nombril, omoplates serrées, descente en 2″."),
+        _rx("Rowing Pendlay","Buste parallèle au sol, la barre repart du sol à chaque rep. Tirage explosif, dos immobile."),
+        _rx("Rowing haltère buste penché","Deux haltères, buste à 45°. Coudes le long du corps, pause 1″ en haut.")]}
+    ],
+    ss2:[
+      {lab:"Hanches", r:"6-8", v:[
+        _rx("Hip thrust barre","Haut du dos sur le banc, barre sur le bassin avec une mousse. Pause 1″ en haut, menton rentré, côtes basses."),
+        _rx("Soulevé de terre roumain barre","Hanches loin en arrière, barre qui glisse le long des cuisses, dos plat. Stop quand les ischios tirent."),
+        _rx("Hip thrust barre pause 3″","Même mouvement, 3″ verrouillé en haut. Charge ~10 % sous ton hip thrust habituel.")],
+        p:_rx("Hip thrust barre","Haut du dos sur le banc, barre sur le bassin. Pause 1″ en haut. Charge modérée, zéro gêne pubienne.","8")},
+      {lab:"Poussée", r:"6-8", v:[
+        _rx("Développé incliné haltères","Banc à 30°. Omoplates serrées, descente contrôlée jusqu'à la poitrine, poussée franche."),
+        _rx("Développé couché barre","Pieds à plat, fesses sur le banc, barre au bas des pectoraux. Descente en 2″."),
+        _rx("Pompes lestées","Disque sur le haut du dos (ou gilet). Corps gainé d'un bloc, coudes à 45°.")]}
+    ],
+    end:{lab:"Mollets", r:"12", sets:3, rec:"récup 45″", v:[
+      _rx("Mollet genou fléchi (disque sur les genoux)","Assis sur le banc, avant-pied sur un disque, charge posée sur les genoux. Amplitude complète, pause 1″ en haut. Le soléaire, clé en trail."),
+      _rx("Heel-drop soléaire excentrique","Sur une marche, genou fléchi : monte à 2 pieds, descends sur 1 en 4″. Encaisse les descentes."),
+      _rx("Mollet genou fléchi (disque sur les genoux)","Assis sur le banc, avant-pied sur un disque, charge posée sur les genoux. Pause 1″ en haut, descente en 3″.")]}
+  },
+  B:{
+    main:{lab:"Force · tirage vertical", r:"max − 1", rec:"récup 2′30", sets:4, dlR:"max − 3", v:[
+      _rx("Tractions pronation","Prise un peu plus large que les épaules. Bras tendus en bas, menton au-dessus de la barre, descente en 2″.\nmax − 1 : tu t'arrêtes 1 rep avant l'échec. Lestées dès que 3 × 8 passent."),
+      _rx("Tractions supination","Paumes vers toi, prise largeur d'épaules. Plus de biceps, même exigence : amplitude complète."),
+      _rx("Tractions prise neutre","Prise marteau (TRX ou poignées). Plus confortable pour les épaules.")]},
+    ss:[
+      {lab:"Poussée verticale", r:"6-8 / bras", v:[
+        _rx("Développé épaule KB","Debout, kettlebell en position rack. Pousse au-dessus de la tête, fessiers et abdos serrés, pas de cambrure."),
+        _rx("Push press KB","Petite flexion des jambes pour lancer, verrouille bras tendu, redescente contrôlée."),
+        _rx("Développé militaire barre","Debout, barre devant les épaules. Côtes basses, la tête passe sous la barre en haut. (6-8 reps au total)")]},
+      {lab:"Jambes légères", r:"8 / jambe", v:[
+        _rx("Step-up box 51 cm (haltères)","Pousse sur le pied posé sur la box, sans impulsion du pied au sol. Descente freinée en 3″. Charge modérée : séance haut du corps."),
+        _rx("Step-up box 61 cm (haltères)","Box plus haute = plus proche de la marche raide en trail. Contrôle avant la charge."),
+        _rx("Step-up latéral box 51 cm (haltères)","Monte par le côté : plan frontal, moyen fessier. Bassin horizontal.")]}
+    ],
+    ss2:[
+      {lab:"Tirage horizontal", r:"10", v:[
+        _rx("Rowing TRX","Corps gainé d'un bloc, poitrine vers les poignées. Avance les pieds pour durcir."),
+        _rx("Rowing TRX pieds surélevés","Pieds sur la box : plus dur. Pause 1″ omoplates serrées."),
+        _rx("Rowing haltère unilatéral","Main et genou sur le banc, dos plat. Coude vers la hanche, descente en 2″. (10 / bras)")]},
+      {lab:"Poussée", r:"max − 2", v:[
+        _rx("Pompes","Corps gainé, poitrine jusqu'au sol, coudes à 45°. Arrête-toi 2 reps avant l'échec."),
+        _rx("Dips","Buste légèrement penché, descente jusqu'à 90° au coude."),
+        _rx("Pompes déficit","Mains sur 2 disques : plus d'amplitude. Même gainage.")]}
+    ],
+    end:{lab:"Épaules + tibias", pair:true, sets:3, rec:"récup 45″", v:[
+      [_rx("Face pull élastique","Élastique à hauteur du visage. Tire vers les yeux, coudes hauts, ouvre les mains. Protège les épaules (bâtons).","15"),
+       _rx("Tibial raise","Dos au mur, talons à 30 cm. Relève les pointes de pied au maximum, descente lente. Le muscle des descentes.","15")]]}
+  },
+  C:{
+    main:{lab:"Force · unilatéral postérieur", r:"6-8 / jambe · RIR 2", rec:"récup 2′", dlR:"6 / jambe", v:[
+      _rx("Single leg deadlift kettlebell","KB dans la main opposée à la jambe d'appui. Hanche qui recule, jambe libre en arrière, dos plat, bassin horizontal. Descente en 3″."),
+      _rx("Soulevé de terre jambes décalées kettlebell","Pied arrière en appui sur la pointe (B-stance). Plus stable que le single leg : charge plus lourde."),
+      _rx("Single leg deadlift kettlebell pause","Pause 2″ en bas, sans poser le pied libre. Charge un peu en dessous.")],
+      p:_rx("Leg curl TRX","Sur le dos, talons dans les sangles. Monte le bassin, ramène les talons vers les fesses, déroule lentement.","8")},
+    ss:[
+      {lab:"Unilatéral", r:"6 / jambe", v:[
+        _rx("Split squat bulgare (haltères)","Pied arrière sur le banc, descente verticale, genou avant dans l'axe du pied, poussée talon."),
+        _rx("Split squat bulgare tempo (haltères)","4″ de descente, 1″ en bas. Charge un peu en dessous."),
+        _rx("Fente arrière glissée (disque de glisse)","Pied arrière sur le disque de glisse, il recule puis revient. Charge en haltères possible.")],
+        p:_rx("Step-up box 51 cm (haltères)","Charge légère. Pousse sur le pied posé sur la box, sans impulsion du pied au sol. Descente en 3″.","8 / jambe")},
+      {lab:"Tirage", r:"8 / bras", v:[
+        _rx("Rowing haltère unilatéral","Main et genou sur le banc, dos plat. Coude vers la hanche, pause 1″, descente en 2″."),
+        _rx("Rowing haltère appui poitrine","Couché ventre sur le banc incliné, deux haltères. Zéro triche avec le dos. (8 reps)"),
+        _rx("Rowing haltère unilatéral","Main et genou sur le banc, dos plat. 3″ de descente.")]}
+    ],
+    ss2:[
+      {lab:"Descente", r:"6 / jambe", v:[
+        _rx("Step-down excentrique box 51 cm","Debout sur la box, descends l'autre pied en 3″ jusqu'à effleurer le sol, sans le poser. Genou aligné sur le 2e orteil. Remonte en t'aidant."),
+        _rx("Step-down excentrique box 61 cm","Amplitude augmentée. Seulement si la version 51 cm est propre."),
+        _rx("Squat unipodal sur box","Assieds-toi sur la box sur une jambe en 3″, relève-toi sur la même jambe (aide des mains si besoin).")],
+        p:_rx("Chaise murale isométrique","Dos au mur, cuisses parallèles. Tiens sans bouger, zéro douleur pubis.","30-40″")},
+      {lab:"Poussée", r:"8", v:[
+        _rx("Dips","Buste légèrement penché, descente jusqu'à 90° au coude."),
+        _rx("Floor press haltères","Allongé au sol, coudes qui touchent le sol en bas, poussée franche. Épargne les épaules."),
+        _rx("Pompes déficit","Mains sur 2 disques, corps gainé.")]}
+    ],
+    end:{lab:"Mollets", r:"10 / jambe", sets:3, rec:"récup 45″", v:[
+      _rx("Mollet debout unilatéral lesté","Sur une marche, une jambe, haltère dans la main du même côté. Montée 1″, descente 3″. Révèle les asymétries."),
+      _rx("Heel-drop excentrique unilatéral","Sur une marche, jambe tendue : descente du talon en 4″ sous la marche. Remonte à 2 pieds."),
+      _rx("Mollet debout unilatéral lesté","Une jambe, haltère à la main, pause 2″ en bas.")]}
+  }
+};
+/* Bloc pubalgie : adducteurs (progression du trépied, pubAdd) toujours présent + 3 des 4 autres en rotation.
+   Version douleur : les 5. */
+function rqPubList(pos,pain){
+  var w=pubWeek(new Date()), T=pubTr(w), F=pubFe(w);
+  var A=pubAdd(w), others=[
+    pubEx("Montée de genou élastique","3 × 10 / côté · récup 45″","Debout, élastique à la cheville (ancré derrière toi). Monte le genou au-dessus de la hanche, buste droit, descente freinée en 2″.\nRenforce le psoas sans tirer sur le pubis. Gêne = élastique plus léger."),
+    F[0], T[0], T[1]];
+  var labs=["Fléchisseurs","Fessiers","Transverse","Gainage"], out=[{x:A,lab:"Adducteurs"}];
+  var skip = pain ? -1 : (((pos%4)+4)%4);
+  for(var i=0;i<others.length;i++){ if(i!==skip) out.push({x:others[i],lab:labs[i]}); }
+  return out;
+}
+var RQ_WARM=[
+  {name:"Rotation thoracique en fente",reps:"5 / côté",cue:"Ton exo : genou au sol, l'autre à 90°. Passe le bras sous l'autre bras, puis ouvre vers le ciel en suivant la main du regard."},
+  {name:"Squats à vide",reps:"10",cue:"Amplitude complète, lent."},
+  {name:"Cercles de bras + band pull-apart",reps:"10 + 15",cue:"Réveille épaules et haut du dos."},
+  {name:"Pont fessier",reps:"10",cue:"Active les fessiers avant de charger."},
+  {name:"Montées de genoux sur place",reps:"30″",cue:"Monte la température."}
+];
+var RQ_FIN=[
+  [{name:"Planche",cue:"Ventre rentré, fessiers serrés."},{name:"Bird dog",cue:"Bras et jambe opposés, bassin fixe."}],
+  [{name:"Gainage latéral gauche",cue:"Bassin haut, corps aligné."},{name:"Gainage latéral droit",cue:"Bassin haut, corps aligné."}],
+  [{name:"Dead bug lent",cue:"Bas du dos plaqué au sol."},{name:"Planche shoulder taps",cue:"Touche l'épaule opposée sans tourner le bassin."}],
+  [{name:"Pallof iso élastique (gauche)",cue:"Bras tendus, le tronc ne tourne pas."},{name:"Pallof iso élastique (droite)",cue:"Bras tendus, le tronc ne tourne pas."}],
+  [{name:"Bear hold",cue:"À 4 pattes, genoux décollés de 2 cm, dos plat."},{name:"Planche",cue:"Ventre rentré, respiration courte."}]
+];
+var RQ_SEED={"back-squat":[55,"repère : ta dernière séance à 50 kg × 8"],"fente-arriere-halteres":[10,"repère : ta dernière séance (20 kg au total)"],
+  "single-leg-deadlift-kettlebell":[16,"repère : ta dernière séance à 15 kg"],"developpe-incline-halteres":[15,"repère : ta dernière séance à 2 × 15 kg"]};
+function rqSugg(name,dl){
+  var u=chgUnit(name); if(u==="none"||u==="band") return null;
+  var h=chgHist(name), td=iso(new Date()), base=null;
+  for(var i=h.length-1;i>=0;i--){ var e=h[i]; if(e.d===td||e.c===undefined||e.c===""||isNaN(Number(e.c))) continue; if(!e.dl){ base=e; break; } }
+  if(!base){
+    var s=RQ_SEED[chgSlug(name)];
+    if(!s) return {c:null, txt:(u==="lest"?"poids du corps, 2 reps en réserve":"charge où il te reste 2 reps en fin de série")};
+    base={c:s[0], f:"seed", t:s[1]};
+  }
+  var c=Number(base.c);
+  if(dl){
+    if(u==="kg") return {c:Math.max(0,Math.round(c*0.7/2.5)*2.5), txt:"décharge −30 %"};
+    return {c:c, txt:"décharge : 2 séries, 3 reps en réserve"};
+  }
+  if(base.f==="seed") return {c:c, txt:base.t};
+  if(base.f==="trop dur") return {c:(u==="kg"?Math.max(0,c-2.5):c), txt:(u==="kg"?"−2,5 kg : la dernière était trop dure":"même charge, reps propres d'abord")};
+  if(base.f==="dur") return {c:c, txt:"même charge : valide-la proprement avant de monter"};
+  if(base.f==="facile"||base.f==="correct"){
+    if(u==="kg") return {c:c+2.5, txt:"+2,5 kg (dernière fois : "+base.f+")"};
+    if(u==="kgx2") return {c:c, txt:"même haltères, +1 rep / série · au haut de la fourchette → cran au-dessus"};
+    return {c:c, txt:"+1 rep par série (dernière fois : "+base.f+")"};
+  }
+  return {c:c, txt:"note ton ressenti en fin de série : c'est lui qui fait monter la charge"};
+}
+function rqPick(slot,v,pain){ if(pain && slot.p) return {x:slot.p, r:slot.p.r, pain:true}; var x=slot.v[v%slot.v.length]; return {x:x, r:x.r||slot.r, pain:false}; }
+function rqBuild(pos,pain){
+  var I=rqInfo(pos), D=RQ_DEF[I.L], S=I.dl?2:3, items=[], segs=[];
+  segs.push({kind:"renfowarm",rounds:2,label:"Échauffement",items:RQ_WARM});
+  var pub=rqPubList(pos,pain);
+  pub.forEach(function(p,i){
+    segs.push({kind:"flow",label:"Pubalgie "+(i+1)+"/"+pub.length+" · "+p.lab,name:p.x.name,reps:p.x.reps,cue:p.x.cue,noSwap:true});
+    items.push({g:"Bloc pubalgie",name:p.x.name,reps:p.x.reps.split("·")[0].trim()});
+  });
+  // Mouvement principal
+  var m=rqPick(D.main,I.v,pain), mS=D.main.sets?(I.dl?D.main.sets-1:D.main.sets):S;
+  var mR=(I.dl&&D.main.dlR&&!m.pain)?D.main.dlR:m.r;
+  var mReps=mS+" × "+mR+" · "+(m.pain?"récup 60″":D.main.rec), mSug=m.pain?null:rqSugg(m.x.n,I.dl);
+  segs.push({kind:"flow",label:D.main.lab,name:m.x.n,reps:mReps,cue:m.x.c+(m.pain?"\n🩹 Version douleur pubis.":""),noSwap:true,rq:true,sugg:[mSug]});
+  items.push({g:"Force",name:m.x.n,reps:mReps.split("·")[0].trim(),sugg:mSug});
+  // Supersets
+  [D.ss,D.ss2].forEach(function(pair,k){
+    var a=rqPick(pair[0],I.v,pain), b=rqPick(pair[1],I.v,pain);
+    var sa=rqSugg(a.x.n,I.dl), sb=rqSugg(b.x.n,I.dl);
+    segs.push({kind:"flow",rq:true,noSwap:true,label:"Superset "+(k+1)+" · "+pair[0].lab+" + "+pair[1].lab,
+      name:a.x.n+"  +  "+b.x.n, reps:S+" × ("+a.r+" + "+b.r+") · récup 2′",
+      parts:[a.x.n,b.x.n], partReps:[a.r,b.r], figs:[figFor(a.x.n),figFor(b.x.n)], sugg:[sa,sb],
+      cue:"Enchaîne les 2 exos sans pause, puis récup 2′ après la paire. Valide une série quand la paire est faite.\n• "+a.x.n+" : "+a.x.c+(a.pain?" 🩹":"")+"\n• "+b.x.n+" : "+b.x.c});
+    items.push({g:"Superset "+(k+1),name:a.x.n,reps:S+" × "+a.r,sugg:sa});
+    items.push({g:"Superset "+(k+1),name:b.x.n,reps:S+" × "+b.r,sugg:sb});
+  });
+  // Fin : mollets / épaules-tibias
+  var E=D.end, eS=I.dl?2:(E.sets||3);
+  if(E.pair){
+    var pr=E.v[I.v%E.v.length];
+    segs.push({kind:"flow",rq:true,noSwap:true,label:E.lab,name:pr[0].n+"  +  "+pr[1].n,reps:eS+" × ("+pr[0].r+" + "+pr[1].r+") · "+E.rec,
+      parts:[pr[0].n,pr[1].n],partReps:[pr[0].r,pr[1].r],figs:[figFor(pr[0].n),figFor(pr[1].n)],sugg:[null,null],
+      cue:"Enchaîne les 2, récup 45″ après la paire.\n• "+pr[0].n+" : "+pr[0].c+"\n• "+pr[1].n+" : "+pr[1].c});
+    items.push({g:E.lab,name:pr[0].n,reps:eS+" × "+pr[0].r}); items.push({g:E.lab,name:pr[1].n,reps:eS+" × "+pr[1].r});
+  } else {
+    var ex=E.v[I.v%E.v.length], eSug=rqSugg(ex.n,I.dl);
+    segs.push({kind:"flow",rq:true,noSwap:true,label:E.lab,name:ex.n,reps:eS+" × "+E.r+" · "+E.rec,cue:ex.c,sugg:[eSug]});
+    items.push({g:E.lab,name:ex.n,reps:eS+" × "+E.r,sugg:eSug});
+  }
+  tagRenfoSegs(segs.slice(1));
+  // Finisher gainage (tourne à chaque séance)
+  var f=RQ_FIN[((pos%RQ_FIN.length)+RQ_FIN.length)%RQ_FIN.length];
+  segs.push({kind:"tabata",label:"Finisher gainage",name:"Tabata gainage",rounds:8,work:20,rest:10,moves:f});
+  items.push({g:"Finisher",name:"Tabata gainage : "+f[0].name+" / "+f[1].name,reps:"8 × 20″/10″"});
+  return {info:I, pain:!!pain, name:"Séance "+I.L+" · "+RQ_NAMES[I.L]+(I.dl?" · décharge":"")+(pain?" · version douleur":""), segs:segs, items:items,
+    blocks:items.filter(function(x){return x.g!=="Échauffement";}).map(function(x){return {name:x.name,reps:x.reps};})};
+}
+function rqTomorrowHard(){ try{ var d=new Date(); d.setDate(d.getDate()+1); var s=sessionFor(d); return s.typeKey==="cotes" ? (s.plan.label||"séance dure") : ""; }catch(e){ return ""; } }
+function renderRQCard(){
+  var box=document.getElementById("rqCard"); if(!box) return;
+  if(dayOffset!==0){ box.innerHTML=""; return; }
+  var td=iso(new Date()), last=rqLast(), wk=rqWeekCount(), pain=rqPainGet();
+  var doneToday = last && last.dateKey===td;
+  var pos=rqShownPos(), s=rqBuild(pos,pain), I=s.info;
+  var head='<div style="display:flex;justify-content:space-between;align-items:center">'+
+    '<div class="eyebrow" style="color:var(--orange-d)">🏋️ Renfo du jour</div>'+
+    '<div style="font-size:11px;font-weight:800;color:'+(wk>=3?'var(--grn)':'var(--mut)')+'">'+wk+'/3 cette semaine</div></div>';
+  if(doneToday){
+    var nI=rqInfo(rqNextPos());
+    box.innerHTML='<div class="card" style="margin-bottom:12px;border-left:5px solid var(--grn)">'+head+
+      '<div style="font-weight:800;font-size:15px;margin:4px 0 2px">✓ '+(last.title||("Séance "+last.rqL))+'</div>'+
+      '<div style="color:var(--mut);font-size:12.5px">Prochaine : Séance '+nI.L+' · '+RQ_NAMES[nI.L]+' — demain au plus tôt (24 h de récup).</div></div>';
+    return;
+  }
+  var warn=[];
+  var hard=rqTomorrowHard();
+  if(I.L==="A" && hard && !rqSwap) warn.push('Demain : <b>'+hard+'</b>. Jambes lourdes la veille = séance dure gâchée. <button onclick="rqToggleSwap()" style="border:1px solid var(--orange);background:none;color:var(--orange-d);border-radius:999px;padding:3px 9px;font-size:11.5px;font-weight:700;font-family:inherit">⇄ Faire '+rqInfo(rqNextAfter(pos)).L+' à la place</button>');
+  if(rqSwap) warn.push('Séance inversée : la '+rqInfo(rqNextPos()).L+' reviendra juste après. <button onclick="rqToggleSwap()" style="border:1px solid var(--line);background:none;color:var(--mut);border-radius:999px;padding:3px 9px;font-size:11.5px;font-family:inherit">annuler</button>');
+  if(last && Number(last.zp)>3 && !pain) warn.push('Dernière séance : pubis à <b>'+last.zp+'/10</b>. Si ça persiste ce matin → active la version douleur.');
+  if(wk>=3) warn.push('3 séances déjà faites cette semaine : celle-ci est du bonus. Repos aussi valable.');
+  var sub=(I.dl?'Décharge −30 % · ~45′':'Tour '+I.tour+'/3 · variantes '+(I.v+1)+'/3 · ~60′');
+  var groups={}, order=[];
+  s.items.forEach(function(x){ if(!groups[x.g]){ groups[x.g]=[]; order.push(x.g); } groups[x.g].push(x); });
+  var det=order.map(function(g){
+    return '<div style="font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--mut);text-transform:uppercase;margin:9px 0 3px">'+g+'</div>'+
+      groups[g].map(function(x){
+        var sg=x.sugg&&x.sugg.c!=null?' · <b style="color:var(--acid-d)">'+(chgUnit(x.name)==="kgx2"?x.sugg.c+" kg × 2":(chgUnit(x.name)==="lest"?(Number(x.sugg.c)>0?"+"+x.sugg.c+" kg":"PDC"):x.sugg.c+" kg"))+'</b>':'';
+        return '<div style="font-size:13px;line-height:1.45">'+x.name+' <span style="color:var(--mut)">· '+x.reps+'</span>'+sg+'</div>';
+      }).join("");
+  }).join("");
+  box.innerHTML='<div class="card" style="margin-bottom:12px;border-left:5px solid var(--orange)">'+head+
+    '<div style="font-weight:800;font-size:16px;margin:4px 0 2px">Séance '+I.L+' · '+RQ_NAMES[I.L]+'</div>'+
+    '<div style="color:var(--mut);font-size:12.5px">'+sub+(pain?' · <b style="color:var(--red)">version douleur</b>':'')+'</div>'+
+    (warn.length?'<div style="margin-top:8px;padding:8px 10px;border-radius:12px;background:#fff3ec;color:var(--ink2);font-size:12.5px;line-height:1.5">'+warn.join('<br>')+'</div>':'')+
+    '<div style="display:flex;gap:8px;margin-top:10px">'+
+      '<button class="btn btn-orange" style="flex:1;padding:10px;font-size:13px" onclick="rqLaunch()">▶ LANCER</button>'+
+      '<button class="btn btn-ghost" style="flex:1;padding:10px;font-size:13px" onclick="rqMarkDone()">✓ DÉJÀ FAITE</button></div>'+
+    '<button onclick="rqTogglePain()" style="width:100%;margin-top:7px;padding:7px;border:1px '+(pain?'solid var(--red)':'dashed var(--line)')+';border-radius:10px;background:none;color:'+(pain?'var(--red)':'var(--mut)')+';font-size:12px;font-family:inherit;font-weight:'+(pain?'700':'500')+'">'+(pain?'🩹 Version douleur activée (sans squat ni fente) · désactiver':'🩹 Pubis > 3/10 aujourd\'hui ? → version douleur')+'</button>'+
+    '<details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:var(--ink2)">Voir la séance</summary>'+det+'</details></div>';
+}
+function rqSetup(){
+  var pos=rqShownPos(), pain=rqPainGet(), s=rqBuild(pos,pain);
+  pKey=iso(new Date()); pIsSupp=true; pSuppKind="renfo"; pWeekly=false;
+  pRQ={pos:pos,L:s.info.L,dl:s.info.dl,pain:pain,v:s.info.v}; rqCurDl=s.info.dl;
+  pState={}; pSeriesDone={}; pSignal={zones:[],text:""};
+  pSuppName=s.name; pRenfoBlocks=s.blocks; pSegs=s.segs; pIdx=0;
+  return s;
+}
+function rqLaunch(){
+  unlockAudio(); reqWake(); beep(660,.12);
+  rqSetup();
+  document.getElementById("player").classList.add("on"); renderSeg();
+}
+function rqMarkDone(){ rqSetup(); finishSuppRenfo(); }
 
 /* ================= HORIZON ================= */
 function renderCapNote(){

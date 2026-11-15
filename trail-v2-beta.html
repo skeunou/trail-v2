@@ -3050,7 +3050,7 @@ function scanLinks(all){
   if(!Array.isArray(all))return 0;
   var fresh={},links=linksGet();
   all.forEach(function(a){ if(ignHas(a.id))return; var sid=parseSid(a.name); if(sid&&!fresh[sid])fresh[sid]={id:a.id,name:a.name,km:a.km,dplus:a.dplus,movingMin:a.movingMin,hrAvg:a.hrAvg,hrMax:a.hrMax,date:a.date};});
-  var added=0; Object.keys(fresh).forEach(function(sid){if(!links[sid])added++; links[sid]=fresh[sid];});
+  var added=0; Object.keys(fresh).forEach(function(sid){if(!links[sid])added++; var o=links[sid]; if(o&&o.dplusMan&&o.id===fresh[sid].id){ fresh[sid].dplus=o.dplus; fresh[sid].dplusMan=true; } links[sid]=fresh[sid];});
   linksSet(links); return added;
 }
 
@@ -3090,7 +3090,7 @@ function stravaCompare(s,lk){
   h+='<div class="row"><span style="color:#fc4c02;font-weight:700">✓ Réalisé · Strava</span><b>'+(lk.date||"").split("-").reverse().slice(0,2).join("/")+'</b></div>';
   h+='<div class="row"><span>Durée</span><b>'+fmtMin(lk.movingMin)+(P.durMin?' <span style="color:var(--mut)">/ '+fmtMin(P.durMin)+' cible</span>':'')+'</b></div>';
   if(lk.km)h+='<div class="row"><span>Distance</span><b>'+lk.km+' km</b></div>';
-  h+='<div class="row"><span>D+</span><b>'+lk.dplus+' m</b></div>';
+  h+='<div class="row"><span>D+</span><b>'+(lk.dplus||0)+' m'+(lk.dplusMan?' <span style="color:var(--mut);font-weight:400">(manuel)</span>':'')+' <button onclick="event.stopPropagation();dpEditLink(\''+s.plan.linkid+'\')" style="border:1px solid var(--line);background:none;color:var(--acid);border-radius:8px;padding:2px 8px;font:600 11px DM Sans,sans-serif;margin-left:6px">✎ D+</button></b></div>';
   if(lk.hrAvg){var z='';if((tk==="fond"||tk==="longue")&&lk.hrAvg>FCZ2HI)z=' <span style="color:var(--orange)">&gt; Z2</span>';else if(tk==="fond"||tk==="longue")z=' <span style="color:var(--grn)">dans Z2</span>';h+='<div class="row"><span>FC moy</span><b>'+lk.hrAvg+(lk.hrMax?' <span style="color:var(--mut)">(max '+lk.hrMax+')</span>':'')+z+'</b></div>';}
   h+='<div class="row"><span style="color:var(--mut);font-size:11px;max-width:70%">'+lk.name+'</span><b></b></div>';
   h+='</div>'; return h;
@@ -5404,6 +5404,12 @@ function wellnessSync(force){
     if(any){ matinWrite(o); try{ renderAdapt(); }catch(e){} }
   }).catch(function(){});
 }
+/* ===== D+ manuel (tapis incliné, etc.) — 15 nov. 2026 =====
+   Strava/Garmin ne donnent pas de D+ sur tapis et ne permettent pas de le saisir.
+   ✎ sur une séance liée ou une activité ajoutée → D+ corrigé, gardé (dplusMan) même après rafraîchissement Strava. */
+function _dpAsk(cur){ var v=prompt("D+ de la séance (m)\nTapis : distance (km) × pente (%) × 10 — ex. 5 km à 12 % = 600", cur||""); if(v===null) return null; v=parseInt(String(v).replace(/\D/g,""),10); return isNaN(v)?null:v; }
+function dpEditLink(lid){ var L=linksGet(); if(!L[lid]) return; var v=_dpAsk(L[lid].dplus); if(v===null) return; L[lid].dplus=v; L[lid].dplusMan=true; linksSet(L); try{ if(curKey) openSheet(curKey,true); }catch(e){} renderToday(); }
+function dpEditExtra(xid){ var a=extrasGet(), e=a.filter(function(x){return x.xid===xid;})[0]; if(!e) return; var v=_dpAsk(e.dplus); if(v===null) return; e.dplus=v; e.dplusMan=true; e._u=Date.now(); extrasSet(a); renderToday(); try{ if(curKey) renderSheetExtras(curKey); }catch(_){} }
 
 /* ================= HORIZON ================= */
 function renderCapNote(){
@@ -6266,7 +6272,8 @@ function extraCard(e){
   if(e.wAvg) stats+=e.wAvg+'W moy';
   if(e.hrAvg) stats+=(stats?' · ':'')+'FC '+e.hrAvg+(e.hrMax?' (max '+e.hrMax+')':'');
   if(e.km) stats+=(stats?' · ':'')+e.km+' km';
-  if(e.dplus) stats+=(stats?' · ':'')+e.dplus+' m D+';
+  if(e.dplus) stats+=(stats?' · ':'')+e.dplus+' m D+'+(e.dplusMan?' (manuel)':'');
+  stats+=(stats?' · ':'')+'<a onclick="dpEditExtra(\''+e.xid+'\')" style="color:var(--acid);cursor:pointer;font-weight:700">✎ D+</a>';
   if(e.note) stats+=(stats?' · ':'')+e.note;
   var src=e.manual?'<span style="color:var(--mut);font-size:10px"> · manuel</span>':'';
   var detailBtn = e.sid ? '<button class="btn btn-ghost" style="width:100%;margin-top:9px;font-size:12.5px;padding:7px" onclick="toggleExtraDetail(this,\''+e.xid+'\')" id="exbtn-'+e.xid+'">+ détails coach</button><div id="exdet-'+e.xid+'" style="display:none;margin-top:8px"></div>' : '';

@@ -631,7 +631,11 @@
     <!-- Carte "À FAIRE" (slots flexibles) : déplacée dans l'onglet Semaine. -->
     <div id="renfoWeek" style="display:none"></div>
     <!-- BÊTA : le reste replié (essentiel visible, détail au clic) -->
-    <details class="homeMore"><summary>▾ Charge, tractions, séance en plus</summary>
+    <details class="homeMore"><summary>▾ Charge, tractions, Strava, séance en plus</summary>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="act" style="flex:1;margin:0" onclick="nav('week');toggleStravaCard()"><span class="sv">↗</span> Strava : connexion / lier</button>
+        <button class="act" style="flex:1;margin:0" onclick="nav('week')">Vue semaine</button>
+      </div>
       <div id="suppHome"></div>
       <div id="loadCard"></div>
       <div id="gtgMini"></div>
@@ -793,7 +797,8 @@
 <!-- NAV -->
 <nav class="nav">
   <button class="on" id="nav-today" onclick="nav('today')"><span class="ni">◎</span><span class="nl">Aujourd'hui</span></button>
-  <button id="nav-week" onclick="nav('week')"><span class="ni">▦</span><span class="nl">Semaine</span></button>
+  <!-- BÊTA : onglet Semaine masqué (non utilisé). Vue conservée, accessible depuis « ▾ plus » de l'accueil. -->
+  <button id="nav-week" style="display:none" onclick="nav('week')"><span class="ni">▦</span><span class="nl">Semaine</span></button>
   <button id="nav-horizon" onclick="nav('horizon')"><span class="ni">⛰</span><span class="nl">Prog 26-27</span></button>
   <button id="nav-log" onclick="nav('log')"><span class="ni">▤</span><span class="nl">Repères</span></button>
   <button id="nav-pull" onclick="nav('pull')"><span class="ni">💪</span><span class="nl">Tractions</span></button>

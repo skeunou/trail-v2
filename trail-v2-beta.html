@@ -90,7 +90,7 @@
   .hAdapt .tx{flex:1;font-size:12.5px;line-height:1.45}
   .hAdapt .tx b{font-weight:700}
   .hAdapt .sub{display:block;font-size:11px;color:var(--mut);margin-top:3px;line-height:1.4}
-  .nextS{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--ink2);background:var(--acid);border-radius:999px;padding:5px 10px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+  .nextS{font-size:10px;font-weight:700;letter-spacing:.5px;color:#1a1d12;background:var(--acid);border-radius:999px;padding:5px 10px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
   .nextS b{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.5px;color:#1a1d12}
   /* ===== POPUP MATINAL + ADAPTATION ===== */
   .mQ{font-size:11px;font-weight:800;letter-spacing:.6px;color:var(--mut);text-transform:uppercase;margin:16px 0 8px}
@@ -99,7 +99,7 @@
   .mHint{font-size:10.5px;color:var(--mut);margin-top:5px;line-height:1.45}
   .mFeel{display:grid;grid-template-columns:1fr 1fr;gap:7px}
   .mFeel button{padding:11px 8px;border:1px solid var(--line);border-radius:11px;background:var(--paper);color:var(--ink2);font-size:12px;font-weight:600;font-family:inherit;text-align:left}
-  .mFeel button.on{background:var(--acid);color:#1a1d12;border-color:var(--ink)}
+  .mFeel button.on{background:var(--acid);color:#1a1d12;border-color:#1a1d12}
   .mBand{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:9px 13px;margin-bottom:10px;font-size:12px}
   .mBand b{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.5px}
   /* ===== RÉFÉRENCES (onglet ex-Historique) ===== */
@@ -134,13 +134,88 @@
   .chgU{font-size:11px;color:var(--mut);min-width:52px}
   .chgFeel{display:flex;gap:5px;margin-top:9px}
   .chgFeel button{flex:1;padding:7px 2px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--mut);font-size:10.5px;font-weight:600;font-family:inherit}
-  .chgFeel button.on{background:var(--acid);color:#1a1d12;border-color:var(--ink)}
+  .chgFeel button.on{background:var(--acid);color:#1a1d12;border-color:#1a1d12}
   .chgHistBtn{margin-top:9px;width:100%;padding:6px;border:none;background:none;color:var(--mut);font-size:11px;font-family:inherit}
   .chgHist{margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
   .chgHist div{display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);padding:3px 0}
   .chgHist span{color:var(--mut)}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
+  /* ===== REFONTE (bêta) ===== */
+  #v-today .topline{background:transparent!important;border-bottom:none!important;padding:0!important;margin:calc(-1 * max(18px, env(safe-area-inset-top))) -18px 6px -18px!important}
+  #v-today .toprow1{display:none}
+  #v-today .topmorn{margin:0 16px;border-top:none;padding-top:0}
+  .crest{position:relative;height:196px;background:radial-gradient(120% 80% at 70% 0%,#23261a 0%,#0d0d0f 70%);overflow:hidden}
+  .crest svg{position:absolute;inset:0;width:100%;height:100%}
+  .crTop{position:absolute;left:20px;right:20px;top:max(18px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start}
+  .crDate{font-size:11px;font-weight:800;letter-spacing:2px;color:#8b9098;text-transform:uppercase}
+  .crBlock{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;margin-top:2px;max-width:200px}
+  .crJ{font-family:'Bebas Neue',sans-serif;font-size:46px;line-height:.85;color:var(--acid)}
+  .crU{font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#8b9098}
+  .crFoot{position:absolute;left:20px;right:20px;bottom:10px;font-size:11px;color:#b8bdb2;display:flex;align-items:center;gap:6px}
+  .crFoot i{width:8px;height:8px;border-radius:4px;background:var(--acid);display:inline-block}
+  .crOld{margin-left:auto;color:#8b9098!important;text-decoration:none;font-size:10.5px}
+  #heroCard{border-left:1px solid var(--line)!important;border-radius:22px!important;cursor:pointer}
+  #heroType{display:flex!important;justify-content:space-between;align-items:center;font-size:11px!important;letter-spacing:2px!important;color:var(--blue)!important;margin-bottom:6px}
+  .stBadge{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--orange);border:1px solid rgba(255,107,53,.5);border-radius:999px;padding:3px 9px}
+  .stBadge.ok{color:var(--grn);border-color:rgba(52,196,111,.5)}
+  #heroTitle{font-family:'Bebas Neue',sans-serif!important;font-size:38px!important;line-height:.9!important;font-weight:400!important;white-space:normal!important;margin:2px 0 10px!important;letter-spacing:.3px!important}
+  #heroCard .spec{background:var(--bg);border:none;border-radius:10px;padding:6px 10px;font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mut)}
+  #heroCard .spec b{font-size:20px;line-height:1;color:var(--ink)}
+  #heroCard .specsRow{flex-direction:column;align-items:stretch!important;gap:10px!important}
+  #heroCard .specs{margin-bottom:0}
+  #heroActions .btn{width:100%;padding:12px!important;font-size:15px!important}
+  .rings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px}
+  .ring{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:10px 4px;display:flex;align-items:center;justify-content:center;gap:6px}
+  .ring .rg{position:relative;width:44px;height:44px;flex:0 0 auto}
+  .ring svg{width:44px;height:44px;transform:rotate(-90deg)}
+  .ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:15px;font-weight:400}
+  .ring span{font-size:10px;color:var(--mut);line-height:1.2}
+  .dayDet{position:fixed;inset:0;z-index:85;background:#0d0d0f;display:none;overflow-y:auto}
+  .dayDet.on{display:block}
+  .ddWrap{max-width:520px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 16px max(20px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;min-height:100%;box-sizing:border-box}
+  .ddTop{display:flex;justify-content:space-between;align-items:center}
+  .ddTop button{min-height:44px;border:none;background:none;color:#8b9098;font:600 13px 'DM Sans',sans-serif;padding:0}
+  .ddTop span{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--blue)}
+  .ddTitle{font-family:'Bebas Neue',sans-serif;font-size:46px;line-height:.88}
+  .ddWhy{font-size:13px;color:#b8bdb2;line-height:1.45}
+  .ddBlocks{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:4px 16px}
+  .ddB{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;line-height:1.45;color:#e2e4dd}
+  .ddB:last-child{border-bottom:none}
+  .ddB b{width:70px;flex:0 0 auto;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--acid);padding-top:2px}
+  .ddB b.m{color:#5d6168}
+  .ddSpecs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .ddSpec{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column}
+  .ddSpec b{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;font-weight:400}
+  .ddSpec span{font-size:9.5px;font-weight:700;letter-spacing:1px;color:var(--mut);text-transform:uppercase}
+  .ddStrava{background:var(--paper);border:1px solid rgba(255,107,53,.45);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+  .ddSh span{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--orange)}
+  .ddAct{font-weight:700;font-size:14px}
+  .ddChk{display:flex;align-items:center;gap:10px;font-size:12.5px}
+  .ddChk i{width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:12px;color:#0d0d0f;background:var(--grn);flex:0 0 auto}
+  .ddChk i.ko{background:var(--orange)}
+  .ddChk span{flex:1;color:#c9ccc4}
+  .ddChk b{font-family:'Bebas Neue',sans-serif;font-size:19px;font-weight:400}
+  .ddNote{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:#b8bdb2}
+  .ddNote button{min-height:44px;min-width:70px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;font:600 12px 'DM Sans',sans-serif}
+  .ddAct2{display:flex;gap:8px;margin-top:auto;padding-top:8px}
+  .ddGhost{flex:1;min-height:56px;border:1px solid var(--line);background:transparent;color:#c9ccc4;border-radius:16px;font:600 13px 'DM Sans',sans-serif}
+  .ddGo{flex:1.6;min-height:56px;border:none;border-radius:16px;background:var(--acid);color:#1a1d12;font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1.5px}
+  /* lecteur renfo */
+  #player .rrow{display:flex;align-items:center;gap:16px}
+  #player .rrecup{position:relative;flex:0 0 auto;width:150px;height:150px;border:none!important;background:none!important;border-radius:50%;padding:0;justify-content:center}
+  #player .rrecup svg{position:absolute;inset:0;width:150px;height:150px;transform:rotate(-90deg)}
+  #player .rrecup .rlab{position:relative;color:var(--orange);font-weight:800;letter-spacing:2px}
+  #player .rrecup .rtime{position:relative;font-size:46px}
+  #player .rserie{order:2;flex:1;min-height:110px;background:var(--acid)!important;border:none!important;border-radius:20px;color:#1a1d12}
+  #player .rserie .rlab{color:#1a1d12;font-weight:800;letter-spacing:1.5px}
+  #player .rserie .rcnt{color:#1a1d12!important;font-size:40px}
+  #player .rserie.done{background:var(--grn)!important}
+  #player .pname{font-size:52px!important;line-height:.9}
+  .chgPM{width:46px;height:46px;flex:0 0 auto;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-family:'Bebas Neue',sans-serif;font-size:24px}
+  .fCrest{position:relative;height:120px;margin:0 0 6px;overflow:hidden;border-radius:16px;background:radial-gradient(100% 90% at 50% 10%,#262a17 0%,#17181c 72%)}
+  .fCrest svg{position:absolute;inset:0;width:100%;height:100%}
+  .fCrest .fk{position:absolute;left:14px;top:12px;font-size:11px;font-weight:800;letter-spacing:2px;color:var(--acid)}
   /* ===== BÊTA ===== */
   .betaTag{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;color:#1a1d12;background:var(--orange);border-radius:6px;padding:2px 6px}
   .rqHero{background:linear-gradient(160deg,#1c1e14 0%,var(--paper) 55%);border:1px solid #3a3f1f;border-radius:22px;padding:18px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
@@ -201,7 +276,7 @@
   .tsep{color:#5d6168;font-size:11px;flex:0 0 auto}
   .tmorn-ask{border:1px dashed #5d6168;background:none;border-radius:999px;padding:5px 12px;font:600 11px 'DM Sans',sans-serif;color:#b8bdb2;cursor:pointer;white-space:nowrap;flex:0 0 auto}
   .tmorn-edit{border:none;background:none;color:var(--ink2);font-size:13px;cursor:pointer;padding:2px 4px;opacity:.55;margin-left:auto;flex:0 0 auto}
-  .blockbadge{font-size:12px;font-weight:700;color:var(--ink);background:var(--acid);border-radius:999px;padding:5px 11px}
+  .blockbadge{font-size:12px;font-weight:700;color:#1a1d12;background:var(--acid);border-radius:999px;padding:5px 11px}
 
   .hero{margin-bottom:16px;border-left:6px solid var(--orange)}
   .hero .type{font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--orange-d)}
@@ -256,7 +331,7 @@
   .stop{position:relative;padding:11px 0}
   .stop .dot{position:absolute;left:-24px;top:15px;width:14px;height:14px;border-radius:50%;background:var(--paper);border:3px solid var(--line)}
   .stop.cur .dot{border-color:var(--orange);background:var(--orange)}
-  .stop.race .dot{border-color:var(--ink);background:var(--acid)}
+  .stop.race .dot{border-color:#1a1d12;background:var(--acid)}
   .stop .n{font-weight:700;font-size:15px}
   .stop .d{font-size:12.5px;color:var(--mut)}
   .stop.cur .n{color:var(--orange-d)}
@@ -394,8 +469,8 @@
   .agdet{padding:2px 13px 14px;border-top:1px dashed var(--line);background:rgba(0,0,0,.015)}
   .agbtns{display:flex;gap:6px;flex-wrap:wrap}
   .agb{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-size:11.5px;font-weight:700;color:var(--ink2);font-family:'DM Sans',sans-serif;cursor:pointer}
-  .agb.on{background:var(--acid);border-color:var(--acid-d);color:var(--ink)}
-  .agb.go{background:var(--acid);color:#1a1d12;border-color:var(--ink);font-size:15px;padding:6px 13px;flex:0 0 auto}
+  .agb.on{background:var(--acid);border-color:var(--acid-d);color:#1a1d12}
+  .agb.go{background:var(--acid);color:#1a1d12;border-color:#1a1d12;font-size:15px;padding:6px 13px;flex:0 0 auto}
   .agit{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink);padding:5px 0;border-bottom:1px solid var(--line)}
   .agit b{font-weight:700;flex:1;min-width:0}
   .agit .lk{font-size:9px;font-weight:800;color:var(--mut);border:1px solid var(--line);border-radius:20px;padding:1px 6px}
@@ -488,7 +563,7 @@
   .co-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:11px;color:var(--mut)}
   .co-regen{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:7px 11px;font:700 12px 'DM Sans',sans-serif;color:var(--ink);cursor:pointer;white-space:nowrap}
   .co-type{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:var(--orange-d)}
-  .co-intent{display:inline-block;margin-left:6px;font-size:10.5px;letter-spacing:.3px;text-transform:none;color:var(--ink);background:var(--acid);border-radius:999px;padding:2px 8px;font-weight:700}
+  .co-intent{display:inline-block;margin-left:6px;font-size:10.5px;letter-spacing:.3px;text-transform:none;color:#1a1d12;background:var(--acid);border-radius:999px;padding:2px 8px;font-weight:700}
   .co-name{font:800 17px 'DM Sans',sans-serif;color:var(--ink);margin:3px 0 8px}
   .co-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 10px}
   .co-k{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
@@ -521,6 +596,7 @@
   <!-- AUJOURD'HUI -->
   <section class="view on" id="v-today">
     <div class="topline">
+      <div id="crestBox"></div>
       <div class="toprow1">
         <div class="eyebrow topdate" id="todayDate">—</div>
         <div style="display:flex;align-items:center;gap:7px">
@@ -543,13 +619,15 @@
       <div class="why" id="heroWhy">—</div>
       <div class="specsRow" style="display:flex;align-items:center;gap:10px;margin-bottom:0">
         <div class="specs" id="heroSpecs" style="flex:1;margin-bottom:0"></div>
-        <div id="heroActions" style="flex-shrink:0"></div>
+        <div id="heroActions" style="flex-shrink:0" onclick="event.stopPropagation()"></div>
       </div>
       <div id="heroAdapt"></div>
     </div>
     <div id="adaptBox"></div>
     <div id="extrasBox"></div>
     <div id="rqCard"></div><!-- nov. 2026 : file de séances renfo (A → B → C) -->
+    <div id="ringsBox"></div>
+    <div id="dayDet" class="dayDet"></div>
     <!-- Carte "À FAIRE" (slots flexibles) : déplacée dans l'onglet Semaine. -->
     <div id="renfoWeek" style="display:none"></div>
     <!-- BÊTA : le reste replié (essentiel visible, détail au clic) -->
@@ -3573,6 +3651,7 @@ function renderToday(){
   else if(s.typeKey==="repos"){ a='<button class="btn btn-go" '+bs+' onclick="openSheet(\''+s.dateKey+'\',true)">MARQUER</button>'; }
   else { a='<button class="btn btn-go" '+bs+' onclick="openSheet(\''+s.dateKey+'\',true)">VALIDER</button>'; }
   document.getElementById("heroActions").innerHTML=a;
+  renderHeroBeta(s); renderCrestBeta(vd,s);
   renderWeek();
   renderLoadCard();
   renderGtgMini();
@@ -3580,6 +3659,7 @@ function renderToday(){
   renderTrip(vd);
   renderExtras(vd);
   renderRQCard();
+  renderRingsBeta();
   renderSuppHome(vd);
   /* renderRenfoWeek() / renderSLWeek() : cartes retirées de l'accueil, conteneurs masqués.
      Appels conservés pour ne rien casser si les cartes sont réactivées. */
@@ -3821,7 +3901,7 @@ function renderGtgMini(){
       '<div style="font-size:10.5px;font-weight:800;letter-spacing:.5px;color:#1a1d12;text-transform:uppercase;margin-top:3px">Traction GTG</div>'+
     '</button>'+
     '<div onclick="nav(\'pull\')" style="flex:1;border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:13px 10px;text-align:center;cursor:pointer">'+
-      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:30px;line-height:.9;color:var(--ink)">'+done+'<small style="font-size:15px;color:var(--mut)"> ×</small></div>'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:30px;line-height:.9;color:#1a1d12">'+done+'<small style="font-size:15px;color:var(--mut)"> ×</small></div>'+
       '<div style="font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--mut);text-transform:uppercase;margin-top:3px">Passages · 💪</div>'+
     '</div></div>';
 }
@@ -4375,7 +4455,7 @@ function rfStartRecup(){
   if(el)el.textContent=fmtClock(t);
   pTimer=setInterval(function(){
     t--; var e=document.getElementById("rfTime"); if(!e){clearInterval(pTimer);return;}
-    e.textContent=fmtClock(Math.max(0,t));
+    e.textContent=fmtClock(Math.max(0,t)); rqRingUpd(t,pState.rfRecup);
     if(t<=3&&t>0)beep(700,.07);
     if(t<=0){ clearInterval(pTimer); dbeep(); try{ if(navigator.vibrate) navigator.vibrate([200,100,200]); }catch(_){} if(box){box.classList.remove("run");box.classList.add("ready");} e.textContent="PRÊT"; }
   },1000);
@@ -4442,6 +4522,7 @@ function chgRowHTML(name, repsHead, sfx, sugg){
     '<div class="chgIn">'+
       '<input id="chgVal'+sfx+'" type="'+(u==="band"?"text":"number")+'" inputmode="'+(u==="band"?"text":"decimal")+'" step="0.5" placeholder="'+CHG_PH[u]+'" value="'+val+'" onchange="chgOnVal(\''+esc+'\',\''+sfx+'\')" onblur="chgOnVal(\''+esc+'\',\''+sfx+'\')">'+
       '<span class="chgU">'+CHG_ULAB[u]+'</span>'+
+      ((u==="kg"||u==="kgx2"||u==="lest")?'<button class="chgPM" aria-label="moins" onclick="chgStep(\''+sfx+'\',\''+esc+'\',-1)">−</button><button class="chgPM" aria-label="plus" onclick="chgStep(\''+sfx+'\',\''+esc+'\',1)">+</button>':'')+
     '</div>'+
     '<div class="chgFeel" id="chgFeel'+sfx+'">'+feels.map(function(f){
       return '<button class="'+(cur&&cur.f===f?'on':'')+'" onclick="chgOnFeel(\''+esc+'\',\''+f+'\',\''+sfx+'\')">'+f+'</button>';
@@ -4534,7 +4615,7 @@ function renderRenfoWork(seg){
       '<button onclick="swapExo()" style="width:100%;margin:8px 0 2px;padding:8px;border:1px dashed var(--line);border-radius:10px;background:none;color:var(--mut);font-size:11.5px;font-family:inherit">⇄ Remplacer cet exercice</button>')+
     '<div class="rrow">'+
       '<button class="rserie'+(pState.rfDone>=pState.rfN?' done':'')+'" id="rfSerie" onclick="rfValidate()"><span class="rlab">Série ✓</span><span class="rcnt bebas" id="rfCnt">'+pState.rfDone+' / '+pState.rfN+'</span></button>'+
-      '<div class="rrecup" id="rfRecup"><span class="rlab">Récup</span><span class="rtime bebas" id="rfTime">'+fmtClock(pState.rfRecup)+'</span></div>'+
+      '<div class="rrecup" id="rfRecup"><svg viewBox="0 0 170 170" aria-hidden="true"><circle cx="85" cy="85" r="74" fill="none" stroke="#1f2125" stroke-width="12"/><circle id="rfRing" cx="85" cy="85" r="74" fill="none" stroke="#ff6b35" stroke-width="12" stroke-linecap="round" stroke-dasharray="465 465"/></svg><span class="rlab">Récup</span><span class="rtime bebas" id="rfTime">'+fmtClock(pState.rfRecup)+'</span></div>'+
     '</div>'+
     (seg.cue?'<button class="rcueBtn" onclick="rfToggleCue()">▾ Comment faire</button><div class="rcueBody" id="'+_rfCueId+'" style="display:none">'+seg.cue.replace(/\n/g,"<br>")+'</div>':'');
   document.getElementById("pAct").innerHTML=pActRow('<button class="btn btn-acid" onclick="nextSeg()">'+(pIdx===pSegs.length-1?'TERMINER':'EXERCICE SUIVANT')+'</button>');
@@ -4715,6 +4796,7 @@ function finishSuppRenfo(){
     '<div class="field"><label>Note</label><textarea id="fNote" placeholder="Charges, sensations, douleur…"></textarea></div>'+
     '';
   var fpan = (pRQ && pSegs && pSegs.length && pIdx>0) ? rqFinishPanel() : "";  /* BÊTA : écran de fin (seulement après une séance lancée) */
+  if(fpan){ document.getElementById("shSpecs").innerHTML=""; document.getElementById("shWhy").textContent=""; }
   if(fpan){ try{ if(navigator.vibrate) navigator.vibrate([60,40,60,40,220]); }catch(_){} recap='<details style="margin-top:6px"><summary style="cursor:pointer;font-size:12.5px;color:var(--mut)">Détail des exercices</summary>'+recap+'</details>'; }
   document.getElementById("shSummary").innerHTML=fpan+'<div class="summary" style="padding:12px">'+recap+f+'</div><div id="suppLink" style="margin-top:8px"></div>';
   document.getElementById("shForm").style.display="none";
@@ -5100,7 +5182,11 @@ function rqFinishPanel(){
     if(nb){ best[fin.fid]={v:sc.v,txt:sc.txt,d:iso(new Date())}; try{ localStorage.setItem(RQ_BEST_KEY,JSON.stringify(best)); }catch(e){} }
   }
   var recH = T.rec.length ? '<div class="fRec">'+T.rec.map(function(r){ return '<div>🔥 <b>'+r.n+'</b> · '+r.v+'</div>'; }).join("")+'</div>' : '<div class="fRec mut">Pas de record aujourd\'hui. La régularité fait le travail.</div>';
+  var fd="M0 100 L40 92 L75 96 L115 74 L150 80 L195 50 L230 60 L270 34 L300 44 L330 18";
   return '<div class="fPanel">'+
+    '<div class="fCrest"><svg viewBox="0 0 390 120" preserveAspectRatio="none" aria-hidden="true"><path d="'+fd+' L355 26 L390 24 V120 H0 Z" fill="#15180f"/><path d="'+fd+'" fill="none" stroke="#e8ff47" stroke-width="3"/>'+
+      '<circle cx="115" cy="74" r="5" fill="#0d0d0f" stroke="#e8ff47" stroke-width="2.5"/><circle cx="195" cy="50" r="5" fill="#0d0d0f" stroke="#e8ff47" stroke-width="2.5"/><circle cx="270" cy="34" r="5" fill="#0d0d0f" stroke="#e8ff47" stroke-width="2.5"/>'+
+      '<path d="M330 18 L330 2" stroke="#ff6b35" stroke-width="2.5"/><path d="M330 2 L346 7 L330 12 Z" fill="#ff6b35"/></svg><div class="fk">SOMMET ATTEINT</div></div>'+
     '<div class="fBig">SÉANCE '+pRQ.L+' ✓</div>'+
     '<div class="fSub">'+(pRQ.dl?'Décharge bouclée':(RQ_NAMES[pRQ.L]||''))+'</div>'+
     '<div class="fGrid">'+
@@ -5175,6 +5261,110 @@ function rqCompareHTML(pos,pain){
       '<div style="flex:1;opacity:'+(rqAlt?'1':'.45')+'">'+nm(v[i])+'</div></div>';
   }
   return head+rows;
+}
+
+/* ================= REFONTE VISUELLE (bêta, nov. 2026) =================
+   Maquettes validées : accueil (crête de prépa + séance du jour + renfo + anneaux),
+   détail séance du jour avec Strava, séance en cours (anneau de récup), fin de séance.
+   Règle Laurent : fond jaune (acid) → texte noir, jamais blanc. */
+var CREST_PTS=[[0,176],[25,166],[48,171],[80,145],[104,151],[132,126],[156,135],[186,102],[208,113],[238,88],[262,98],[292,72],[318,88],[344,78],[372,94],[390,89]];
+function crestPath(pts){ return pts.map(function(p,i){ return (i?"L":"M")+p[0]+" "+p[1]; }).join(" "); }
+function renderCrestBeta(vd,s){
+  var box=document.getElementById("crestBox"); if(!box) return;
+  var t0=parse(BLOCKS[0].start), ut=parse(UT4M_DATE), now=new Date(today); now.setHours(0,0,0,0);
+  var p=Math.max(0,Math.min(1,(now-t0)/(ut-t0))), jd=Math.max(0,Math.round((ut-now)/86400000));
+  var x=Math.max(6,Math.min(384,p*390)), y=176;
+  for(var i=1;i<CREST_PTS.length;i++){ if(x<=CREST_PTS[i][0]){ var a=CREST_PTS[i-1], b=CREST_PTS[i]; y=a[1]+(b[1]-a[1])*(x-a[0])/(b[0]-a[0]); break; } }
+  var d=crestPath(CREST_PTS);
+  box.innerHTML='<div class="crest">'+
+    '<svg viewBox="0 0 390 196" preserveAspectRatio="none" aria-hidden="true"><defs><clipPath id="crDone"><rect x="0" y="0" width="'+x.toFixed(1)+'" height="196"/></clipPath>'+
+    '<linearGradient id="crRock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2016"/><stop offset="1" stop-color="#0d0d0f"/></linearGradient></defs>'+
+    '<path d="'+d+' V196 H0 Z" fill="url(#crRock)"/>'+
+    '<path d="'+d+'" fill="none" stroke="#3a3d33" stroke-width="2" stroke-dasharray="4 5"/>'+
+    '<path d="'+d+'" fill="none" stroke="#e8ff47" stroke-width="3" clip-path="url(#crDone)"/>'+
+    '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="6" fill="#e8ff47"/><circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="13" fill="none" stroke="#e8ff47" stroke-opacity=".35" stroke-width="2"/>'+
+    '<path d="M292 72 L292 52" stroke="#ff6b35" stroke-width="2"/><path d="M292 52 L306 57 L292 62 Z" fill="#ff6b35"/></svg>'+
+    '<div class="crTop"><div><div class="crDate">'+JOURS[dowMon(vd)-1]+' '+vd.getDate()+' '+MOIS[vd.getMonth()]+'</div><div class="crBlock">'+((s&&s.block&&s.block.name)||"")+'</div></div>'+
+    '<div style="text-align:right"><div class="crJ">J-'+jd+'</div><div class="crU">UT4M 180</div></div></div>'+
+    '<div class="crFoot"><i></i>Tu es ici · '+Math.round(p*100)+' % de la prépa <a href="trail-v2.html" class="crOld">↩ version classique</a></div></div>';
+}
+/* Carte « Séance du jour » : badge Strava + cibles en pastilles, tap → détail */
+function stravaState(s){
+  var lid=s.plan&&s.plan.linkid; if(!lid) return "";
+  if(isLinked(lid)) return "lie";
+  return iso(s.date)<=iso(today) ? "alier" : "";
+}
+function renderHeroBeta(s){
+  var ht=document.getElementById("heroType"); if(!ht) return;
+  var st=stravaState(s);
+  ht.style.display="";
+  ht.innerHTML='<span>Séance du jour</span>'+(st==="lie"?'<span class="stBadge ok">STRAVA · LIÉE</span>':(st==="alier"?'<span class="stBadge">STRAVA · À LIER</span>':''));
+  var why=document.getElementById("heroWhy"); if(why) why.style.display="none";
+  var hc=document.getElementById("heroCard"); if(hc) hc.onclick=function(){ openDayDetail(s.dateKey); };
+}
+/* ===== Détail séance du jour (écran plein) ===== */
+function _rangeOf(v){ var m=String(v||"").match(/(\d+)\s*[-–]\s*(\d+)/); if(m) return [+m[1],+m[2]]; m=String(v||"").match(/<\s*(\d+)/); if(m) return [0,+m[1]]; m=String(v||"").match(/>\s*(\d+)/); if(m) return [+m[1],999]; return null; }
+function openDayDetail(k){
+  var d=parse(k), s=sessionFor(d), g=s.plan, el=document.getElementById("dayDet"); if(!el) return;
+  var lines=(g.detail||[]).slice(), note="", blocks=[];
+  lines.forEach(function(L){
+    var t=String(L).replace(/<[^>]+>/g,"");
+    var mn=t.match(/Note Strava\s*:\s*«\s*([^»]+)»/); if(mn){ note=mn[1].trim(); return; }
+    var m=t.match(/^([A-ZÉÈa-zéèûô.\s]{2,18})\s*:\s*(.+)$/);
+    if(m) blocks.push({lab:m[1].trim(), txt:m[2]}); else blocks.push({lab:"", txt:t});
+  });
+  var specs=(s.specs||[]).map(function(x){ return '<div class="ddSpec"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'; }).join("");
+  var lid=g.linkid, L=lid?linksGet()[lid]:null, strava="";
+  if(lid){
+    if(L){
+      var fc=null, du=g.plan&&g.plan.durMin; (s.specs||[]).forEach(function(x){ if(/^FC/i.test(x[0])) fc=_rangeOf(x[1]); });
+      var chk=[];
+      if(L.hrAvg){ var okF=!fc||(L.hrAvg>=fc[0]&&L.hrAvg<=fc[1]); chk.push({k:"FC moyenne"+(fc?" · cible "+(fc[0]?fc[0]+"-":"< ")+(fc[1]<999?fc[1]:""):""),v:Math.round(L.hrAvg),ok:okF}); }
+      if(L.movingMin){ var okD=!du||Math.abs(L.movingMin-du)<=Math.max(5,du*0.15); chk.push({k:"Durée"+(du?" · cible "+du+"′":""),v:Math.round(L.movingMin)+"′",ok:okD}); }
+      if(L.km) chk.push({k:"Distance",v:L.km+" km",ok:true});
+      if(L.dplus) chk.push({k:"D+",v:L.dplus+" m",ok:true});
+      strava='<div class="ddStrava"><div class="ddSh"><span>STRAVA · LIÉE</span></div><div class="ddAct">'+(L.name||"Activité")+'</div>'+
+        chk.map(function(c){ return '<div class="ddChk"><i class="'+(c.ok?'ok':'ko')+'">'+(c.ok?'✓':'!')+'</i><span>'+c.k+'</span><b>'+c.v+'</b></div>'; }).join("")+'</div>';
+    } else {
+      strava='<div class="ddStrava"><div class="ddSh"><span>STRAVA · '+(k<=iso(today)?'À LIER':'PAS ENCORE FAITE')+'</span></div>'+
+        '<div style="font-size:12.5px;color:var(--mut);margin-top:4px">Lie l\'activité pour comparer FC et durée à la cible.</div></div>';
+    }
+  }
+  var noteH = note ? '<div class="ddNote"><span>Note Strava : « '+note+' »</span><button onclick="ddCopy(this,\''+note.replace(/'/g,"\\'")+'\')">Copier</button></div>' : '';
+  var done=sessionDone(s);
+  el.innerHTML='<div class="ddWrap">'+
+    '<div class="ddTop"><button onclick="closeDayDetail()">‹ Aujourd\'hui</button><span>'+JOURS[dowMon(d)-1].toUpperCase()+' '+d.getDate()+' '+MOIS[d.getMonth()].toUpperCase()+'</span></div>'+
+    '<div class="ddTitle">'+(g.displayTitle||g.label)+'</div>'+
+    (g.why?'<div class="ddWhy">'+g.why+'</div>':'')+
+    (blocks.length?'<div class="ddBlocks">'+blocks.map(function(b){ return '<div class="ddB">'+(b.lab?'<b>'+b.lab+'</b>':'<b class="m">•</b>')+'<span>'+b.txt+'</span></div>'; }).join("")+'</div>':'')+
+    (specs?'<div class="ddSpecs">'+specs+'</div>':'')+
+    strava+noteH+
+    '<div class="ddAct2">'+(lid&&!L&&k<=iso(today)?'<button class="ddGhost" onclick="closeDayDetail();openSheet(\''+k+'\',true)">Lier Strava</button>':'')+
+      '<button class="ddGo" onclick="closeDayDetail();openSheet(\''+k+'\',true)">'+(done?'Séance validée ✓':(hasPlayer(s.typeKey)?'▶ Ouvrir la séance':'Valider la séance'))+'</button></div>'+
+  '</div>';
+  el.classList.add("on"); el.scrollTop=0;
+}
+function closeDayDetail(){ var el=document.getElementById("dayDet"); if(el) el.classList.remove("on"); }
+function ddCopy(btn,t){ try{ navigator.clipboard.writeText(t); btn.textContent="Copié ✓"; }catch(e){ btn.textContent="—"; } }
+/* ===== Anneaux : renfo semaine · séances du plan · charge ===== */
+function _ring(f,val,lab,col){ var C=2*Math.PI*26, d=(C*Math.max(0,Math.min(1,f))).toFixed(1)+" "+C.toFixed(1);
+  return '<div class="ring"><div class="rg"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="26" fill="none" stroke="#2a2c31" stroke-width="8"/><circle cx="32" cy="32" r="26" fill="none" stroke="'+col+'" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+d+'"/></svg><b>'+val+'</b></div><span>'+lab+'</span></div>'; }
+function renderRingsBeta(){
+  var box=document.getElementById("ringsBox"); if(!box) return;
+  if(dayOffset!==0){ box.innerHTML=""; return; }
+  var wk=rqWeekCount(), mon=mondayOf(today), tot=0, dn=0;
+  for(var i=0;i<7;i++){ var d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i), s=sessionFor(d); if(s.typeKey==="repos") continue; tot++; if(sessionDone(s)) dn++; }
+  var ls=null; try{ ls=loadStats(); }catch(e){}
+  var ac=(ls&&ls.acwr!=null&&ls.daysCov>=14)?ls.acwr:null;
+  box.innerHTML='<div class="rings">'+_ring(wk/3,wk+"/3","Renfo semaine","#e8ff47")+_ring(tot?dn/tot:0,dn+"/"+tot,"Séances plan","#4aa3e8")+
+    _ring(ac!=null?ac/1.5:0,ac!=null?ac.toFixed(1).replace(".",","):"—","Charge",ac==null?"#2a2c31":(ac>1.3?"#ff5a5f":(ac<0.8?"#4aa3e8":"#34c46f")))+'</div>';
+}
+/* ===== Lecteur : anneau de récup + ±charge ===== */
+function rqRingUpd(t,tot){ var c=document.getElementById("rfRing"); if(!c) return; var C=2*Math.PI*74; c.setAttribute("stroke-dasharray",(C*Math.max(0,t)/Math.max(1,tot)).toFixed(1)+" "+C.toFixed(1)); }
+function chgStep(sfx,name,dir){
+  var el=document.getElementById("chgVal"+(sfx||"")); if(!el) return;
+  var u=chgUnit(name), st=(u==="kgx2")?1:2.5, v=Number(String(el.value).replace(",","."))||0;
+  v=Math.max(0,Math.round((v+dir*st)*10)/10); el.value=v; chgOnVal(name,sfx||"");
 }
 
 /* ================= HORIZON ================= */

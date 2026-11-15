@@ -5925,7 +5925,7 @@ function updateNextSid(){
   var mx=0;
   lastActs.forEach(function(a){ var s=parseSid(a.name); if(!s)return; var n=parseFloat(s.slice(1)); if(!isNaN(n)&&n>mx)mx=n; });
   el.style.display="inline-flex";
-  el.innerHTML='Titre Strava <b>S'+(Math.floor(mx)+1)+'</b>';
+  el.innerHTML='Next <b>S'+(Math.floor(mx)+1)+'</b>';
 }
 function fetchStravaData(retried){
   stravaMsg("Chargement…","var(--mut)");

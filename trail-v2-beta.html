@@ -5153,7 +5153,28 @@ function renderRQCardBeta(){
       '<button class="'+(pain?'pain':'')+'" onclick="rqTogglePain()">🩹 '+(pain?'Douleur ON':'Pubis > 3/10')+'</button>'+
       '<button onclick="rqMarkDone()">✓ Déjà faite</button>'+
     '</div>'+
-    '<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;color:var(--mut)">Voir la séance complète</summary>'+det+'</details></div>';
+    '<details id="rqDet" style="margin-top:10px"'+(rqDetOpen?' open':'')+' ontoggle="rqDetOpen=this.open"><summary style="cursor:pointer;font-size:12.5px;color:var(--mut)">Comparer classique / variante</summary>'+rqCompareHTML(pos,pain)+'</details></div>';
+}
+var rqDetOpen=false;
+function rqPickAlt(a){ rqAlt=a; rqDetOpen=true; renderRQCard(); }
+/* BÊTA : les 2 versions côte à côte, colonne choisie en surbrillance, exos qui changent marqués */
+function rqCompareHTML(pos,pain){
+  var c=rqBuild(pos,pain,false).items, v=rqBuild(pos,pain,true).items;
+  function nm(x){ var u=chgUnit(x.name), sg=x.sugg&&x.sugg.c!=null?' <b style="color:var(--acid)">'+(u==="kgx2"?x.sugg.c+"×2":(u==="lest"?(Number(x.sugg.c)>0?"+"+x.sugg.c:"PDC"):x.sugg.c))+'</b>':''; return x.name+'<div style="color:var(--mut);font-size:11px">'+x.reps+sg+'</div>'; }
+  var col=function(on){ return 'style="flex:1;padding:8px 4px;border-radius:10px;border:1px solid '+(on?'var(--acid)':'var(--line)')+';background:'+(on?'rgba(232,255,71,.1)':'transparent')+';color:'+(on?'var(--acid)':'var(--mut)')+';font:600 12px DM Sans,sans-serif"'; };
+  var head='<div style="display:flex;gap:6px;margin:10px 0 6px"><button '+col(!rqAlt)+' onclick="rqPickAlt(false)">'+(!rqAlt?'✓ ':'')+'Classique</button><button '+col(rqAlt)+' onclick="rqPickAlt(true)">'+(rqAlt?'✓ ':'')+'Variante</button></div>';
+  var nPub=c.filter(function(x){return x.g==="Bloc pubalgie";}).length;
+  var rows='<div style="font-size:11.5px;color:var(--mut);margin:4px 0 8px">Échauffement + bloc pubalgie ('+nPub+' exos) : identiques.</div>', lastG="";
+  for(var i=0;i<c.length;i++){
+    if(c[i].g==="Bloc pubalgie") continue;
+    if(c[i].g!==lastG){ rows+='<div style="font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--mut);text-transform:uppercase;margin:9px 0 3px">'+c[i].g+'</div>'; lastG=c[i].g; }
+    var same=(v[i]&&v[i].name===c[i].name);
+    if(same){ rows+='<div style="font-size:12.5px;line-height:1.35;padding:5px 0;border-top:1px solid var(--line)">'+nm(c[i])+'<div style="font-size:10px;color:var(--mut)">identique dans les 2</div></div>'; continue; }
+    rows+='<div style="display:flex;gap:8px;font-size:12.5px;line-height:1.35;padding:5px 0;border-top:1px solid var(--line)">'+
+      '<div style="flex:1;opacity:'+(rqAlt?'.45':'1')+'">'+nm(c[i])+'</div>'+
+      '<div style="flex:1;opacity:'+(rqAlt?'1':'.45')+'">'+nm(v[i])+'</div></div>';
+  }
+  return head+rows;
 }
 
 /* ================= HORIZON ================= */

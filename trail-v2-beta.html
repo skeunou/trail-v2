@@ -3660,7 +3660,7 @@ function renderToday(){
   else if(s.typeKey==="repos"){ a='<button class="btn btn-go" '+bs+' onclick="openSheet(\''+s.dateKey+'\',true)">MARQUER</button>'; }
   else { a='<button class="btn btn-go" '+bs+' onclick="openSheet(\''+s.dateKey+'\',true)">VALIDER</button>'; }
   document.getElementById("heroActions").innerHTML=a;
-  renderHeroBeta(s); renderCrestBeta(vd,s);
+  renderHeroBeta(s); renderCrestBeta(vd,s); if(dayOffset===0) wellnessSync();
   renderWeek();
   renderLoadCard();
   renderGtgMini();
@@ -5378,6 +5378,31 @@ function chgStep(sfx,name,dir){
   var el=document.getElementById("chgVal"+(sfx||"")); if(!el) return;
   var u=chgUnit(name), st=(u==="kgx2")?1:2.5, v=Number(String(el.value).replace(",","."))||0;
   v=Math.max(0,Math.round((v+dir*st)*10)/10); el.value=v; chgOnVal(name,sfx||"");
+}
+/* ===== Bien-être auto (Garmin → intervals.icu → proxy Netlify « wellness ») — 15 nov. 2026 =====
+   Remplit sommeil / VFC / FC repos de l'état du matin, sans jamais écraser une saisie manuelle.
+   Clé : la même RECAP_KEY que l'onglet Coach. Au plus 1 appel/h tant que la nuit manque, puis 1 / 6 h. */
+var WELL_URL="https://coach-nutrition.netlify.app/.netlify/functions/wellness", WELL_LAST="wellness:last";
+function wellnessSync(force){
+  var k=""; try{ k=coKey(); }catch(e){} if(!k) return;
+  var last=0; try{ last=+localStorage.getItem(WELL_LAST)||0; }catch(e){}
+  var m=matinFor(iso(new Date()))||{}, have=(m.sleep!=null&&m.vfc!=null);
+  if(!force && Date.now()-last < (have?6:1)*3600000) return;
+  try{ localStorage.setItem(WELL_LAST,String(Date.now())); }catch(e){}
+  fetch(WELL_URL+"?key="+encodeURIComponent(k)+"&days=30").then(function(r){ return r.json(); }).then(function(j){
+    if(!j||j.status!=="ok"||!Array.isArray(j.days)) return;
+    var o=matinAll(), any=false;
+    j.days.forEach(function(w){
+      if(!w||!/^\d{4}-\d{2}-\d{2}$/.test(w.d||"")) return;
+      var e=o[w.d]||{d:w.d}, ch=false;
+      if(e.sleep==null && w.sleepH!=null){ e.sleep=w.sleepH; ch=true; }
+      if(e.vfc==null && w.hrv!=null){ e.vfc=w.hrv; ch=true; }
+      if(e.rhr==null && w.rhr!=null){ e.rhr=w.rhr; ch=true; }
+      if(e.sleepScore==null && w.sleepScore!=null){ e.sleepScore=w.sleepScore; ch=true; }
+      if(ch){ e.src="garmin"; e._u=Date.now(); o[w.d]=e; any=true; }
+    });
+    if(any){ matinWrite(o); try{ renderAdapt(); }catch(e){} }
+  }).catch(function(){});
 }
 
 /* ================= HORIZON ================= */

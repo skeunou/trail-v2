@@ -876,12 +876,12 @@ var BLOCKS=[
    intent:"Maintien. Zéro culpabilité.", wk:[[28,600],[28,600]]}, */
   {id:"b7",  name:"Spécifique montée 1", start:"2027-01-04", end:"2027-01-31", phase:"build",
    intent:"Gros bloc VAM. Tapis 15% + gilet lesté 6-8 kg + bâtons.", wk:[[40,1100],[45,1300],[48,1500],[32,900]]},
-  /* B8 découpé (sept. 2026) : Trace des Maquisards 42K le sam. 6 fév. 2027.
+  /* B8 découpé (sept. 2026) : Trace des Maquisards le sam. 6 fév. 2027 — format 18K confirmé le 16 nov. 2026.
      Ancienne version : b8 du 1 au 28 fév, wk:[[45,1200],[48,1400],[50,1600],[34,800]] */
   {id:"b8a", name:"Affûtage Maquisards", start:"2027-02-01", end:"2027-02-07", phase:"build",
-   intent:"Mini-affûtage avant le 42K de nuit. Volume −30%, pas de tapis.", wk:[[22,400]]},
+   intent:"Mini-affûtage avant le 18K de nuit. Volume −30%, pas de tapis.", wk:[[22,400]]},  /* 16 nov. 2026 : 42K → 18K */
   {id:"b8r", name:"Récup Maquisards",    start:"2027-02-08", end:"2027-02-14", phase:"recup",
-   intent:"4 jours de repos complet (1 j / 10 km), puis reprise EF.", wk:[[15,300]]},
+   intent:"2 jours de repos (1 j / 10 km), puis reprise EF.", wk:[[25,500]]},  /* 16 nov. 2026 : récup 18K. Ancien (42K) : 4 jours, wk:[[15,300]] */
   {id:"b8",  name:"Spécifique montée 2", start:"2027-02-15", end:"2027-02-28", phase:"build",
    intent:"Tapis 4×12′, côtes 12-14 reps.", wk:[[45,1300],[48,1500]]},
   {id:"b9",  name:"Affûtage Chianti",    start:"2027-03-01", end:"2027-03-21", phase:"affutage",
@@ -982,7 +982,7 @@ var REP_PAIN="Règle douleur : ≤2/10 pendant ET retour à la normale le lendem
 var REP_MILES={
   "2026-11-15":"📍 JALON — Décision SaintéLyon : assistance/ravito ou SaintÉpique en marche. Pacing en course = hors protocole à ce stade.",
   "2026-11-28":"📍 JALON — SaintéLyon 24 km (ta compagne) : pas de course pour toi. Assistance ou marche. Zéro ibuprofène.",
-  "2027-01-04":"📍 JALON — GO/NO-GO Maquisards : Fractionné + réintroduction terminés sans rechute (descente comprise) + OK médecin → go en mode gestion. Sinon → no-go."
+  "2027-01-04":"📍 JALON — Maquisards 18K (format confirmé) : Fractionné + réintroduction terminés sans rechute (descente comprise) + OK kiné → go en mode gestion. Sinon → on la court en randonnée ou on s'abstient."
 };
 function repMile(d){ return REP_MILES[iso(d)]||""; }
 function repFracIdx(d){
@@ -1302,7 +1302,7 @@ var BLOCKSESS={
   b6:   {cotes:[8,10],  mer:"ef",    qualite:false, renfoN:1, slPct:0.55, note:"Fêtes : maintien, zéro culpabilité."},
   b7:   {cotes:[12,14], mer:"tapis", qualite:true,  renfoN:2, slPct:0.60, note:"Gros bloc VAM : tapis 15% + gilet lesté + bâtons."},
   b8a:  {cotes:[6,6],   mer:"ef",    qualite:false, renfoN:1, slPct:0,    restFrom:"2027-02-07", restUntil:"2027-02-07", note:"Affûtage Maquisards : côtes allégées, aucune séance dure, course samedi soir."},
-  b8r:  {cotes:[0,0],   mer:"ef",    qualite:false, renfoN:1, slPct:0.50, restUntil:"2027-02-10", note:"Récup post-42K : repos complet jusqu'au mercredi 10, puis EF uniquement."},
+  b8r:  {cotes:[0,0],   mer:"ef",    qualite:false, renfoN:1, slPct:0.50, restUntil:"2027-02-08", note:"Récup post-18K : repos dim. 7 et lun. 8, puis EF uniquement."},  /* 16 nov. 2026 · ancien (42K) : restUntil 2027-02-10 */
   b8:   {cotes:[12,14], mer:"tapis", qualite:true,  renfoN:2, slPct:0.62, tapisMin:12, tapisLest:8, note:"Tapis 4×12′, côtes 12-14 reps. Le pic d'économie de grimpe."},
   b9:   {cotes:[6,6],   mer:"ef",    qualite:true,  renfoN:1, slPct:0.55, note:"Affûtage Chianti : volume −40%, intensité maintenue."},
   b10:  {cotes:[10,12], mer:"ef",    qualite:true,  renfoN:2, slPct:0.65, note:"Bloc Paladru : sorties longues 3h → 4h. Le gros test."},
@@ -1330,7 +1330,8 @@ var RACES=[
   {d:"2026-10-18", n:"20K de Caluire",           km:20, dp:200,  role:"Test d'allure — recalage VMA"}, */
   /* Oct. 2026 : 42K incompatible avec la reprise (J0 7 déc.). Ancienne entrée :
   {d:"2027-02-06", n:"Trace des Maquisards 42K", km:42, dp:1600, role:"Course de nuit · départ 19h30 Maillat → Oyonnax · dossards à Valexpo dès 10h"}, */
-  {d:"2027-02-06", n:"Trace des Maquisards 18K (à confirmer)", km:20, dp:660, role:"Go/no-go le 4 janv. : bascule sur le 18K (19,8 km · 657 m D+ / 454 m D−) ou annulation. De nuit, en gestion, descentes contrôlées"},
+  /* 16 nov. 2026 : format 18K CONFIRMÉ par l'organisation. Ancienne entrée « 18K (à confirmer) » avec go/no-go de format. */
+  {d:"2027-02-06", n:"Trace des Maquisards 18K", km:20, dp:660, role:"Format 18K confirmé · 19,8 km · 657 m D+ / 454 m D− · course de nuit · en gestion, descentes contrôlées · go santé le 4 janv."},
   {d:"2027-03-19", n:"Chianti Ultra 46K",        km:46, dp:1500, role:"Reprise de compétition · vendredi, départ 9h"},
   /* Oct. 2026 : date et D+ confirmés par Laurent (site traildulacdepaladru.fr). Ancienne entrée :
   {d:"2027-04-18", n:"Trail de Paladru 84K",     km:84, dp:2500, role:"Le gros test (date provisoire)"}, */

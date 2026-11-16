@@ -5573,8 +5573,8 @@ function matinStats(){
 function matinNeeded(){
   var now=new Date();
   if(now.getHours()<3) return false;
-  var me=matinFor(iso(now));
-  return !me || (me.src==="garmin" && !me.feel && !me.skipped);  /* bêta : nuit auto Garmin → on demande encore le ressenti */
+  /* 16 nov. 2026 : questionnaire du matin supprimé (données Garmin auto). Ancien : !me || (me.src==="garmin" && !me.feel && !me.skipped) */
+  return false;
 }
 function matinOpen(){
   var k=iso(new Date()), e=matinFor(k)||{}, st=matinStats();
@@ -5695,8 +5695,8 @@ function renderTopMorning(){
   if(e.feel){ var f=FEELS.filter(function(x){return x.k===e.feel;})[0];
     if(f) bits.push('<span class="tpill" style="color:var(--mut)">'+(f.k==="normal"?"Comme d\'habitude":f.l)+'</span>'); }
   el.innerHTML = bits.length
-    ? bits.join('<span class="tsep">·</span>')+'<button class="tmorn-edit" onclick="matinEdit()">✎</button>'
-    : '<button class="tmorn-ask" onclick="matinEdit()">Ton état du matin ?</button>';
+    ? bits.join('<span class="tsep">·</span>')+(e.src==="garmin"?'<span class="tsep">·</span><span style="color:var(--grn);font-size:11px">auto Garmin</span>':'')  /* ✎ retiré 16 nov. 2026 */
+    : '';  /* bouton « Ton état du matin ? » retiré (16 nov. 2026) : nuit pas encore synchronisée → rien */
 }
 function renderAdapt(){
   var box=document.getElementById("adaptBox"), hb=document.getElementById("heroAdapt");

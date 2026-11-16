@@ -5586,16 +5586,16 @@ function matinOpen(){
             : ("Baseline en construction ("+st.vfcN+"/30 jours) — la VFC ne servira pas avant 3-4 semaines. C'est normal.");
   document.getElementById("mBody").innerHTML=
     '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:26px;letter-spacing:1px">CE MATIN</div>'+
-    '<div style="font-size:12px;color:var(--mut);margin-top:2px">'+((e.src==="garmin"&&e.sleep!=null&&e.vfc!=null)?'Sommeil et VFC remontés de ta montre : il reste 2 champs, 10 secondes.':'4 champs, 20 secondes. Ça pilote la suggestion du jour.')+'</div>'+
+    '<div style="font-size:12px;color:var(--mut);margin-top:2px">'+((e.src==="garmin"&&e.sleep!=null&&e.vfc!=null)?'Sommeil et VFC remontés de ta montre : juste ton ressenti, 5 secondes.':'3 champs, 15 secondes. Ça pilote la suggestion du jour.')+'</div>'+
     ((e.src==="garmin" && e.sleep!=null)
       ? '<div class="mQ">Sommeil · <span style="color:var(--grn)">auto Garmin</span></div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:26px">'+String(e.sleep).replace(".",",")+' h'+(e.sleepScore!=null?' <span style="font-size:16px;color:var(--mut)">· score '+e.sleepScore+'</span>':'')+'</div><input id="mSleep" type="hidden" value="'+e.sleep+'"><div class="mHint">'+hintS+'</div>'
       : '<div class="mQ">Sommeil (heures)</div><input class="mIn" id="mSleep" type="number" step="0.25" inputmode="decimal" placeholder="ex. 6,5" value="'+(e.sleep!=null?e.sleep:"")+'"><div class="mHint">'+hintS+'</div>')+
     ((e.src==="garmin" && e.vfc!=null)
       ? '<div class="mQ">VFC nocturne · <span style="color:var(--grn)">auto Garmin</span></div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:26px">'+e.vfc+' ms'+(e.rhr!=null?' <span style="font-size:16px;color:var(--mut)">· FC repos '+e.rhr+'</span>':'')+'</div><input id="mVfc" type="hidden" value="'+e.vfc+'"><div class="mHint">'+hintV+'</div>'
       : '<div class="mQ">VFC nocturne (ms)</div><input class="mIn" id="mVfc" type="number" step="1" inputmode="decimal" placeholder="ex. 42" value="'+(e.vfc!=null?e.vfc:"")+'"><div class="mHint">Garmin Connect → détails du sommeil. La <b>valeur en ms</b>, pas le statut. '+hintV+'</div>')+
-    '<div class="mQ">Body Battery au réveil</div>'+
+    /* Body Battery masqué (16 nov. 2026) */ '<div style="display:none"><div class="mQ">Body Battery au réveil</div>'+
     '<input class="mIn" id="mBb" type="number" step="1" min="0" max="100" inputmode="decimal" placeholder="ex. 72" value="'+(e.bb!=null?e.bb:"")+'">'+
-    '<div class="mHint">'+hintB+'</div>'+
+    '<div class="mHint">'+hintB+'</div></div>'+
     '<div class="mQ">Par rapport à un lever normal à 4h, ce matin c\'est…</div>'+
     '<div class="mFeel" id="mFeel">'+FEELS.map(function(f){
       return '<button class="'+(e.feel===f.k?"on":"")+'" onclick="matinFeel(\''+f.k+'\')">'+f.l+'</button>';

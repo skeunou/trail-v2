@@ -784,13 +784,16 @@ var BLOCKS_BASE=BLOCKS.slice();
 var REP_INJ_DEFAULT="2026-10-15";
 /* J0 repoussé au lun. 7 déc. 2026 (oct. 2026) : prudence post-infiltration, contrôle médical fin nov.
    Effacer le J0 manuel dans l'app enregistre j0:"" → retour au calcul auto. */
-var REP_J0_DEFAULT="2026-12-07";
+/* 16 nov. 2026 : J0 FIXÉ au lun. 16 nov. 2026 (test 3×(1′/1′) du 15/11 validé sans aucune gêne, feu vert kiné).
+   L'infiltration ne sert plus au calcul. Ancien défaut : "2026-12-07" (traité comme « non réglé »). */
+var REP_J0_DEFAULT="2026-11-16";
 function repGet(){ var r; try{ r=JSON.parse(localStorage.getItem(REP_KEY))||{}; }catch(e){ r={}; } if(!("inj" in r)) r.inj=REP_INJ_DEFAULT; if(!("j0" in r)) r.j0=REP_J0_DEFAULT; return r; }
 function repAdd(s,n){ var d=parse(s); d.setDate(d.getDate()+n); return iso(d); }
 function repMon(s){ var d=parse(s), w=dowMon(d); if(w!==1) d.setDate(d.getDate()+(8-w)); return iso(d); }
 function repJ0(){
   var r=repGet(), j;
-  if(r.j0) j=r.j0; else if(r.inj) j=repAdd(r.inj,7); else return null;
+  /* ancien : if(r.j0) j=r.j0; else if(r.inj) j=repAdd(r.inj,7); else return null; */
+  j = (r.j0 && r.j0!=="2026-12-07") ? r.j0 : REP_J0_DEFAULT;
   j=repMon(j); if(j<REP_MIN_J0) j=REP_MIN_J0; return j;
 }
 function rebuildBlocks(){
@@ -1137,14 +1140,14 @@ function repCardHTML(){
   function row(l,v){ return '<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:13px"><span style="color:var(--mut)">'+l+'</span><b>'+v+'</b></div>'; }
   return '<div class="card" style="padding:13px 15px;margin-bottom:12px;border-left:3px solid var(--orange)">'+
     '<div class="eyebrow" style="margin-bottom:6px">Reprise pubalgie · Fractionné '+repProg()+'</div>'+
-    row("Infiltration", r.inj?frShort(r.inj):"non datée")+
-    row("J0 reprise", j0?("lun "+frShort(j0)+(r.j0?" · manuel":" · auto")):"en attente")+
+    /* 16 nov. 2026 : ligne infiltration retirée (J0 fixé). Ancien : row("Infiltration", …) */
+    row("J0 reprise", j0?("lun "+frShort(j0)+((r.j0&&r.j0!=="2026-12-07")?" · manuel":" · fixé")):"en attente")+
     row("Programme", "Fractionné "+repProg()+" · "+repFrac().length+" séances")+
     (j0?row("Fin du Fractionné", frShort(repAdd(j0,repFracDays()-1))):"")+
     (j0?row("Fin réintroduction", frShort(repAdd(j0,repFracDays()+27)>REP_ZONE_END?REP_ZONE_END:repAdd(j0,repFracDays()+27))):"")+
-    '<div style="font-size:11.5px;color:var(--mut);line-height:1.45;margin:8px 0 10px">J0 = infiltration + 7 j minimum, calé au lundi suivant, jamais avant le 9 nov. Le manuel prime sur l\'auto.</div>'+
+    '<div style="font-size:11.5px;color:var(--mut);line-height:1.45;margin:8px 0 10px">J0 fixé au lun. 16 nov. 2026 : test 3×(1′/1′) du 15/11 validé sans aucune gêne. Le J0 manuel reste possible et prime.</div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
-      '<button class="btn btn-ghost" style="flex:1;width:auto" onclick="repEditInj()">💉 Date infiltration</button>'+
+      '<button class="btn btn-ghost" style="flex:1;width:auto;display:none" onclick="repEditInj()">💉 Date infiltration</button>'+ /* masqué 16 nov. 2026 */
       '<button class="btn btn-ghost" style="flex:1;width:auto" onclick="repEditJ0()">J0 manuel</button>'+
       '<button class="btn btn-ghost" style="flex:1 1 100%;width:auto" onclick="repToggleProg()">Basculer sur le programme '+(repProg()==="II"?"I":"II")+'</button>'+
     '</div></div>';

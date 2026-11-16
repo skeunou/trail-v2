@@ -220,6 +220,8 @@
   .fCrest{position:relative;height:120px;margin:0 0 6px;overflow:hidden;border-radius:16px;background:radial-gradient(100% 90% at 50% 10%,#262a17 0%,#17181c 72%)}
   .fCrest svg{position:absolute;inset:0;width:100%;height:100%}
   .fCrest .fk{position:absolute;left:14px;top:12px;font-size:11px;font-weight:800;letter-spacing:2px;color:var(--acid)}
+  /* bouton ☀️/🌙 du LV TOOL (lvnav.js) : remonté au-dessus de la barre d'onglets, il masquait « Aujourd'hui » (16 nov. 2026) */
+  #lv-theme-btn.lv-float{bottom:calc(var(--nav,64px) + 14px + env(safe-area-inset-bottom))!important;left:10px!important;opacity:.7!important;padding:5px 9px!important}
   /* ===== BÊTA ===== */
   .betaTag{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;color:#1a1d12;background:var(--orange);border-radius:6px;padding:2px 6px}
   .rqHero{background:linear-gradient(160deg,#1c1e14 0%,var(--paper) 55%);border:1px solid #3a3f1f;border-radius:22px;padding:18px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.45)}

@@ -4998,7 +4998,9 @@ function renderHorizon(){
   if(!road) return;
 
   /* --- Progression sur les 50 semaines --- */
-  var first=parse(BLOCKS[0].start), last=parse(BLOCKS[BLOCKS.length-1].end);
+  /* 18 nov. 2026 : avancement et D+ comptés depuis le J0 de reprise (16 nov.), plus depuis le 3 août. Ancien : first=parse(BLOCKS[0].start) */
+  var j0s=(typeof repJ0==="function"&&repJ0())||BLOCKS[0].start;
+  var first=mondayOf(parse(j0s)), last=parse(BLOCKS[BLOCKS.length-1].end);
   var totW=Math.max(1,Math.round((last-first)/(7*86400000)));
   var doneW=Math.max(0,Math.min(totW,Math.round((mondayOf(today)-first)/(7*86400000))));
   var pctW=Math.round(doneW/totW*100);
@@ -5011,13 +5013,13 @@ function renderHorizon(){
     var ms=mondayOf(parse(b.start));
     (b.wk||[]).forEach(function(w,wi){
       var d=new Date(ms.getFullYear(),ms.getMonth(),ms.getDate()+wi*7);
-      if(d<=today) planD+=w[1];
+      if(d<=today && d>=first) planD+=w[1];
     });
   });
   var realD=0;
   if(typeof lastActs!=="undefined" && Array.isArray(lastActs)){
     lastActs.forEach(function(a){
-      if(!a.date || a.date<BLOCKS[0].start) return;
+      if(!a.date || a.date<j0s) return;
       var nm=(a.name||"");
       if(/^(h\.?\s*t|vdr)\s*-/i.test(nm)) return;   // vélo exclu du D+ course
       realD+=(a.dplus||0);
@@ -5035,8 +5037,10 @@ function renderHorizon(){
     '<span class="verdict '+eCls+'">Semaine '+(doneW+1)+' / '+totW+'</span></div>'+
     '<div class="bar" style="height:8px"><i style="width:'+pctW+'%;background:var(--acid-d)"></i></div>'+
     '<div class="sublab" style="margin-top:5px"><span>'+curB.name+'</span><span>'+pctW+' % du chemin</span></div>'+
+    (!planD?'<div class="gauge" style="margin-top:13px"><div class="grow"><span>D+ depuis la reprise</span><b>'+realD.toLocaleString("fr-FR")+' m</b></div>'+
+      '<div class="lnote">Protocole sur le plat : pas de D+ prévu pour l\'instant.</div></div>':'')+
     (planD?'<div class="gauge" style="margin-top:13px">'+
-      '<div class="grow"><span>D+ cumulé</span><b>'+realD.toLocaleString("fr-FR")+' <i>/ '+planD.toLocaleString("fr-FR")+' m prévus</i></b></div>'+
+      '<div class="grow"><span>D+ depuis la reprise</span><b>'+realD.toLocaleString("fr-FR")+' <i>/ '+planD.toLocaleString("fr-FR")+' m prévus</i></b></div>'+
       '<div class="bar"><i style="width:'+Math.min(100,Math.round(realD/planD*100))+'%;background:var(--'+(eCls==="grn"?"grn":eCls==="blue"?"blue":"orange")+')"></i></div>'+
       '<div class="lnote '+eCls+'">'+eTxt+'</div></div>':'')+
   '</div>';
@@ -5058,7 +5062,8 @@ function renderHorizon(){
     '</div>':'')+
   '</div>';
 
-  h2+=repCardHTML();
+  /* 18 nov. 2026 : carte « Reprise pubalgie » masquée à la demande de Laurent (J0 fixé, plus rien à régler). */
+  h2+='<div style="display:none">'+repCardHTML()+'</div>';
 
   /* --- Échéances : les 2 prochaines en clair, le reste au clic --- */
   var k=iso(today), next=RACES.filter(function(r){return r.d>=k;}), past=RACES.filter(function(r){return r.d<k;});

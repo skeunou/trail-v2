@@ -2864,7 +2864,7 @@ var RENFO_FORCE={
   amrap:{kind:"amrap",sec:480,moves:[["A","Farmer carry lourd ~20 m","le plus lourd tenable"],["B","6 Tractions (lestées si possible)","amplitude complète"],["C","8 Rowing haltère","4/bras, lourd"]]}
 };
 function content(k){
-  var g=gen(parse(k)), t=g.typeKey;
+  var g=genSw(parse(k)), t=g.typeKey; /* 18 nov. 2026 : échanges de séances */
   if(g.plan&&g.plan.segs) return g.plan.segs;  /* séances guidées sur mesure (trépied pubis, oct. 2026) */
   if(t==="mobilite"){ return MOBIS[g.mobiIdx].map(function(s){return {kind:"flow",name:s.name,cue:s.cue,hold:s.hold,reps:s.reps,side:s.side};}); }
   if(t==="trailforce"){
@@ -2890,8 +2890,119 @@ function dowMon(d){var g=d.getDay();return g===0?7:g;}
 var MOIS=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
 var JOURS=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 function blockFor(d){var k=iso(d);for(var i=0;i<BLOCKS.length;i++){if(k>=BLOCKS[i].start&&k<=BLOCKS[i].end)return BLOCKS[i];}return k<BLOCKS[0].start?BLOCKS[0]:BLOCKS[BLOCKS.length-1];}
-function sessionFor(d){var b=blockFor(d),g=gen(d);if(!g.specs)g.specs=[];if(!g.displayTitle)g.displayTitle=g.label;return {dateKey:iso(d),date:d,block:b,typeKey:g.typeKey,info:TYPES[g.typeKey],plan:g,specs:g.specs};}
+function sessionFor(d){var b=blockFor(d),g=genSw(d); /* 18 nov. 2026 : échanges de séances */if(!g.specs)g.specs=[];if(!g.displayTitle)g.displayTitle=g.label;return {dateKey:iso(d),date:d,block:b,typeKey:g.typeKey,info:TYPES[g.typeKey],plan:g,specs:g.specs};}
 
+
+/* ===== ÉCHANGE DE SÉANCES (bêta, 18 nov. 2026, demande de Laurent) =====
+   Bouton ⇄ sur la carte Séance du jour : on échange la séance du jour affiché avec celle d'un autre
+   jour de la MÊME semaine (lun → dim). Le reste du plan ne bouge pas (progression calée sur les dates).
+   Stockage swap:v1 = {p:{"jour":"jour dont on prend la séance"}, _u}. Toujours une permutation.
+   Synchro cloud (clé swap). Le serveur (plan.js) applique les mêmes échanges → montre Garmin + coach.
+   Après chaque échange : sauvegarde cloud immédiate puis envoi garmin-plan (clé RECAP_KEY du téléphone). */
+var SWAP_KEY="swap:v1";
+function swGet(){ try{ var o=JSON.parse(localStorage.getItem(SWAP_KEY)||"null"); if(o&&o.p) return o; }catch(e){} return {p:{},_u:0}; }
+function _swWrite(o){ try{ localStorage.setItem(SWAP_KEY,JSON.stringify(o)); }catch(e){} }
+function swapSrc(k){ return swGet().p[k]||null; }
+function genSw(d){
+  var k=iso(d), src=swapSrc(k); if(!src) return gen(d);
+  var g=gen(parse(src)); if(g){ if(g.linkid) g.linkid="plan:"+k; g._swFrom=src; } return g;
+}
+function swMon(d){ var m=new Date(d); m.setDate(d.getDate()-(dowMon(d)-1)); m.setHours(0,0,0,0); return m; }
+function swWeek(d){ var m=swMon(d), a=[]; for(var i=0;i<7;i++){ a.push(new Date(m.getFullYear(),m.getMonth(),m.getDate()+i)); } return a; }
+function swDayLbl(k){ var d=parse(k); return JOURS[dowMon(d)-1]+". "+d.getDate(); }
+function swTitle(g){ return (g&&(g.displayTitle||g.label))||"—"; }
+/* Séance « dure » pour l'avertissement (les fractionnés de reprise 1′/1′ n'en sont pas : le protocole les enchaîne). */
+function swHard(g){
+  if(!g) return false; var t=(g.label||"")+" "+(g.displayTitle||"");
+  if(/fractionn|pas de c[ôo]te|sortie courte/i.test(t)) return false;
+  return g.typeKey==="cotes"||g.typeKey==="longue"||/qualit|seuil|VMA|c[ôo]te|mont[ée]e|lest[ée]|sortie longue/i.test(t);
+}
+function swRepN(g){ var m=/fractionn\S*\s+\S+\s*·\s*(\d+)\s*\//i.exec((g&&g.label)||""); return m?+m[1]:0; }
+/* Échange a ⇄ b dans le mapping courant (gère les échanges déjà faits). */
+function swApply(o,a,b){ var ca=o.p[a]||a, cb=o.p[b]||b; o.p[a]=cb; o.p[b]=ca; [a,b].forEach(function(x){ if(o.p[x]===x) delete o.p[x]; }); return o; }
+/* Avertissements sur la semaine après échange (sans bloquer). */
+function swWarn(a,b){
+  var o=swApply(JSON.parse(JSON.stringify(swGet())),a,b), days=swWeek(parse(a)), w=[];
+  var ext=[new Date(days[0].getFullYear(),days[0].getMonth(),days[0].getDate()-1)].concat(days).concat([new Date(days[6].getFullYear(),days[6].getMonth(),days[6].getDate()+1)]);
+  var gs=ext.map(function(d){ var k=iso(d), s=o.p[k]; return {k:k, g:gen(s?parse(s):d)}; });
+  for(var i=0;i<gs.length-1;i++){
+    var x=gs[i], y=gs[i+1]; if(x.k!==a&&x.k!==b&&y.k!==a&&y.k!==b) continue;
+    if(swHard(x.g)&&swHard(y.g)) w.push("Deux séances dures d'affilée : "+swDayLbl(x.k)+" ("+swTitle(x.g)+") puis "+swDayLbl(y.k)+" ("+swTitle(y.g)+").");
+  }
+  var reps=gs.slice(1,8).map(function(z){ return swRepN(z.g); }).filter(function(n){ return n>0; });
+  for(var j=1;j<reps.length;j++) if(reps[j]<reps[j-1]){ w.push("Ordre du protocole inversé : la séance "+reps[j]+" passerait après la "+reps[j-1]+"."); break; }
+  return w;
+}
+function swHeroHtml(s,done){
+  var k=s.dateKey, src=swapSrc(k), h='';
+  if(!done) h+='<button class="btn btn-ghost" style="margin-top:8px;padding:9px!important;font-size:13px!important" onclick="event.stopPropagation();swOpen(\''+k+'\')">⇄ Changer de séance</button>';
+  if(src) h+='<div style="margin-top:6px;font-size:12px;color:var(--mut);text-align:center">⇄ échangée avec '+swDayLbl(src)+(done?'':' · <span style="color:var(--blue);cursor:pointer;text-decoration:underline" onclick="event.stopPropagation();swUndo(\''+k+'\')">annuler l\'échange</span>')+'</div>';
+  return h;
+}
+function swClose(){ var el=document.getElementById("swSheet"); if(el) el.remove(); }
+function swSheet(inner){
+  swClose();
+  var el=document.createElement("div"); el.id="swSheet";
+  el.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center";
+  el.onclick=function(e){ if(e.target===el) swClose(); };
+  el.innerHTML='<div style="background:var(--paper);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:85vh;overflow:auto;padding:16px 14px calc(18px + env(safe-area-inset-bottom))">'+inner+'</div>';
+  document.body.appendChild(el);
+}
+function swOpen(k){
+  var cur=sessionFor(parse(k)), rows='';
+  swWeek(parse(k)).forEach(function(d){
+    var kk=iso(d); if(kk===k) return;
+    var s=sessionFor(d), dn=sessionDone(s), col=(s.info&&s.info.color)||"var(--mut)";
+    rows+='<div onclick="'+(dn?'':'swPick(\''+k+'\',\''+kk+'\')')+'" style="display:flex;align-items:center;gap:10px;padding:11px 10px;margin:6px 0;border-radius:12px;background:var(--bg);border-left:4px solid '+col+';'+(dn?'opacity:.4;':'cursor:pointer;')+'">'+
+      '<div style="width:52px;font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase">'+swDayLbl(kk)+'</div>'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+swTitle(s.plan)+'</div>'+
+      (s.plan.short?'<div style="font-size:11.5px;color:var(--mut)">'+s.plan.short+'</div>':'')+'</div>'+
+      (dn?'<div style="font-size:11px;color:var(--grn);font-weight:700">FAITE ✓</div>':(s.plan._swFrom?'<div style="font-size:11px;color:var(--mut)">⇄</div>':''))+'</div>';
+  });
+  swSheet('<div style="font-family:\'Bebas Neue\',sans-serif;font-size:26px;color:var(--ink);letter-spacing:.5px">Changer de séance</div>'+
+    '<div style="font-size:12.5px;color:var(--mut);margin:2px 0 8px">'+swDayLbl(k)+' : <b style="color:var(--ink)">'+swTitle(cur.plan)+'</b><br>Choisis la séance que tu fais à la place. Les deux jours sont échangés, le reste de la semaine ne bouge pas.</div>'+
+    rows+'<button class="btn btn-ghost" style="margin-top:8px;padding:11px" onclick="swClose()">Annuler</button>');
+}
+function swPick(a,b){
+  var w=swWarn(a,b);
+  if(!w.length){ swDo(a,b); return; }
+  var ga=sessionFor(parse(a)).plan, gb=sessionFor(parse(b)).plan;
+  swSheet('<div style="font-family:\'Bebas Neue\',sans-serif;font-size:24px;color:var(--orange)">⚠️ À vérifier</div>'+
+    '<div style="font-size:13px;color:var(--ink2);margin:6px 0 4px">'+swDayLbl(a)+' : '+swTitle(gb)+'<br>'+swDayLbl(b)+' : '+swTitle(ga)+'</div>'+
+    w.map(function(x){ return '<div style="font-size:13px;color:var(--ink);background:var(--bg);border-left:3px solid var(--orange);border-radius:8px;padding:9px 10px;margin:8px 0">'+x+'</div>'; }).join("")+
+    '<div class="btn-row" style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-ghost" style="padding:11px" onclick="swOpen(\''+a+'\')">Retour</button>'+
+    '<button class="btn btn-orange" style="padding:11px" onclick="swDo(\''+a+'\',\''+b+'\')">Échanger quand même</button></div>');
+}
+function swDo(a,b){
+  var o=swApply(swGet(),a,b); o._u=Date.now(); _swWrite(o);
+  swClose(); renderToday(); swPush("Séances échangées");
+}
+/* Annuler : le jour k retrouve sa séance d'origine (on l'échange avec le jour qui la porte). */
+function swUndo(k){
+  var o=swGet(), c=null; Object.keys(o.p).forEach(function(x){ if(o.p[x]===k) c=x; });
+  if(!c){ delete o.p[k]; } else swApply(o,k,c);
+  o._u=Date.now(); _swWrite(o); renderToday(); swPush("Échange annulé");
+}
+function swToast(t,col){
+  var el=document.getElementById("swToast"); if(!el){ el=document.createElement("div"); el.id="swToast"; document.body.appendChild(el); }
+  el.style.cssText="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav) + 18px);z-index:10000;background:var(--paper);border:1px solid "+(col||"var(--line)")+";color:var(--ink);border-radius:999px;padding:10px 16px;font-size:13px;font-weight:600;box-shadow:var(--shadow);max-width:92vw;text-align:center";
+  el.innerHTML=t; clearTimeout(el._t); el._t=setTimeout(function(){ if(el&&el.parentNode) el.remove(); },6000);
+}
+/* Sauvegarde cloud immédiate puis mise à jour de la montre (intervals.icu → Garmin). */
+var GARMIN_URL="https://coach-nutrition.netlify.app/.netlify/functions/garmin-plan";
+function swPush(lbl){
+  if(syncTimer) clearTimeout(syncTimer);
+  swToast(lbl+" · envoi à la montre…");
+  cloudSaveNow(function(ok){
+    if(!ok){ swToast('⚠️ '+lbl+', mais sauvegarde cloud échouée · <span style="color:var(--blue);text-decoration:underline" onclick="swPush(\''+lbl+'\')">réessayer</span>',"var(--orange)"); return; }
+    var key=(typeof coKey==="function")?coKey():"";
+    if(!key){ swToast("⚠️ Montre non mise à jour : clé du coach absente (onglet Coach)","var(--orange)"); return; }
+    fetch(GARMIN_URL+"?key="+encodeURIComponent(key),{cache:"no-store"}).then(function(r){ return r.json(); }).then(function(d){
+      if(d&&d.status==="ok") swToast("✓ Montre mise à jour · synchronise Garmin Connect","var(--grn)");
+      else swToast('⚠️ Envoi montre échoué ('+((d&&d.status)||"?")+') · <span style="color:var(--blue);text-decoration:underline" onclick="swPush(\''+lbl+'\')">réessayer</span>',"var(--orange)");
+    }).catch(function(){ swToast('⚠️ Envoi montre échoué (réseau) · <span style="color:var(--blue);text-decoration:underline" onclick="swPush(\''+lbl+'\')">réessayer</span>',"var(--orange)"); });
+  });
+}
 /* ================= STORAGE (seam synchro) ================= */
 var LOG_KEY="lvtrail:v2:log";
 function loadLog(){try{return JSON.parse(localStorage.getItem(LOG_KEY)||"[]");}catch(e){return [];}}
@@ -2964,12 +3075,12 @@ function cloudSave(){
   if(syncTimer)clearTimeout(syncTimer);
   syncTimer=setTimeout(cloudSaveNow,1200); // debounce : 1 écriture par rafale
 }
-function cloudSaveNow(){
-  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet(),charges:chgAll(),refs:refGet(),matin:matinAll(),pull:pullGet(),agenda:(typeof agGet==="function"?agGet():null),rep:repGet()};
+function cloudSaveNow(cb){
+  var payload={log:loadLog(),links:linksGet(),extras:extrasGet(),linkignore:ignGet(),charges:chgAll(),refs:refGet(),matin:matinAll(),pull:pullGet(),agenda:(typeof agGet==="function"?agGet():null),rep:repGet(),swap:swGet()};
   fetch(SYNC_URL+"?action=save&user="+SYNC_USER,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
     .then(function(r){return r.json();})
-    .then(function(d){ setSyncBadge(d&&d.ok?"ok":"err"); })
-    .catch(function(){ setSyncBadge("err"); });
+    .then(function(d){ setSyncBadge(d&&d.ok?"ok":"err"); if(typeof cb==="function") cb(!!(d&&d.ok)); })
+    .catch(function(){ setSyncBadge("err"); if(typeof cb==="function") cb(false); });
 }
 function cloudPull(cb){
   fetch(SYNC_URL+"?action=get&user="+SYNC_USER)
@@ -3006,6 +3117,8 @@ function mergeCloud(d){
         la.we=mw; la._u=d.agenda._u;
         localStorage.setItem(AG_KEY,JSON.stringify(la));
       } }catch(e){} }
+  // échanges de séances : le cloud prime si plus récent (objet entier)
+  if(d.swap&&d.swap.p){ try{ if((d.swap._u||0)>(swGet()._u||0)) _swWrite(d.swap); }catch(e){} }
   // reprise pubalgie : le cloud prime si plus récent
   if(d.rep){ try{ var lrp=repGet(); if((d.rep._u||0)>(lrp._u||0)){ localStorage.setItem(REP_KEY,JSON.stringify(d.rep)); rebuildBlocks(); } }catch(e){} }
   // références : le cloud prime si plus récent
@@ -3665,7 +3778,7 @@ function renderToday(){
   else if(hasPlayer(s.typeKey)){ a='<button class="btn btn-orange" '+bs+' onclick="openSheet(\''+s.dateKey+'\',true)">OUVRIR</button>'; }
   else if(s.typeKey==="repos"){ a='<button class="btn btn-go" '+bs+' onclick="openSheet(\''+s.dateKey+'\',true)">MARQUER</button>'; }
   else { a='<button class="btn btn-go" '+bs+' onclick="openSheet(\''+s.dateKey+'\',true)">VALIDER</button>'; }
-  document.getElementById("heroActions").innerHTML=a;
+  document.getElementById("heroActions").innerHTML=a+swHeroHtml(s,done);
   renderHeroBeta(s); renderCrestBeta(vd,s); if(dayOffset===0) wellnessSync();
   renderWeek();
   renderLoadCard();

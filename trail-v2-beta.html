@@ -3013,6 +3013,74 @@ function swPush(lbl){
     }).catch(function(){ swToast('⚠️ Envoi montre échoué (réseau) · <span style="color:var(--blue);text-decoration:underline" onclick="swPush(\''+lbl+'\')">réessayer</span>',"var(--orange)"); });
   });
 }
+
+/* ===== CONSEIL DU JOUR (bêta, 20 nov. 2026, demande de Laurent) =====
+   Pop-up une fois par matin, SANS saisie : dès que la nuit (sommeil + VFC) est arrivée de la montre,
+   le coach IA (Netlify daily-advice → Haiku) relie la nuit (vs ta moyenne 30 j) à la séance du jour
+   (échanges compris) et donne 2-3 consignes. Si la séance du jour change (échange), le conseil est refait.
+   Stockage local advice:v1 = {d, sig, v, titre, nuit, conseils, seen}. Relecture : « 💡 Conseil » dans le bandeau. */
+var ADV_KEY="advice:v1", ADV_URL="https://coach-nutrition.netlify.app/.netlify/functions/daily-advice", _advBusy=false;
+function advGet(){ try{ return JSON.parse(localStorage.getItem(ADV_KEY)||"null"); }catch(e){ return null; } }
+function advSet(o){ try{ localStorage.setItem(ADV_KEY,JSON.stringify(o)); }catch(e){} }
+function advSig(s){ return (s.plan&&(s.plan.displayTitle||s.plan.label)||"")+"|"+(s.plan&&s.plan._swFrom||""); }
+function advPayload(td,s){
+  var o=matinAll(), e=o[td]||{}, st=matinStats(), r30=[], nights=[];
+  Object.keys(o).sort().reverse().forEach(function(k){
+    if(k===td) return; var x=o[k]; if((parse(td)-parse(k))/86400000>30) return;
+    if(typeof x.rhr==="number") r30.push(x.rhr);
+    if(nights.length<4 && (x.sleep!=null||x.vfc!=null)) nights.push({d:k,sleep:x.sleep,vfc:x.vfc});
+  });
+  function r1(x){ return x==null?null:Math.round(x*10)/10; }
+  var renfo=""; try{ var last=rqLast(); if(last&&last.dateKey===td) renfo="déjà fait aujourd'hui ("+(last.title||"")+")"; else { var I=rqInfo(rqShownPos()); renfo="Séance "+I.L+" · "+RQ_NAMES[I.L]+(rqPainGet()?" (mode douleur pubis activé)":""); } }catch(err){}
+  var y=sessionFor(new Date(parse(td).getTime()-86400000)), yd="";
+  try{ yd=(y.plan.displayTitle||y.plan.label||"")+(sessionDone(y)?" (faite)":" (non validée)"); }catch(err){}
+  return { date:td, dow:JOURS[dowMon(parse(td))-1],
+    night:{sleep:e.sleep, score:e.sleepScore, vfc:e.vfc, rhr:e.rhr},
+    base:{sleep:r1(st.sleepBase), vfc:r1(st.vfcBase), vfcSd:r1(st.vfcSd), rhr:r30.length?r1(r30.reduce(function(a,b){return a+b;},0)/r30.length):null, n:st.sleepN},
+    nights:nights,
+    session:{title:s.plan.displayTitle||s.plan.label, short:s.plan.short||"", why:s.plan.why||"", detail:(s.plan.detail||[]).map(function(x){ return String(x).replace(/<[^>]+>/g,""); }),
+      specs:(s.specs||[]).map(function(x){ return String(x[0]).replace(/<[^>]+>/g,"")+" "+String(x[1]).replace(/<[^>]+>/g,""); }),
+      swappedFrom:s.plan._swFrom||"", done:sessionDone(s)},
+    renfo:renfo, yesterday:yd };
+}
+function advMaybe(){
+  if(dayOffset!==0 || _advBusy) return;
+  var key=""; try{ key=coKey(); }catch(e){} if(!key) return;
+  var td=iso(new Date()), e=matinFor(td)||{};
+  if(e.sleep==null || e.vfc==null) return;               // la nuit n'est pas encore arrivée
+  var s=sessionFor(new Date()), sig=advSig(s), a=advGet();
+  if(a && a.d===td && a.sig===sig){ if(!a.seen) advShow(); return; }
+  _advBusy=true;
+  fetch(ADV_URL+"?key="+encodeURIComponent(key),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(advPayload(td,s))})
+    .then(function(r){ return r.json(); })
+    .then(function(j){ _advBusy=false; if(!j||!j.ok) return;
+      advSet({d:td, sig:sig, v:j.v, titre:j.titre, nuit:j.nuit, conseils:j.conseils, seen:false, at:Date.now()});
+      try{ renderTopMorning(); }catch(e){} advShow(); })
+    .catch(function(){ _advBusy=false; });
+}
+function advLinkHtml(){
+  var a=advGet(); if(!a || a.d!==iso(new Date())) return "";
+  var c={vert:"var(--grn)",orange:"var(--orange)",rouge:"var(--red)"}[a.v]||"var(--mut)";
+  return '<span class="tsep">·</span><span onclick="advShow()" style="cursor:pointer;color:'+c+';font-size:12px;font-weight:700;text-decoration:underline">💡 Conseil</span>';
+}
+function advShow(){
+  var a=advGet(); if(!a || a.d!==iso(new Date())) return;
+  var c={vert:"var(--grn)",orange:"var(--orange)",rouge:"var(--red)"}[a.v]||"var(--mut)";
+  var lbl={vert:"SÉANCE TELLE QUE PRÉVUE",orange:"SÉANCE ALLÉGÉE",rouge:"REPOS OU SÉANCE DOUCE"}[a.v]||"";
+  var old=document.getElementById("advPop"); if(old) old.remove();
+  var el=document.createElement("div"); el.id="advPop";
+  el.style.cssText="position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:18px";
+  el.onclick=function(ev){ if(ev.target===el) advClose(); };
+  el.innerHTML='<div style="background:var(--paper);border:1px solid var(--line);border-top:4px solid '+c+';border-radius:18px;width:100%;max-width:440px;padding:18px 16px 16px">'+
+    '<div style="font-size:11px;letter-spacing:2px;font-weight:700;color:'+c+'">💡 CONSEIL DU JOUR · '+lbl+'</div>'+
+    '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:30px;line-height:1.05;color:var(--ink);margin:6px 0 8px">'+(a.titre||"")+'</div>'+
+    '<div style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">'+(a.nuit||"")+'</div>'+
+    (a.conseils||[]).map(function(x){ return '<div style="display:flex;gap:8px;font-size:14px;color:var(--ink);margin:7px 0"><span style="color:'+c+';font-weight:700">—</span><span>'+x+'</span></div>'; }).join("")+
+    '<button class="btn btn-acid" style="margin-top:14px;padding:12px;color:#1a1d12" onclick="advClose()">OK</button>'+
+    '<div style="font-size:10.5px;color:var(--mut);text-align:center;margin-top:8px">Coach IA · d\'après ta nuit Garmin et la séance du jour</div></div>';
+  document.body.appendChild(el);
+}
+function advClose(){ var el=document.getElementById("advPop"); if(el) el.remove(); var a=advGet(); if(a){ a.seen=true; advSet(a); } }
 /* ================= STORAGE (seam synchro) ================= */
 var LOG_KEY="lvtrail:v2:log";
 function loadLog(){try{return JSON.parse(localStorage.getItem(LOG_KEY)||"[]");}catch(e){return [];}}
@@ -3790,7 +3858,7 @@ function renderToday(){
   else { a='<button class="btn btn-go" '+bs+' onclick="openSheet(\''+s.dateKey+'\',true)">VALIDER</button>'; }
   document.getElementById("heroActions").innerHTML=a+swHeroHtml(s,done);
   swFreeStrip(hero,s); /* 20 nov. 2026 : échange possible depuis un créneau libre (carte plan masquée) */
-  renderHeroBeta(s); renderCrestBeta(vd,s); if(dayOffset===0) wellnessSync();
+  renderHeroBeta(s); renderCrestBeta(vd,s); if(dayOffset===0){ wellnessSync(); try{ advMaybe(); }catch(e){} }
   renderWeek();
   renderLoadCard();
   renderGtgMini();
@@ -5532,6 +5600,7 @@ function wellnessSync(force){
       if(ch){ e.src="garmin"; e._u=Date.now(); o[w.d]=e; any=true; }
     });
     if(any){ matinWrite(o); try{ renderAdapt(); }catch(e){} }
+    try{ advMaybe(); }catch(e){} /* conseil du jour (20 nov. 2026) */
   }).catch(function(){});
 }
 /* ===== D+ manuel (tapis incliné, etc.) — 15 nov. 2026 =====
@@ -5827,7 +5896,7 @@ function renderTopMorning(){
   if(e.feel){ var f=FEELS.filter(function(x){return x.k===e.feel;})[0];
     if(f) bits.push('<span class="tpill" style="color:var(--mut)">'+(f.k==="normal"?"Comme d\'habitude":f.l)+'</span>'); }
   el.innerHTML = bits.length
-    ? bits.join('<span class="tsep">·</span>')+(e.src==="garmin"?'<span class="tsep">·</span><span style="color:var(--grn);font-size:11px">auto Garmin</span>':'')  /* ✎ retiré 16 nov. 2026 */
+    ? bits.join('<span class="tsep">·</span>')+(e.src==="garmin"?'<span class="tsep">·</span><span style="color:var(--grn);font-size:11px">auto Garmin</span>':'')+advLinkHtml()  /* ✎ retiré 16 nov. 2026 ; 💡 conseil du jour 20 nov. 2026 */
     : '';  /* bouton « Ton état du matin ? » retiré (16 nov. 2026) : nuit pas encore synchronisée → rien */
 }
 function renderAdapt(){

@@ -237,6 +237,7 @@
   .rqChips button.on{border-color:var(--acid);color:var(--acid)}
   .rqChips button.pain{border-color:var(--red);color:var(--red)}
   .rqGo{width:100%;margin-top:12px;padding:16px;border:none;border-radius:14px;background:var(--acid);color:#1a1d12;font:400 26px 'Bebas Neue',sans-serif;letter-spacing:1.5px}
+  .rqGo.ok{background:var(--grn);color:#0d1a12;cursor:default}  /* renfo validé : vert, texte foncé (lisible) */
   .rqToast{position:fixed;left:50%;top:max(18px,env(safe-area-inset-top));transform:translateX(-50%);z-index:200;background:var(--acid);color:#1a1d12;font:400 20px 'Bebas Neue',sans-serif;letter-spacing:.8px;padding:10px 16px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:rqIn .35s cubic-bezier(.2,1.6,.4,1);transition:opacity .5s;max-width:90vw;text-align:center}
   .rqToast.out{opacity:0}
   @keyframes rqIn{from{transform:translate(-50%,-30px) scale(.8);opacity:0}to{transform:translate(-50%,0) scale(1);opacity:1}}
@@ -5269,7 +5270,8 @@ function renderRQCardPascal(){
   if(last && last.dateKey===td){
     box.innerHTML='<div class="rqHero"><div style="display:flex;justify-content:space-between;align-items:center"><div class="k">✓ Renfo validé</div>'+dots+'</div>'+
       '<div class="t">'+(last.title||"Renfo")+'</div>'+
-      '<div class="s">'+wk+'/3 cette semaine'+streak+(last.zp!==""&&last.zp!=null?' · pubis '+last.zp+'/10':'')+'</div></div>';
+      '<div class="s">'+wk+'/3 cette semaine'+streak+(last.zp!==""&&last.zp!=null?' · pubis '+last.zp+'/10':'')+'</div>'+
+      '<button class="rqGo ok" tabindex="-1">✓ RENFO VALIDÉ</button></div>';
     return;
   }
   var warn=(last && Number(last.zp)>3)?'<div style="margin-top:10px;padding:9px 11px;border-radius:12px;background:rgba(255,107,53,.12);color:var(--ink2);font-size:12.5px;line-height:1.5">Dernière séance : pubis à <b>'+last.zp+'/10</b>. À signaler à Pascal si ça persiste.</div>':'';

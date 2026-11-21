@@ -5271,7 +5271,8 @@ function renderRQCardPascal(){
     box.innerHTML='<div class="rqHero"><div style="display:flex;justify-content:space-between;align-items:center"><div class="k">✓ Renfo validé</div>'+dots+'</div>'+
       '<div class="t">'+(last.title||"Renfo")+'</div>'+
       '<div class="s">'+wk+'/3 cette semaine'+streak+(last.zp!==""&&last.zp!=null?' · pubis '+last.zp+'/10':'')+'</div>'+
-      '<button class="rqGo ok" tabindex="-1">✓ RENFO VALIDÉ</button></div>';
+      '<button class="rqGo ok" tabindex="-1">✓ RENFO VALIDÉ</button>'+
+      '<div style="text-align:center;margin-top:8px"><a onclick="rqPascalUndo(\''+last.id+'\')" style="color:var(--mut);font-size:12.5px;cursor:pointer;text-decoration:underline">↩ Annuler la validation</a></div></div>';
     return;
   }
   var warn=(last && Number(last.zp)>3)?'<div style="margin-top:10px;padding:9px 11px;border-radius:12px;background:rgba(255,107,53,.12);color:var(--ink2);font-size:12.5px;line-height:1.5">Dernière séance : pubis à <b>'+last.zp+'/10</b>. À signaler à Pascal si ça persiste.</div>':'';
@@ -5280,6 +5281,11 @@ function renderRQCardPascal(){
     '<div class="t">Programme <i>Pascal</i></div>'+
     '<div class="s">Séance dans son appli, puis valide ici · '+wk+'/3 cette semaine'+streak+'</div>'+warn+
     '<button class="rqGo" onclick="rqPascalDone()">RENFO À FAIRE</button></div>';
+}
+function rqPascalUndo(id){  /* annule une validation (erreur, essai) : supprime l'entrée du journal → synchro cloud */
+  if(!confirm("Annuler la validation de ce renfo ?")) return;
+  saveLog(loadLog().filter(function(e){ return e.id!==id; }));
+  renderToday(); renderLog();
 }
 function rqPascalDone(){
   pKey=iso(new Date()); pIsSupp=true; pSuppKind="renfo"; pWeekly=false; pRQ=null; rqCurDl=false; rqPascal=true;

@@ -4995,7 +4995,7 @@ function finishSuppRenfo(){
   curKey=pKey; editing=entry;
   document.getElementById("shTitle").textContent=pSuppName;
   document.getElementById("shWhy").textContent=rqPascal?"Séance faite dans l'appli de Pascal — note ton ressenti.":"Séance de renfo — note ton ressenti (RPE, jambes, sensations).";
-  document.getElementById("shSpecs").innerHTML='<div class="spec"><b>'+(rqPascal?"PASCAL":(pRQ?"≈60′":"≈30′"))+'</b>FAIT</div>';
+  document.getElementById("shSpecs").innerHTML='<div class="spec"><b>'+(rqPascal?"PASCAL":(pRQ?"≈60′":"≈30′"))+'</b>'+(rqPascal?'À VALIDER':'FAIT')+'</div>';
   var recap = (pWeekly||pRQ) ? renfoRecapHTML(pRenfoBlocks,"fin") : "";
   var f='<div class="field"><label>RPE <b id="frV">6</b></label><input type="range" min="1" max="10" value="6" id="fRpe" oninput="frV.textContent=this.value"></div>'+
     '<div class="field"><label>Jambes <b id="fjV">6</b></label><input type="range" min="1" max="10" value="6" id="fJambes" oninput="fjV.textContent=this.value"></div>'+
@@ -5267,17 +5267,17 @@ function renderRQCardPascal(){
   var dots='<div class="rqDots">'+[0,1,2].map(function(i){ return '<i class="'+(i<wk?'on':'')+'"></i>'; }).join("")+'</div>';
   var streak=S.streak?' · 🔥 '+S.streak+' semaine'+(S.streak>1?'s':'')+' à 3/3':'';
   if(last && last.dateKey===td){
-    box.innerHTML='<div class="rqHero"><div style="display:flex;justify-content:space-between;align-items:center"><div class="k">✓ Renfo du jour fait</div>'+dots+'</div>'+
+    box.innerHTML='<div class="rqHero"><div style="display:flex;justify-content:space-between;align-items:center"><div class="k">✓ Renfo validé</div>'+dots+'</div>'+
       '<div class="t">'+(last.title||"Renfo")+'</div>'+
       '<div class="s">'+wk+'/3 cette semaine'+streak+(last.zp!==""&&last.zp!=null?' · pubis '+last.zp+'/10':'')+'</div></div>';
     return;
   }
   var warn=(last && Number(last.zp)>3)?'<div style="margin-top:10px;padding:9px 11px;border-radius:12px;background:rgba(255,107,53,.12);color:var(--ink2);font-size:12.5px;line-height:1.5">Dernière séance : pubis à <b>'+last.zp+'/10</b>. À signaler à Pascal si ça persiste.</div>':'';
   box.innerHTML='<div class="rqHero">'+
-    '<div style="display:flex;justify-content:space-between;align-items:center"><div class="k">🏋️ Renfo du jour</div>'+dots+'</div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center"><div class="k">🏋️ Renfo à faire</div>'+dots+'</div>'+
     '<div class="t">Programme <i>Pascal</i></div>'+
     '<div class="s">Séance dans son appli, puis valide ici · '+wk+'/3 cette semaine'+streak+'</div>'+warn+
-    '<button class="rqGo" onclick="rqPascalDone()">✓ RENFO FAIT</button></div>';
+    '<button class="rqGo" onclick="rqPascalDone()">✓ VALIDER LE RENFO</button></div>';
 }
 function rqPascalDone(){
   pKey=iso(new Date()); pIsSupp=true; pSuppKind="renfo"; pWeekly=false; pRQ=null; rqCurDl=false; rqPascal=true;

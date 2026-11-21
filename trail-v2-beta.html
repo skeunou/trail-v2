@@ -2758,7 +2758,7 @@ function buildWeeklyWork(s,org){
 }
 function launchWeeklyRenfo(idx,slot,signal){
   unlockAudio(); reqWake(); beep(660,.12);
-  pKey=iso(new Date()); pIsSupp=true; pSuppKind="renfo"; pWeekly=true; pRQ=null; rqCurDl=false; _wkSlot=slot; _wkIdx=idx;
+  pKey=iso(new Date()); pIsSupp=true; pSuppKind="renfo"; pWeekly=true; pRQ=null; rqPascal=false; rqCurDl=false; _wkSlot=slot; _wkIdx=idx;
   pState={}; pSeriesDone={}; pSignal=signal||{zones:[],text:""};
   var s=RW()[idx];
   var org=rnd(s.cat==="A"?["sets","sets","superset","cluster5"]:["sets","superset","circuit"]);
@@ -3031,7 +3031,7 @@ function advPayload(td,s){
     if(nights.length<4 && (x.sleep!=null||x.vfc!=null)) nights.push({d:k,sleep:x.sleep,vfc:x.vfc});
   });
   function r1(x){ return x==null?null:Math.round(x*10)/10; }
-  var renfo=""; try{ var last=rqLast(); if(last&&last.dateKey===td) renfo="déjà fait aujourd'hui ("+(last.title||"")+")"; else { var I=rqInfo(rqShownPos()); renfo="Séance "+I.L+" · "+RQ_NAMES[I.L]+(rqPainGet()?" (mode douleur pubis activé)":""); } }catch(err){}
+  var renfo=""; try{ var last=rqLast(); if(last&&last.dateKey===td) renfo="déjà fait aujourd'hui ("+(last.title||"")+")"; else if(RQ_MODE==="pascal") renfo="programme de Pascal Tramoni (kiné), fait dans son appli · "+rqWeekCount()+"/3 cette semaine"; else { var I=rqInfo(rqShownPos()); renfo="Séance "+I.L+" · "+RQ_NAMES[I.L]+(rqPainGet()?" (mode douleur pubis activé)":""); } }catch(err){}
   var y=sessionFor(new Date(parse(td).getTime()-86400000)), yd="";
   try{ yd=(y.plan.displayTitle||y.plan.label||"")+(sessionDone(y)?" (faite)":" (non validée)"); }catch(err){}
   return { date:td, dow:JOURS[dowMon(parse(td))-1],
@@ -4318,7 +4318,7 @@ function chooseSupp(k){
 }
 function startSuppRenfo(k,signal){
   unlockAudio(); reqWake(); beep(660,.12);
-  pKey=k; pIsSupp=true; pSuppKind="renfo"; pWeekly=false; pRQ=null; rqCurDl=false; pState={}; pSeriesDone={}; pSignal=signal||{zones:[],text:""};
+  pKey=k; pIsSupp=true; pSuppKind="renfo"; pWeekly=false; pRQ=null; rqPascal=false; rqCurDl=false; pState={}; pSeriesDone={}; pSignal=signal||{zones:[],text:""};
   var r=buildSuppRenfo(pSignal); pSuppName=r.name; pSegs=r.segs; pIdx=0;
   closeSheet(); document.getElementById("player").classList.add("on");
   renderSeg();
@@ -4987,19 +4987,20 @@ function saveSuppWod(){
   closeSheet(); renderToday(); renderLog();
 }
 function finishSuppRenfo(){
-  var displayType = pRQ ? ("RENFO "+pRQ.L) : (pWeekly ? ("RENFO "+_wkSlot+"/2") : "RENFO SUPP");
+  var displayType = rqPascal ? "RENFO PASCAL" : pRQ ? ("RENFO "+pRQ.L) : (pWeekly ? ("RENFO "+_wkSlot+"/2") : "RENFO SUPP");
   var entry={id:"r_"+Date.now(),dateKey:pKey,ts:Date.now(),
     typeKey:"renfo-supp",type:displayType,title:pSuppName,color:"var(--orange)",
     rpe:"",zp:"",jambes:"",score:"",note:""};
   openSheet(pKey);
   curKey=pKey; editing=entry;
   document.getElementById("shTitle").textContent=pSuppName;
-  document.getElementById("shWhy").textContent="Séance de renfo — note ton ressenti (RPE, jambes, sensations).";
-  document.getElementById("shSpecs").innerHTML='<div class="spec"><b>'+(pRQ?"≈60′":"≈30′")+'</b>FAIT</div>';
+  document.getElementById("shWhy").textContent=rqPascal?"Séance faite dans l'appli de Pascal — note ton ressenti.":"Séance de renfo — note ton ressenti (RPE, jambes, sensations).";
+  document.getElementById("shSpecs").innerHTML='<div class="spec"><b>'+(rqPascal?"PASCAL":(pRQ?"≈60′":"≈30′"))+'</b>FAIT</div>';
   var recap = (pWeekly||pRQ) ? renfoRecapHTML(pRenfoBlocks,"fin") : "";
   var f='<div class="field"><label>RPE <b id="frV">6</b></label><input type="range" min="1" max="10" value="6" id="fRpe" oninput="frV.textContent=this.value"></div>'+
     '<div class="field"><label>Jambes <b id="fjV">6</b></label><input type="range" min="1" max="10" value="6" id="fJambes" oninput="fjV.textContent=this.value"></div>'+
-    (pRQ?'<div class="field"><label>Douleur pubis max pendant <b id="fzV">0</b>/10</label><input type="range" min="0" max="10" value="0" id="fZp" oninput="fzV.textContent=this.value"></div>':'')+
+    (rqPascal?'<div class="field"><label>Durée (min)</label><input type="number" inputmode="numeric" id="fDur" placeholder="ex. 45"></div>':'')+
+    ((pRQ||rqPascal)?'<div class="field"><label>Douleur pubis max pendant <b id="fzV">0</b>/10</label><input type="range" min="0" max="10" value="0" id="fZp" oninput="fzV.textContent=this.value"></div>':'')+
     '<div class="field"><label>Note</label><textarea id="fNote" placeholder="Charges, sensations, douleur…"></textarea></div>'+
     '';
   var fpan = (pRQ && pSegs && pSegs.length && pIdx>0) ? rqFinishPanel() : "";  /* BÊTA : écran de fin (seulement après une séance lancée) */
@@ -5014,16 +5015,17 @@ function finishSuppRenfo(){
 function saveSuppRenfo(){
   var log=loadLog();
   var entry={id:"r_"+Date.now(),dateKey:curKey,ts:Date.now(),_u:Date.now(),
-    typeKey:"renfo-supp",type:pRQ?("RENFO "+pRQ.L):(pWeekly?("RENFO "+_wkSlot+"/2"):"RENFO SUPP"),title:editing.title,color:"var(--orange)",
-    rpe:val("fRpe"),zp:(pRQ?val("fZp"):""),jambes:val("fJambes"),score:"",note:[signalNote(),(val("fNote")||"").trim()].filter(Boolean).join(" · "),
+    typeKey:"renfo-supp",type:rqPascal?"RENFO PASCAL":pRQ?("RENFO "+pRQ.L):(pWeekly?("RENFO "+_wkSlot+"/2"):"RENFO SUPP"),title:editing.title,color:"var(--orange)",
+    rpe:val("fRpe"),zp:((pRQ||rqPascal)?val("fZp"):""),jambes:val("fJambes"),score:"",note:[signalNote(),(val("fNote")||"").trim()].filter(Boolean).join(" · "),
     exos:(pWeekly||pRQ)?pRenfoBlocks.map(function(b){return {name:b.name,reps:b.reps};}):null,
     wk:pWeekly?mondayKey():"",wslot:pWeekly?_wkSlot:0,
     sid:editing.sid||"",stravaName:editing.stravaName||"",hrAvg:editing.hrAvg||null,hrMax:editing.hrMax||null,durMin:editing.durMin||null,wAvg:editing.wAvg||null};
+  if(rqPascal){ entry.rq=true; entry.rqSrc="pascal"; entry.exos=null; var _dm=Number(val("fDur")); if(!entry.durMin && _dm>0) entry.durMin=_dm; }  /* programme Pascal : compte dans x/3, sans position de file */
   if(pRQ){ entry.rq=true; entry.rqPos=pRQ.pos; entry.rqL=pRQ.L; entry.rqDl=!!pRQ.dl; entry.rqPain=!!pRQ.pain; entry.rqVar=pRQ.v; }
   log.unshift(entry);
   log.sort(function(a,b){return a.dateKey<b.dateKey?1:-1;});
   saveLog(log);
-  pWeekly=false; pRQ=null; rqCurDl=false; rqSwap=false;
+  pWeekly=false; pRQ=null; rqPascal=false; rqCurDl=false; rqSwap=false;
   closeSheet(); renderToday(); renderLog();
 }
 
@@ -5253,7 +5255,37 @@ function rqBuild(pos,pain,alt){
     blocks:items.filter(function(x){return x.g!=="Échauffement";}).map(function(x){return {name:x.name,reps:x.reps};})};
 }
 function rqTomorrowHard(){ try{ var d=new Date(); d.setDate(d.getDate()+1); var s=sessionFor(d); return s.typeKey==="cotes" ? (s.plan.label||"séance dure") : ""; }catch(e){ return ""; } }
-function renderRQCard(){ return renderRQCardBeta(); }
+/* Nov. 2026 : renfo prescrit par Pascal Tramoni (kiné), réalisé dans son appli.
+   Le P.P.L sert seulement à valider + suivre (x/3, douleur pubis, coach).
+   RQ_MODE="file" → retour à la file A/B/C (code conservé, intact). */
+var RQ_MODE="pascal", rqPascal=false;
+function renderRQCard(){ return RQ_MODE==="pascal" ? renderRQCardPascal() : renderRQCardBeta(); }
+function renderRQCardPascal(){
+  var box=document.getElementById("rqCard"); if(!box) return;
+  if(dayOffset!==0){ box.innerHTML=""; return; }
+  var td=iso(new Date()), last=rqLast(), wk=rqWeekCount(), S=rqWeekStreak();
+  var dots='<div class="rqDots">'+[0,1,2].map(function(i){ return '<i class="'+(i<wk?'on':'')+'"></i>'; }).join("")+'</div>';
+  var streak=S.streak?' · 🔥 '+S.streak+' semaine'+(S.streak>1?'s':'')+' à 3/3':'';
+  if(last && last.dateKey===td){
+    box.innerHTML='<div class="rqHero"><div style="display:flex;justify-content:space-between;align-items:center"><div class="k">✓ Renfo du jour fait</div>'+dots+'</div>'+
+      '<div class="t">'+(last.title||"Renfo")+'</div>'+
+      '<div class="s">'+wk+'/3 cette semaine'+streak+(last.zp!==""&&last.zp!=null?' · pubis '+last.zp+'/10':'')+'</div></div>';
+    return;
+  }
+  var warn=(last && Number(last.zp)>3)?'<div style="margin-top:10px;padding:9px 11px;border-radius:12px;background:rgba(255,107,53,.12);color:var(--ink2);font-size:12.5px;line-height:1.5">Dernière séance : pubis à <b>'+last.zp+'/10</b>. À signaler à Pascal si ça persiste.</div>':'';
+  box.innerHTML='<div class="rqHero">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center"><div class="k">🏋️ Renfo du jour</div>'+dots+'</div>'+
+    '<div class="t">Programme <i>Pascal</i></div>'+
+    '<div class="s">Séance dans son appli, puis valide ici · '+wk+'/3 cette semaine'+streak+'</div>'+warn+
+    '<button class="rqGo" onclick="rqPascalDone()">✓ RENFO FAIT</button></div>';
+}
+function rqPascalDone(){
+  pKey=iso(new Date()); pIsSupp=true; pSuppKind="renfo"; pWeekly=false; pRQ=null; rqCurDl=false; rqPascal=true;
+  pState={}; pSeriesDone={}; pSignal={zones:[],text:""};
+  pSuppName="Renfo Pascal"; pRenfoBlocks=[]; pSegs=[]; pIdx=0;
+  finishSuppRenfo();
+}
+function renderRQCard_file(){ return renderRQCardBeta(); }  /* ancienne file A/B/C */
 function renderRQCardProd(){ /* version prod conservée, non appelée dans la bêta */
   var box=document.getElementById("rqCard"); if(!box) return;
   if(dayOffset!==0){ box.innerHTML=""; return; }
